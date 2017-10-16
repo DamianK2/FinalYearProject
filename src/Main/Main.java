@@ -13,7 +13,7 @@ public class Main {
 		
         Crawler test = new Crawler(url);
         links = test.getAllLinks();
-        
+		 
 		print("\nLinks: (%d)", links.size());
 		int i = 1;
 		for (String link : links) {
