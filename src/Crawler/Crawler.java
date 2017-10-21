@@ -24,10 +24,10 @@ public class Crawler {
 		linkList.add(url);
 	}
 	
-	// Method for testing different solutions
-	public void testing() {
+	// Initial method for getting the title
+	public String getTitle(int i) {
 		Document doc = null;
-        String firstURL = linkList.get(0);
+        String firstURL = linkList.get(i);
 		try {
 			doc = Jsoup.connect(firstURL).get();
 			System.out.println("Fetching from" + firstURL + "...");
@@ -35,9 +35,22 @@ public class Crawler {
 			System.out.println("Something went wrong when getting the first element from the list of links.");
 			e.printStackTrace();
 		}
-		System.out.println("Title: " + doc.title());
+		return doc.title();
+	}
+	
+	// Initial method for getting the description
+	public String getDescription(int i) {
+		Document doc = null;
+        String firstURL = linkList.get(i);
+		try {
+			doc = Jsoup.connect(firstURL).get();
+			System.out.println("Fetching from" + firstURL + "...");
+		} catch (IOException e) {
+			System.out.println("Something went wrong when getting the first element from the list of links.");
+			e.printStackTrace();
+		}
 		boolean check = true;
-		String meta, parsedMeta;
+		String meta = null, parsedMeta;
 		try {
 			meta = doc.select("meta[name=description]").first().attr("content");
 			parsedMeta = meta.replaceAll("(.{100})", "$1\n");
@@ -57,9 +70,12 @@ public class Crawler {
 				check = false;
 			}
 		}
-		if(!check)
+		if(!check) {
 			System.out.println("Well this is embarassing. No description found!");
+			meta = "No description!";
+		}
 		
+		return meta;
 	}
 	
 	// Fetches all links in the website, including sub-links
