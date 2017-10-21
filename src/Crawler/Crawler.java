@@ -24,13 +24,51 @@ public class Crawler {
 		linkList.add(url);
 	}
 	
+	// Method for testing different solutions
+	public void testing() {
+		Document doc = null;
+        String firstURL = linkList.get(0);
+		try {
+			doc = Jsoup.connect(firstURL).get();
+			System.out.println("Fetching from" + firstURL + "...");
+		} catch (IOException e) {
+			System.out.println("Something went wrong when getting the first element from the list of links.");
+			e.printStackTrace();
+		}
+		System.out.println("Title: " + doc.title());
+		boolean check = true;
+		String meta, parsedMeta;
+		try {
+			meta = doc.select("meta[name=description]").first().attr("content");
+			parsedMeta = meta.replaceAll("(.{100})", "$1\n");
+			System.out.println("Decription: " + parsedMeta);
+		} catch(NullPointerException e) {
+		   System.out.println("No meta with attribute \"name\"");
+		   check = false;
+		}
+		if(!check) {
+			check = true;
+			try {
+				meta = doc.select("meta[property=og:description]").first().attr("content");
+				parsedMeta = meta.replaceAll("(.{100})", "$1\n");
+				System.out.println("Description: " + parsedMeta);
+			} catch(NullPointerException e) {
+				System.out.println("No meta with attribute \"property\"");
+				check = false;
+			}
+		}
+		if(!check)
+			System.out.println("Well this is embarassing. No description found!");
+		
+	}
+	
 	// Fetches all links in the website, including sub-links
 	public ArrayList<String> getAllLinks() {
 		Document doc = null;
         String firstURL = linkList.get(0);
 		try {
 			doc = Jsoup.connect(firstURL).get();
-			System.out.println("Fetching from" + firstURL + "...");
+			System.out.println("Fetching from " + firstURL + "...");
 		} catch (IOException e) {
 			System.out.println("Something went wrong when getting the first element from the list of links.");
 			e.printStackTrace();
