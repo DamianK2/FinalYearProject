@@ -15,14 +15,17 @@ import org.apache.poi.ss.usermodel.Workbook;
 
 import Crawler.Crawler;
 import Crawler.Parser;
+import venue.Country;
 
 public class Main {
 
-	public static final String[] URLS = {"https://icpe2018.spec.org/home.html", "http://lsds.hesge.ch/ISPDC2018/" ,"https://unescoprivacychair.urv.cat/psd2018/"};
+	public static final String[] URLS = {"https://icpe2018.spec.org/home.html", "http://lsds.hesge.ch/ISPDC2018/", "https://unescoprivacychair.urv.cat/psd2018/index.php"};
 	
 	public static void main(String[] args) {
 		long tStart = System.currentTimeMillis();
 		ArrayList<String> links = new ArrayList<String>();
+		
+		Country country = new Country();
 		
 		// Look through title and description to find antiques if not there then 
 		
@@ -35,20 +38,24 @@ public class Main {
         row.createCell(0).setCellValue(createHelper.createRichTextString("Link"));
         row.createCell(1).setCellValue(createHelper.createRichTextString("Title"));
         row.createCell(2).setCellValue(createHelper.createRichTextString("Description"));
+        row.createCell(3).setCellValue(createHelper.createRichTextString("Venue"));
 		
-        int i;
+        int i = 0;
         Crawler crawl;
         Parser parser;
 		for(String url: URLS) {
 			links.clear();
-			i= 1;
 			crawl = new Crawler(url);
 			links = crawl.getAllLinks();
 			parser = new Parser(links);
 			row = sheet.createRow(i+1);
 			row.createCell(0).setCellValue(createHelper.createRichTextString(url));
-	        row.createCell(1).setCellValue(createHelper.createRichTextString(parser.getTitle()));
-	        row.createCell(2).setCellValue(createHelper.createRichTextString(parser.getDescription()));
+			String title = parser.getTitle();
+	        row.createCell(1).setCellValue(createHelper.createRichTextString(title));
+	        String description = parser.getDescription();
+	        row.createCell(2).setCellValue(createHelper.createRichTextString(description));
+	        String venue = parser.getVenue(title, description, country);
+	        row.createCell(3).setCellValue(createHelper.createRichTextString(venue));
 			i++;
 		}
         
@@ -62,21 +69,9 @@ public class Main {
 		}
         try {
 			wb.write(fileOut);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-        try {
 			fileOut.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-        
-        try {
 			wb.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
