@@ -42,13 +42,27 @@ public class Worker implements Runnable {
 				e.printStackTrace();
 			}	
 			sublinks = doc.select("ul li ul a[href]");
-			this.addToLinkList(sublinks);	
+			if(!sublinks.isEmpty())
+				this.addToLinkList(sublinks);
 	}
 	
 	// Adds the newly fetched links into an ArrayList
 	private void addToLinkList(Elements links) {
 		for(Element link: links) {
-			this.linkList.add(link.attr("abs:href"));
+			// Change element to string
+			String sublink = link.attr("abs:href");
+			// If the link is not the same as one of existing links, then add it
+			if(!this.checkDuplicates(sublink))
+				this.linkList.add(sublink);
 		}
+	}
+	
+	private boolean checkDuplicates(String sublink) {
+		boolean check = false;
+		for(String link: linkList) {
+			if(sublink.equals(link))
+				check = true;
+		}
+		return check;
 	}
 }

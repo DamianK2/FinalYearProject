@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Locale;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
@@ -13,14 +14,17 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 
 import Crawler.Crawler;
+import Crawler.Parser;
 
 public class Main {
 
-	public static final String[] URLS = {"https://icpe2017.spec.org/", "http://ispdc2017.dps.uibk.ac.at/" ,"https://unescoprivacychair.urv.cat/psd2016/"};
+	public static final String[] URLS = {"https://icpe2018.spec.org/home.html", "http://lsds.hesge.ch/ISPDC2018/" ,"https://unescoprivacychair.urv.cat/psd2018/"};
 	
 	public static void main(String[] args) {
 		long tStart = System.currentTimeMillis();
 		ArrayList<String> links = new ArrayList<String>();
+		
+		// Look through title and description to find antiques if not there then 
 		
 		Workbook wb = new HSSFWorkbook();
         //Workbook wb = new XSSFWorkbook();
@@ -32,13 +36,19 @@ public class Main {
         row.createCell(1).setCellValue(createHelper.createRichTextString("Title"));
         row.createCell(2).setCellValue(createHelper.createRichTextString("Description"));
 		
-        int i = 0;
+        int i;
+        Crawler crawl;
+        Parser parser;
 		for(String url: URLS) {
-			Crawler test = new Crawler(url);
+			links.clear();
+			i= 1;
+			crawl = new Crawler(url);
+			links = crawl.getAllLinks();
+			parser = new Parser(links);
 			row = sheet.createRow(i+1);
 			row.createCell(0).setCellValue(createHelper.createRichTextString(url));
-	        row.createCell(1).setCellValue(createHelper.createRichTextString(test.getTitle(i)));
-	        row.createCell(2).setCellValue(createHelper.createRichTextString(test.getDescription(i)));
+	        row.createCell(1).setCellValue(createHelper.createRichTextString(parser.getTitle()));
+	        row.createCell(2).setCellValue(createHelper.createRichTextString(parser.getDescription()));
 			i++;
 		}
         
