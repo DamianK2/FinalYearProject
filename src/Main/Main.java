@@ -24,6 +24,7 @@ public class Main {
 	public static void main(String[] args) {
 		long tStart = System.currentTimeMillis();
 		ArrayList<String> links = new ArrayList<String>();
+		ArrayList<String> deadlines = new ArrayList<String>();
 		
 		Country country = new Country();
 		
@@ -39,12 +40,16 @@ public class Main {
         row.createCell(1).setCellValue(createHelper.createRichTextString("Title"));
         row.createCell(2).setCellValue(createHelper.createRichTextString("Description"));
         row.createCell(3).setCellValue(createHelper.createRichTextString("Venue"));
+        row.createCell(4).setCellValue(createHelper.createRichTextString("Submission deadline"));
+        row.createCell(5).setCellValue(createHelper.createRichTextString("Notification deadline"));
+        row.createCell(6).setCellValue(createHelper.createRichTextString("Camera ready deadline"));
 		
         int i = 0;
         Crawler crawl;
         Parser parser;
 		for(String url: URLS) {
 			links.clear();
+			deadlines.clear();
 			crawl = new Crawler(url);
 			links = crawl.getAllLinks();
 			parser = new Parser(links);
@@ -56,6 +61,13 @@ public class Main {
 	        row.createCell(2).setCellValue(createHelper.createRichTextString(description));
 	        String venue = parser.getVenue(title, description, country);
 	        row.createCell(3).setCellValue(createHelper.createRichTextString(venue));
+	        deadlines = parser.getDeadlines();				
+	        int j = 4;
+	        for(String deadline: deadlines) {
+	        	System.out.println("(wtf) " + deadline);
+	        	row.createCell(j).setCellValue(createHelper.createRichTextString(deadline));
+	        	j++;
+	        }
 			i++;
 		}
         
