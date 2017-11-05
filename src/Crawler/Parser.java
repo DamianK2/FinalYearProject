@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import venue.Country;
 
@@ -125,34 +126,67 @@ public class Parser {
 		return venue;
 	}
 	
-	//TODO add ICPE deadlines scraping
 	public ArrayList<String> getDeadlines() {
+		Document doc = null;
 		ArrayList<String> deadlines = new ArrayList<>();
 		Pattern pattern = Pattern.compile("\\w+.\\s\\d{1,2},\\s\\d{4}");
 		String[] separated;
-		Document doc = null;
-        doc = this.getURLDoc(linkList.get(0));
-		Element el = doc.select("div:contains(Important Dates)").last();
-		
-		String elementString = el.select("p").toString();
-		if(!elementString.isEmpty()) {
-			this.removeFromString(elementString, "<p>");
-			this.removeFromString(elementString, "</p>");
-			separated = elementString.split("<br> ");
+		String link = this.searchLinks("[iI]mportant");
+		if(!link.isEmpty()) {
+			ArrayList<String> otherSeparated = new ArrayList<>();
+			doc = this.getURLDoc(link);
+			Element el = doc.select("table").last();
+			Element row = el.select("tr").get(1);
+//			for(Element row: el.select("tr")) {
+//			otherSeparated.clear();
+			Elements tds = row.select("td");
+			
+			for(Element td: tds) {
+				String selectedHtml = td.select("p").html();
+				if(!selectedHtml.isEmpty() && otherSeparated.isEmpty()) {
+					separated = selectedHtml.split("<br>");
+					for(String s: separated) {
+						otherSeparated.add(s);
+					}	
+				} else if(!selectedHtml.isEmpty()) {
+					separated = selectedHtml.split("<br>");
+					for(int i = 0; i < separated.length; i++) {
+						String newString = otherSeparated.get(i) + separated[i];
+						otherSeparated.remove(i);
+						otherSeparated.add(i, newString);
+					}
+				}
+				
+			}
+
 			for(String toFind: searchDeadlines) {
-				String found = this.findDeadline(separated, toFind, pattern);
+				String found = this.findDeadline(otherSeparated, toFind, pattern);
 				deadlines.add(found);
 			}
-		}
-		
-		elementString = el.select("ul li").toString();
-		if(!elementString.isEmpty()) {
-			this.removeFromString(elementString, "<li>");
-			this.removeFromString(elementString, "</li>");
-			separated = elementString.split("\n");
-			for(String toFind: searchDeadlines) {
-				String found = this.findDeadline(separated, toFind, pattern);
-				deadlines.add(found);
+		} else {
+	        doc = this.getURLDoc(linkList.get(0));
+			Element el = doc.select("div:contains(Important Dates)").last();
+			
+			String elementString = el.select("p").toString();
+			if(!elementString.isEmpty()) {
+				this.removeFromString(elementString, "<p>");
+				this.removeFromString(elementString, "</p>");
+				separated = elementString.split("<br> ");
+				for(String toFind: searchDeadlines) {
+					String found = this.findDeadline(separated, toFind, pattern);
+					deadlines.add(found);
+				}
+			}
+			
+			elementString = el.select("ul li").toString();
+			if(!elementString.isEmpty()) {
+				this.removeFromString(elementString, "<li>");
+				this.removeFromString(elementString, "</li>");
+				separated = elementString.split("\n");
+				for(String toFind: searchDeadlines) {
+					String found = this.findDeadline(separated, toFind, pattern);
+					deadlines.add(found);
+				}
 			}
 		}
 		
@@ -209,6 +243,25 @@ public class Parser {
 				
 				if(matcher.find())
 					found = matcher.group(0);
+				break;
+			}
+		}
+		return found;
+	}
+	
+	private String findDeadline(ArrayList<String> separated, String toFind, Pattern pattern) {
+		String found = "N/A";
+		Matcher matcher;
+		for(String string: separated) {
+			if(string.matches(toFind)) {
+				System.out.println("Found: " + string);
+				matcher = pattern.matcher(string);
+				
+				if(matcher.find())
+					found = matcher.group(0);
+				if(matcher.find())
+					found = matcher.group(0);		
+	
 				break;
 			}
 		}

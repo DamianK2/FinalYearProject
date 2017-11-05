@@ -4,10 +4,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Locale;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -22,7 +20,7 @@ public class Main {
 	public static final String[] URLS = {"https://icpe2018.spec.org/home.html", "http://lsds.hesge.ch/ISPDC2018/", "https://unescoprivacychair.urv.cat/psd2018/index.php"};
 	
 	public static void main(String[] args) {
-		long tStart = System.currentTimeMillis();
+		//long tStart = System.currentTimeMillis();
 		ArrayList<String> links = new ArrayList<String>();
 		ArrayList<String> deadlines = new ArrayList<String>();
 		
@@ -43,7 +41,7 @@ public class Main {
         row.createCell(4).setCellValue(createHelper.createRichTextString("Submission deadline"));
         row.createCell(5).setCellValue(createHelper.createRichTextString("Notification deadline"));
         row.createCell(6).setCellValue(createHelper.createRichTextString("Camera ready deadline"));
-		
+        
         int i = 0;
         Crawler crawl;
         Parser parser;
