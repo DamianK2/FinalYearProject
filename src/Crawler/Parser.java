@@ -193,6 +193,16 @@ public class Parser {
 		return deadlines;
 	}
 	
+	public String getConferenceYear(String title) {
+		String year = "";
+		Pattern pattern = Pattern.compile("\\d{4}");
+		Matcher matcher;
+		matcher = pattern.matcher(title);
+		if(matcher.find())
+			year = matcher.group(0);
+		return year;
+	}
+	
 	// Helper methods start here
 	private String searchCountries(String string, Country country) {
 		String venue = "", countryRegex;
