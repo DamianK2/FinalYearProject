@@ -203,6 +203,26 @@ public class Parser {
 		return year;
 	}
 	
+	public String getAntiquity(String description) {
+		String antiquity = "";
+		Pattern pattern = Pattern.compile("\\d{1,2}(?:st|nd|rd|th)|\\w+(?:st|nd|rd|th)|\\w+-\\w+(?:st|nd|rd|th)");
+		Matcher matcher;
+		matcher = pattern.matcher(description);
+		if(matcher.find())
+			antiquity = matcher.group(0);
+		
+		if(antiquity.equals("")) {
+			Document doc = this.getURLDoc(linkList.get(0));
+			Element el = doc.select("div:contains(Previous)").last();
+			Elements ele = el.select("ul li");
+			int currentYear = 1;
+			currentYear += ele.size();
+			antiquity = Integer.toString(currentYear);
+		}
+		
+		return antiquity;
+	}
+	
 	// Helper methods start here
 	private String searchCountries(String string, Country country) {
 		String venue = "", countryRegex;

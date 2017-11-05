@@ -42,6 +42,7 @@ public class Main {
         row.createCell(5).setCellValue(createHelper.createRichTextString("Notification deadline"));
         row.createCell(6).setCellValue(createHelper.createRichTextString("Camera ready deadline"));
         row.createCell(7).setCellValue(createHelper.createRichTextString("Current Year"));
+        row.createCell(8).setCellValue(createHelper.createRichTextString("Antiquity"));
         
         int i = 0;
         Crawler crawl;
@@ -69,6 +70,8 @@ public class Main {
 	        }
 	        String year = parser.getConferenceYear(title);
 	        row.createCell(7).setCellValue(createHelper.createRichTextString(year));
+	        String antiquity = parser.getAntiquity(description);
+	        row.createCell(8).setCellValue(createHelper.createRichTextString(antiquity));
 			i++;
 		}
         
