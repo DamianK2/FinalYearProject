@@ -13,6 +13,9 @@ import org.apache.poi.ss.usermodel.Workbook;
 
 import Crawler.Crawler;
 import Crawler.Parser;
+import Crawler.Parser2;
+import Crawler.Parser3;
+import Crawler.Parser4;
 import venue.Country;
 
 public class Main {
@@ -47,24 +50,43 @@ public class Main {
         row.createCell(10).setCellValue(createHelper.createRichTextString("Current Year"));
         row.createCell(11).setCellValue(createHelper.createRichTextString("Antiquity"));
         
+        ArrayList<Parser> parsers = new ArrayList<>();
         int i = 0;
         Crawler crawl;
-        Parser parser;
+        
 		for(String url: URLS) {
+			parsers.clear();
 			links.clear();
 			deadlines.clear();
 			crawl = new Crawler(url);
 			links = crawl.getAllLinks();
-			parser = new Parser(links);
-			row = sheet.createRow(i+1);
+	        parsers.add(new Parser(links));
+	        parsers.add(new Parser2(links));
+	        parsers.add(new Parser3(links));
+	        parsers.add(new Parser4(links));
+	        row = sheet.createRow(i+1);
 			row.createCell(0).setCellValue(createHelper.createRichTextString(url));
-			String title = parser.getTitle();
-	        row.createCell(1).setCellValue(createHelper.createRichTextString(title));
-	        String description = parser.getDescription();
+			String title = parsers.get(0).getTitle();
+			row.createCell(1).setCellValue(createHelper.createRichTextString(title));
+			String description;
+			int k = 0;
+			do {
+	        	description = parsers.get(k).getDescription();
+	        	k++;
+	        } while(description == "" && k < parsers.size());	      
+	        
 	        row.createCell(2).setCellValue(createHelper.createRichTextString(description));
-	        String venue = parser.getVenue(title, description, country);
+	        
+	        String venue;
+	        k = 0;
+			do {
+				venue = parsers.get(k).getVenue(title, description, country);
+	        	k++;
+	        } while(venue == "" && k < parsers.size());	
+
 	        row.createCell(3).setCellValue(createHelper.createRichTextString(venue));
-	        deadlines = parser.getDeadlines();				
+	        
+	        deadlines = parsers.get(0).getDeadlines();				
 	        int j = 4;
 	        for(String deadline: deadlines) {
 	        	System.out.println("(wtf) " + deadline);
@@ -72,15 +94,15 @@ public class Main {
 	        	j++;
 	        }
 	        deadlines.clear();
-	        deadlines = parser.getAdditionalDeadlineInfo();
+	        deadlines = parsers.get(0).getAdditionalDeadlineInfo();
 	        for(String deadline: deadlines) {
 	        	System.out.println("(wtf) " + deadline);
 	        	row.createCell(j).setCellValue(createHelper.createRichTextString(deadline));
 	        	j++;
 	        }
-	        String year = parser.getConferenceYear(title);
+	        String year = parsers.get(0).getConferenceYear(title);
 	        row.createCell(10).setCellValue(createHelper.createRichTextString(year));
-	        String antiquity = parser.getAntiquity(description);
+	        String antiquity = parsers.get(0).getAntiquity(description);
 	        row.createCell(11).setCellValue(createHelper.createRichTextString(antiquity));
 			i++;
 		}
@@ -90,7 +112,6 @@ public class Main {
 		try {
 			fileOut = new FileOutputStream("workbook.xls");
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
         try {
