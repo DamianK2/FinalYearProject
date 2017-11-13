@@ -31,9 +31,9 @@ public class Parser {
 	
 	private void addSearchWords() {
 		searchDeadlines.clear();
-		searchDeadlines.add(".*[sS]ubmission.*");
-		searchDeadlines.add(".*[nN]otification.*");
-		searchDeadlines.add(".*[cC]amera.*");
+		searchDeadlines.add(this.changeToRegex("[sS]ubmission"));
+		searchDeadlines.add(this.changeToRegex("[nN]otification"));
+		searchDeadlines.add(this.changeToRegex("[cC]amera"));
 	}
 	
 	// Get the website's title
@@ -201,6 +201,53 @@ public class Parser {
 		return deadlines;
 	}
 	
+	public ArrayList<String> getAdditionalDeadlineInfo() {
+		ArrayList<String> additionalInfo = new ArrayList<>();
+		Document doc = null;
+		this.addNewSearchWords();
+		
+		String link = this.searchLinks("[iI]mportant");
+		if(!link.isEmpty()) {
+			doc = this.getURLDoc(link);
+			Element el = doc.select("div:contains(Important Dates)").last();
+			String html = el.html();
+			html = html.replaceAll("\n", "");
+			for(String keyword: searchDeadlines) {
+				if(html.matches(keyword))
+					additionalInfo.add("Yes");
+				else
+					additionalInfo.add("No");
+			}
+			
+		} else {
+	        doc = this.getURLDoc(linkList.get(0));
+			Element el = doc.select("div:contains(Important Dates)").last();
+			
+			String elementString = el.select("p").toString();
+			if(!elementString.isEmpty()) {
+				elementString = elementString.replaceAll("\n", "");
+				for(String keyword: searchDeadlines) {
+					if(elementString.matches(keyword))
+						additionalInfo.add("Yes");
+					else
+						additionalInfo.add("No");
+				}
+			}
+			
+			elementString = el.select("ul li").toString();
+			if(!elementString.isEmpty()) {
+				elementString = elementString.replaceAll("\n", "");
+				for(String keyword: searchDeadlines) {
+					if(elementString.matches(keyword))
+						additionalInfo.add("Yes");
+					else
+						additionalInfo.add("No");
+				}
+			}
+		}
+		return additionalInfo;
+	}
+	
 	public String getConferenceYear(String title) {
 		String year = "";
 		Pattern pattern = Pattern.compile("\\d{4}");
@@ -237,6 +284,13 @@ public class Parser {
 	}
 	
 	// Helper methods start here
+	private void addNewSearchWords() {
+		searchDeadlines.clear();
+		searchDeadlines.add(this.changeToRegex("[wW]ork-[iI]n-[pP]rogress"));
+		searchDeadlines.add(this.changeToRegex("[tT]ools"));
+		searchDeadlines.add(this.changeToRegex("[wW]orkshop"));
+	}
+	
 	/**
 	 * Changes an integer to its ordinal.
 	 * @param number

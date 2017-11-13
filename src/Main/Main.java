@@ -41,8 +41,11 @@ public class Main {
         row.createCell(4).setCellValue(createHelper.createRichTextString("Submission deadline"));
         row.createCell(5).setCellValue(createHelper.createRichTextString("Notification deadline"));
         row.createCell(6).setCellValue(createHelper.createRichTextString("Camera ready deadline"));
-        row.createCell(7).setCellValue(createHelper.createRichTextString("Current Year"));
-        row.createCell(8).setCellValue(createHelper.createRichTextString("Antiquity"));
+        row.createCell(7).setCellValue(createHelper.createRichTextString("Work in progress papers"));
+        row.createCell(8).setCellValue(createHelper.createRichTextString("Tool papers"));
+        row.createCell(9).setCellValue(createHelper.createRichTextString("Workshop papers"));
+        row.createCell(10).setCellValue(createHelper.createRichTextString("Current Year"));
+        row.createCell(11).setCellValue(createHelper.createRichTextString("Antiquity"));
         
         int i = 0;
         Crawler crawl;
@@ -68,10 +71,17 @@ public class Main {
 	        	row.createCell(j).setCellValue(createHelper.createRichTextString(deadline));
 	        	j++;
 	        }
+	        deadlines.clear();
+	        deadlines = parser.getAdditionalDeadlineInfo();
+	        for(String deadline: deadlines) {
+	        	System.out.println("(wtf) " + deadline);
+	        	row.createCell(j).setCellValue(createHelper.createRichTextString(deadline));
+	        	j++;
+	        }
 	        String year = parser.getConferenceYear(title);
-	        row.createCell(7).setCellValue(createHelper.createRichTextString(year));
+	        row.createCell(10).setCellValue(createHelper.createRichTextString(year));
 	        String antiquity = parser.getAntiquity(description);
-	        row.createCell(8).setCellValue(createHelper.createRichTextString(antiquity));
+	        row.createCell(11).setCellValue(createHelper.createRichTextString(antiquity));
 			i++;
 		}
         
