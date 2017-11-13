@@ -114,7 +114,14 @@ public class Main {
 	        
 	        String year = parsers.get(0).getConferenceYear(title);
 	        row.createCell(10).setCellValue(createHelper.createRichTextString(year));
-	        String antiquity = parsers.get(0).getAntiquity(description);
+	        
+	        String antiquity; 
+	        k = 0;
+	        do {
+	        	antiquity = parsers.get(k).getAntiquity(description);
+	        	k++;
+	        } while(antiquity == "" && k < parsers.size());
+	        
 	        row.createCell(11).setCellValue(createHelper.createRichTextString(antiquity));
 			i++;
 		}

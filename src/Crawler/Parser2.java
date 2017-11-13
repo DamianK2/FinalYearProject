@@ -1,10 +1,12 @@
 package Crawler;
 
 import java.util.ArrayList;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import venue.Country;
 
@@ -87,5 +89,23 @@ public class Parser2 extends Parser {
 			}
 			return additionalInfo;
 		}	
+	}
+	
+	@Override
+	public String getAntiquity(String description) {
+		String antiquity = "";
+	
+		Document doc = this.getURLDoc(linkList.get(0));
+		Element el = doc.select("div:contains(Previous)").last();
+		Elements ele = el.select("ul li");
+		if(ele.isEmpty())
+			return antiquity;
+		else {
+			int currentYear = 1;
+			currentYear += ele.size();
+			antiquity = this.toOrdinal(currentYear);
+			
+			return antiquity;
+		}
 	}
 }

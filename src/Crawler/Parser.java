@@ -175,15 +175,6 @@ public class Parser {
 				antiquity = this.toOrdinal(Integer.parseInt(number[0]));
 			}
 		}
-			
-		if(antiquity.equals("")) {
-			Document doc = this.getURLDoc(linkList.get(0));
-			Element el = doc.select("div:contains(Previous)").last();
-			Elements ele = el.select("ul li");
-			int currentYear = 1;
-			currentYear += ele.size();
-			antiquity = this.toOrdinal(currentYear);
-		}
 		
 		return antiquity;
 	}
@@ -201,7 +192,7 @@ public class Parser {
 	 * @param number
 	 * @return ordinal
 	 */
-	private String toOrdinal(int number) {
+	protected String toOrdinal(int number) {
 		if(number < 20)
 			return SPECIAL_CASES[number];
 		else if(number % 10 == 0)
