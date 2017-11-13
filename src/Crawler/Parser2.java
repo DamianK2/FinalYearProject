@@ -15,6 +15,20 @@ public class Parser2 extends Parser {
 		super(links);
 	}
 	
+	public String getSponsors(String title, String description) {
+		String sponsors = "";
+		
+		for(String sponsor: SPONSORS) {
+			if(description.matches(this.changeToRegex(sponsor)))
+				if(sponsors.isEmpty())
+					sponsors += sponsor;
+				else
+					sponsors += "/" + sponsor;
+		}
+		
+		return sponsors;
+	}
+	
 	@Override
 	public String getDescription() {
 		Document doc = null;
@@ -22,9 +36,9 @@ public class Parser2 extends Parser {
         doc = this.getURLDoc(linkList.get(0));
 		String meta = "", parsedMeta = "";
 		try {
-			meta = doc.select("meta[property=og:description]").first().attr("content");
+			parsedMeta = doc.select("meta[property=og:description]").first().attr("content");
 			// Limit the string to 100 characters
-			parsedMeta = meta.replaceAll("(.{100})", "$1\n");
+			//parsedMeta = meta.replaceAll("(.{100})", "$1\n");
 			System.out.println("Description: " + parsedMeta);
 		} catch(NullPointerException e) {
 			System.out.println("No meta with attribute \"property\"");

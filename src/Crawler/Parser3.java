@@ -20,9 +20,9 @@ public class Parser3 extends Parser {
         doc = this.getURLDoc(linkList.get(0));
 		String meta = "", parsedMeta = "";
 		try {
-			meta = doc.select(".site-description").text();
+			parsedMeta = doc.select(".site-description").text();
 			// Limit the string to 100 characters
-			parsedMeta = meta.replaceAll("(.{100})", "$1\n");
+			//parsedMeta = meta.replaceAll("(.{100})", "$1\n");
 			System.out.println("Description: " + parsedMeta);
 		} catch(NullPointerException e) {
 			System.out.println("No class with name \"site-description\"");

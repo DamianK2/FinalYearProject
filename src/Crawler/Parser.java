@@ -27,6 +27,8 @@ public class Parser {
 	private static final ArrayList<String> TENS = new ArrayList<>(
 										Arrays.asList("Twent", "Thirt", "Fort", "Fift", 
 										"Sixt", "Sevent", "Eight", "Ninet"));
+	protected static final ArrayList<String> SPONSORS = new ArrayList<>(Arrays.asList("ACM", "SPEC", 
+																		"UNESCO", "Springer", "IEEE"));
 	
 	public Parser(ArrayList<String> links) {
 		linkList = links;		
@@ -56,6 +58,20 @@ public class Parser {
 		return doc.title();
 	}
 	
+	public String getSponsors(String title, String description) {
+		String sponsors = "";
+		
+		for(String sponsor: SPONSORS) {
+			if(title.matches(this.changeToRegex(sponsor)))
+				if(sponsors.isEmpty())
+					sponsors += sponsor;
+				else
+					sponsors += "/" + sponsor;
+		}
+		
+		return sponsors;
+	}
+	
 	/**
 	 * Parses the description from the home page 
 	 * or the head of the website
@@ -67,9 +83,9 @@ public class Parser {
         doc = this.getURLDoc(linkList.get(0));
 		String meta = "", parsedMeta = "";
 		try {
-			meta = doc.select("meta[name=description]").first().attr("content");
+			parsedMeta = doc.select("meta[name=description]").first().attr("content");
 			// Limit the string to 100 characters
-			parsedMeta = meta.replaceAll("(.{100})", "$1\n");
+			//parsedMeta = meta.replaceAll("(.{100})", "$1\n");
 			System.out.println("Decription: " + parsedMeta);
 		} catch(NullPointerException e) {
 		   System.out.println("No meta with attribute \"name\"");
@@ -283,7 +299,7 @@ public class Parser {
 	 * @param keyword
 	 * @return regex
 	 */
-	private String changeToRegex(String keyword) {
+	protected String changeToRegex(String keyword) {
 		keyword = ".*" + keyword +".*";
 		return keyword;
 	}
