@@ -1,0 +1,92 @@
+package Crawler;
+
+import java.util.ArrayList;
+import java.util.regex.Pattern;
+
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
+import venue.Country;
+
+public class Parser3 extends Parser {
+
+	public Parser3(ArrayList<String> links) {
+		super(links);
+	}
+	
+	@Override
+	public String getDescription() {
+		Document doc = null;
+        doc = this.getURLDoc(linkList.get(0));
+		String meta = "", parsedMeta = "";
+		try {
+			meta = doc.select(".site-description").text();
+			// Limit the string to 100 characters
+			parsedMeta = meta.replaceAll("(.{100})", "$1\n");
+			System.out.println("Description: " + parsedMeta);
+		} catch(NullPointerException e) {
+			System.out.println("No class with name \"site-description\"");
+		}
+		return parsedMeta;
+	}
+
+	@Override
+	public String getVenue(String title, String description, Country country) {
+		String venue = "";
+		
+		// Search the description for the country of the conference
+		if(!description.equals(""))
+			venue = this.searchCountries(description, country);
+		
+		return venue;
+	}
+	
+	@Override
+	public ArrayList<String> getDeadlines() {
+		Document doc = null;
+		ArrayList<String> deadlines = new ArrayList<>();
+		Pattern pattern = Pattern.compile("\\w+.\\s\\d{1,2},\\s\\d{4}");
+		String[] separated;
+		doc = this.getURLDoc(linkList.get(0));
+		// Select the div with "Important Dates"
+		Element el = doc.select("div:contains(Important Dates)").last();
+		
+		// Extract the list
+		String elementString = el.select("ul li").toString();
+		if(!elementString.isEmpty()) {
+			// Split into multiple lines on seeing the new line
+			separated = elementString.split("\n");
+			// Search for the deadlines
+			for(String toFind: searchDeadlines) {
+				String found = this.findDeadline(separated, toFind, pattern);
+				deadlines.add(found);
+			}
+		}
+		
+		return deadlines;
+	}
+	
+	@Override
+	public ArrayList<String> getAdditionalDeadlineInfo() {
+		ArrayList<String> additionalInfo = new ArrayList<>();
+		Document doc = null;
+		this.addNewSearchWords();
+		
+		doc = this.getURLDoc(linkList.get(0));
+		Element el = doc.select("div:contains(Important Dates)").last();
+		
+		String elementString = el.select("ul li").toString();
+		if(elementString.isEmpty()) {
+			return additionalInfo;
+		} else {
+			elementString = elementString.replaceAll("\n", "");
+			for(String keyword: searchDeadlines) {
+				if(elementString.matches(keyword))
+					additionalInfo.add("Yes");
+				else
+					additionalInfo.add("No");
+			}
+			return additionalInfo;
+		}
+	}
+}

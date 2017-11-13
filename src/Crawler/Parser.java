@@ -13,8 +13,8 @@ import org.jsoup.select.Elements;
 import venue.Country;
 
 public class Parser {
-	private static ArrayList<String> linkList = new ArrayList<>();
-	private static ArrayList<String> searchDeadlines = new ArrayList<>();
+	protected static ArrayList<String> linkList = new ArrayList<>();
+	protected static ArrayList<String> searchDeadlines = new ArrayList<>();
 	private static final String[] SPECIAL_CASES = {"Zeroth","First", "Second", "Third", 
 												"Fourth", "Fifth", "Sixth", "Seventh", 
 												"Eighth", "Ninth", "Tenth", "Eleventh", 
@@ -47,92 +47,33 @@ public class Parser {
 	public String getDescription() {
 		Document doc = null;
         doc = this.getURLDoc(linkList.get(0));
-		boolean check = true;
 		String meta = "", parsedMeta = "";
 		try {
 			meta = doc.select("meta[name=description]").first().attr("content");
+			// Limit the string to 100 characters
 			parsedMeta = meta.replaceAll("(.{100})", "$1\n");
 			System.out.println("Decription: " + parsedMeta);
 		} catch(NullPointerException e) {
 		   System.out.println("No meta with attribute \"name\"");
-		   check = false;
 		}
-		if(!check) {
-			check = true;
-			try {
-				meta = doc.select("meta[property=og:description]").first().attr("content");
-				parsedMeta = meta.replaceAll("(.{100})", "$1\n");
-				System.out.println("Description: " + parsedMeta);
-			} catch(NullPointerException e) {
-				System.out.println("No meta with attribute \"property\"");
-				check = false;
-			}
-		}
-		if(!check) {
-			check = true;
-			try {
-				meta = doc.select(".site-description").text();
-				parsedMeta = meta.replaceAll("(.{100})", "$1\n");
-				System.out.println("Description: " + parsedMeta);
-			} catch(NullPointerException e) {
-				System.out.println("No class with name \"site-description\"");
-				check = false;
-			}
-			if(parsedMeta.equals("")) {
-				System.out.println("No class with name \"site-description\"");
-				check = false;
-			}
-		}
-		if(!check) {
-			System.out.println("Well this is embarassing. No description found!");
-			meta = "No description!";
-		}
+//		if(!check) {
+//			System.out.println("Well this is embarassing. No description found!");
+//			meta = "No description!";
+//		}
 		
 		return parsedMeta;
 	}
 	
 	public String getVenue(String title, String description, Country country) {
 		String venue = "", link, temp;
-		boolean found = false;
 		Document doc = null;
-		//search the venue website
+		// Search the venue website
 		link = this.searchLinks("[vV]enue");
 		if(!link.equals("")) {
 			doc = this.getURLDoc(link);
 			temp = doc.select("*p").text();
-			if(!temp.equals("")) {
+			if(!temp.equals(""))
 				venue = this.searchCountries(temp, country);
-				if(!venue.equals(""))
-					found = true;
-			}
-		}
-			
-		// if not there search the title
-		if(!found) {
-			if(!title.equals("")) {
-				venue = this.searchCountries(title, country);
-				if(!venue.equals(""))
-					found = true;
-			}
-		}
-		
-		// if not there search the description
-		if(!found) {
-			if(!description.equals("")) {
-				venue = this.searchCountries(description, country);
-				if(!venue.equals(""))
-					found = true;
-			}
-		}
-
-		// if not there target div header on home website
-		if(!found) {
-			temp = doc.select("div#header").text();
-			if(!temp.equals("")) {
-				venue = this.searchCountries(temp, country);
-				if(!venue.equals(""))
-					found = true;
-			}
 		}
 		
 		return venue;
@@ -141,26 +82,34 @@ public class Parser {
 	public ArrayList<String> getDeadlines() {
 		Document doc = null;
 		ArrayList<String> deadlines = new ArrayList<>();
+		ArrayList<String> otherSeparated = new ArrayList<>();
 		Pattern pattern = Pattern.compile("\\w+.\\s\\d{1,2},\\s\\d{4}");
 		String[] separated;
+		
 		String link = this.searchLinks("[iI]mportant");
-		if(!link.isEmpty()) {
-			ArrayList<String> otherSeparated = new ArrayList<>();
+		if(link.isEmpty())
+			return deadlines;
+		else {
 			doc = this.getURLDoc(link);
+			
+			// Selects the last table on the website
 			Element el = doc.select("table").last();
+			// Gets the first row from the table
 			Element row = el.select("tr").get(1);
-//			for(Element row: el.select("tr")) {
-//			otherSeparated.clear();
+			// Gets the <td> elements from the row
 			Elements tds = row.select("td");
 			
 			for(Element td: tds) {
+				// Extract the paragraph from the <td> element
 				String selectedHtml = td.select("p").html();
+				// Split and add the first paragraph to the ArrayList
 				if(!selectedHtml.isEmpty() && otherSeparated.isEmpty()) {
 					separated = selectedHtml.split("<br>");
 					for(String s: separated) {
 						otherSeparated.add(s);
 					}	
 				} else if(!selectedHtml.isEmpty()) {
+					// Split and add the second paragraph to the ArrayList
 					separated = selectedHtml.split("<br>");
 					for(int i = 0; i < separated.length; i++) {
 						String newString = otherSeparated.get(i) + separated[i];
@@ -171,34 +120,13 @@ public class Parser {
 				
 			}
 
+			// Search for the deadlines in the above extracted information
 			for(String toFind: searchDeadlines) {
 				String found = this.findDeadline(otherSeparated, toFind, pattern);
 				deadlines.add(found);
 			}
-		} else {
-	        doc = this.getURLDoc(linkList.get(0));
-			Element el = doc.select("div:contains(Important Dates)").last();
-			
-			String elementString = el.select("p").toString();
-			if(!elementString.isEmpty()) {
-				separated = elementString.split("<br> ");
-				for(String toFind: searchDeadlines) {
-					String found = this.findDeadline(separated, toFind, pattern);
-					deadlines.add(found);
-				}
-			}
-			
-			elementString = el.select("ul li").toString();
-			if(!elementString.isEmpty()) {
-				separated = elementString.split("\n");
-				for(String toFind: searchDeadlines) {
-					String found = this.findDeadline(separated, toFind, pattern);
-					deadlines.add(found);
-				}
-			}
+			return deadlines;
 		}
-		
-		return deadlines;
 	}
 	
 	public ArrayList<String> getAdditionalDeadlineInfo() {
@@ -207,7 +135,9 @@ public class Parser {
 		this.addNewSearchWords();
 		
 		String link = this.searchLinks("[iI]mportant");
-		if(!link.isEmpty()) {
+		if(link.isEmpty()) {
+			return additionalInfo;
+		} else {
 			doc = this.getURLDoc(link);
 			Element el = doc.select("div:contains(Important Dates)").last();
 			String html = el.html();
@@ -218,34 +148,9 @@ public class Parser {
 				else
 					additionalInfo.add("No");
 			}
-			
-		} else {
-	        doc = this.getURLDoc(linkList.get(0));
-			Element el = doc.select("div:contains(Important Dates)").last();
-			
-			String elementString = el.select("p").toString();
-			if(!elementString.isEmpty()) {
-				elementString = elementString.replaceAll("\n", "");
-				for(String keyword: searchDeadlines) {
-					if(elementString.matches(keyword))
-						additionalInfo.add("Yes");
-					else
-						additionalInfo.add("No");
-				}
-			}
-			
-			elementString = el.select("ul li").toString();
-			if(!elementString.isEmpty()) {
-				elementString = elementString.replaceAll("\n", "");
-				for(String keyword: searchDeadlines) {
-					if(elementString.matches(keyword))
-						additionalInfo.add("Yes");
-					else
-						additionalInfo.add("No");
-				}
-			}
+			return additionalInfo;
 		}
-		return additionalInfo;
+		
 	}
 	
 	public String getConferenceYear(String title) {
@@ -284,7 +189,7 @@ public class Parser {
 	}
 	
 	// Helper methods start here
-	private void addNewSearchWords() {
+	protected void addNewSearchWords() {
 		searchDeadlines.clear();
 		searchDeadlines.add(this.changeToRegex("[wW]ork-[iI]n-[pP]rogress"));
 		searchDeadlines.add(this.changeToRegex("[tT]ools"));
@@ -305,7 +210,7 @@ public class Parser {
 			return TENS[(number/10) - 2] + "y-" + SPECIAL_CASES[number % 10];
 	}
 	
-	private String searchCountries(String string, Country country) {
+	protected String searchCountries(String string, Country country) {
 		String venue = "", countryRegex;
 		for(String countryName: country.getCountries()) {
 			countryRegex = this.changeToRegex(countryName);
@@ -332,7 +237,7 @@ public class Parser {
 		return answer;
 	}
 	
-	private Document getURLDoc(String url) {
+	protected Document getURLDoc(String url) {
 		Document doc = null;
 		try {
 			doc = Jsoup.connect(url).get();
@@ -344,7 +249,7 @@ public class Parser {
 		return doc;
 	}
 	
-	private String findDeadline(String[] separated, String toFind, Pattern pattern) {
+	protected String findDeadline(String[] separated, String toFind, Pattern pattern) {
 		String found = "N/A";
 		Matcher matcher;
 		for(String string: separated) {
