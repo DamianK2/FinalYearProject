@@ -2,6 +2,7 @@ package Crawler;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,20 +16,28 @@ import venue.Country;
 public class Parser {
 	protected static ArrayList<String> linkList = new ArrayList<>();
 	protected static ArrayList<String> searchDeadlines = new ArrayList<>();
-	private static final String[] SPECIAL_CASES = {"Zeroth","First", "Second", "Third", 
-												"Fourth", "Fifth", "Sixth", "Seventh", 
-												"Eighth", "Ninth", "Tenth", "Eleventh", 
-												"Twelfth", "Thirteenth", "Fourteenth", 
-												"Fifteenth", "Sixteenth", "Seventeenth", 
-												"Eighteenth", "Nineteenth"};
-	private static final String[] TENS = {"Twent", "Thirt", "Fort", "Fift", 
-										"Sixt", "Sevent", "Eight", "Ninet"};
+	private static final ArrayList<String> SPECIAL_CASES = new ArrayList<>(
+															Arrays.asList(
+															"Zeroth","First", "Second", "Third", 
+															"Fourth", "Fifth", "Sixth", "Seventh", 
+															"Eighth", "Ninth", "Tenth", "Eleventh", 
+															"Twelfth", "Thirteenth", "Fourteenth", 
+															"Fifteenth", "Sixteenth", "Seventeenth", 
+															"Eighteenth", "Nineteenth"));
+	private static final ArrayList<String> TENS = new ArrayList<>(
+										Arrays.asList("Twent", "Thirt", "Fort", "Fift", 
+										"Sixt", "Sevent", "Eight", "Ninet"));
 	
 	public Parser(ArrayList<String> links) {
 		linkList = links;		
 		this.addSearchWords();
 	}
 	
+	/**
+	 * Adds search keywords to the ArrayList that will be
+	 * used for searching the important dates
+	 * i.e. submission, notification, camera
+	 */
 	private void addSearchWords() {
 		searchDeadlines.clear();
 		searchDeadlines.add(this.changeToRegex("[sS]ubmission"));
@@ -36,16 +45,25 @@ public class Parser {
 		searchDeadlines.add(this.changeToRegex("[cC]amera"));
 	}
 	
-	// Get the website's title
+	/**
+	 * Parses the title from the home page of the website.
+	 * @return title
+	 */
 	public String getTitle() {
 		Document doc = null;
+		// Connect to the home page
         doc = this.getURLDoc(linkList.get(0));
 		return doc.title();
 	}
 	
-	// Get the website's description
+	/**
+	 * Parses the description from the home page 
+	 * or the head of the website
+	 * @return description
+	 */
 	public String getDescription() {
 		Document doc = null;
+		// Connect to the home page
         doc = this.getURLDoc(linkList.get(0));
 		String meta = "", parsedMeta = "";
 		try {
@@ -56,21 +74,28 @@ public class Parser {
 		} catch(NullPointerException e) {
 		   System.out.println("No meta with attribute \"name\"");
 		}
-//		if(!check) {
-//			System.out.println("Well this is embarassing. No description found!");
-//			meta = "No description!";
-//		}
-		
+	
 		return parsedMeta;
 	}
 	
+	/**
+	 * Parses the venue from the /venue link (if available), 
+	 * the title(if available), description(if available) 
+	 * or header(if available).
+	 * @param title
+	 * @param description
+	 * @param country
+	 * @return venue
+	 */
 	public String getVenue(String title, String description, Country country) {
 		String venue = "", link, temp;
 		Document doc = null;
 		// Search the venue website
 		link = this.searchLinks("[vV]enue");
 		if(!link.equals("")) {
+			// Connect to the target link
 			doc = this.getURLDoc(link);
+			// Select the paragraphs from the website
 			temp = doc.select("*p").text();
 			if(!temp.equals(""))
 				venue = this.searchCountries(temp, country);
@@ -79,6 +104,12 @@ public class Parser {
 		return venue;
 	}
 	
+	/**
+	 * Parses the important deadlines from the /Important_Dates
+	 * link (if available) or the home page and 
+	 * returns a list in the format (month dd, yyyy).
+	 * @return list of deadlines
+	 */
 	public ArrayList<String> getDeadlines() {
 		Document doc = null;
 		ArrayList<String> deadlines = new ArrayList<>();
@@ -129,6 +160,11 @@ public class Parser {
 		}
 	}
 	
+	/**
+	 * Parses information about additional papers, from the /Important_Dates
+	 * link (if available) or the home page to see if they can be submitted or not.
+	 * @return list containing "Yes/No" strings
+	 */
 	public ArrayList<String> getAdditionalDeadlineInfo() {
 		ArrayList<String> additionalInfo = new ArrayList<>();
 		Document doc = null;
@@ -138,10 +174,13 @@ public class Parser {
 		if(link.isEmpty()) {
 			return additionalInfo;
 		} else {
+			// Connect to the target link
 			doc = this.getURLDoc(link);
+			// Parse the elements to receive a string
 			Element el = doc.select("div:contains(Important Dates)").last();
 			String html = el.html();
 			html = html.replaceAll("\n", "");
+			// Search for the keywords in the string
 			for(String keyword: searchDeadlines) {
 				if(html.matches(keyword))
 					additionalInfo.add("Yes");
@@ -153,23 +192,37 @@ public class Parser {
 		
 	}
 	
+	/**
+	 * Checks the title for the conference year (if available).
+	 * @param title
+	 * @return conference year
+	 */
 	public String getConferenceYear(String title) {
 		String year = "";
 		Pattern pattern = Pattern.compile("\\d{4}");
 		Matcher matcher;
+		// Match the pattern with the title
 		matcher = pattern.matcher(title);
 		if(matcher.find())
 			year = matcher.group(0);
 		return year;
 	}
 	
+	/**
+	 * Checks the description or hompage for the antiquity of the conference.
+	 * @param description
+	 * @return antiquity
+	 */
 	public String getAntiquity(String description) {
 		String antiquity = "";
 		Pattern pattern = Pattern.compile("\\d{1,2}(?:st|nd|rd|th)|\\w+(?:st|nd|rd|th)|\\w+-\\w+(?:st|nd|rd|th)");
 		Matcher matcher;
+		// Match the pattern with the description
 		matcher = pattern.matcher(description);
 		if(matcher.find()) {
 			antiquity = matcher.group(0);
+			// If the string is in the format of "1st, 2nd, 3rd" etc.
+			// Change it to its ordinal form
 			if(antiquity.matches("\\d{1,2}(?:st|nd|rd|th)")) {
 				String[] number = antiquity.split("(?:st|nd|rd|th)");
 				antiquity = this.toOrdinal(Integer.parseInt(number[0]));
@@ -179,7 +232,12 @@ public class Parser {
 		return antiquity;
 	}
 	
-	// Helper methods start here
+	// ------------- HELPER METHODS START HERE -------------
+	/**
+	 * Overwrites the ArrayList with the "submission, notification and
+	 * camera" keywords with new keywords. Used for searching the
+	 * website for papers like "Work in progress", "Tools", "Workshops".
+	 */
 	protected void addNewSearchWords() {
 		searchDeadlines.clear();
 		searchDeadlines.add(this.changeToRegex("[wW]ork-[iI]n-[pP]rogress"));
@@ -194,32 +252,56 @@ public class Parser {
 	 */
 	protected String toOrdinal(int number) {
 		if(number < 20)
-			return SPECIAL_CASES[number];
+			return SPECIAL_CASES.get(number);
 		else if(number % 10 == 0)
-			return TENS[(number/10 - 2)] + "ieth";
+			return TENS.get(number/10 - 2) + "ieth";
 		else
-			return TENS[(number/10) - 2] + "y-" + SPECIAL_CASES[number % 10];
+			return TENS.get(number/10 - 2) + "y-" + SPECIAL_CASES.get(number % 10);
 	}
 	
+	/**
+	 * Finds a country name using the given string.
+	 * @param string
+	 * @param country
+	 * @return venue
+	 */
 	protected String searchCountries(String string, Country country) {
 		String venue = "", countryRegex;
+		// Go through the list of countries
 		for(String countryName: country.getCountries()) {
 			countryRegex = this.changeToRegex(countryName);
+			// Check if the string contains the country name
 			if(string.matches(countryRegex))
 				venue = countryName;
 		}
 		return venue;
 	}
 	
+	/**
+	 * Receives a keyword that we want to search for
+	 * and adds ".*" around it.
+	 * @param keyword
+	 * @return regex
+	 */
 	private String changeToRegex(String keyword) {
 		keyword = ".*" + keyword +".*";
 		return keyword;
 	}
 
+	/**
+	 * Receives a keyword that we want to find in the link
+	 * and returns the link if it has been found in the list
+	 * of links.
+	 * e.g. passing in "venue" can return a link like
+	 * www.example.com/venue/
+	 * @param keyword
+	 * @return link
+	 */
 	private String searchLinks(String keyword) {
 		String answer = "";
 		keyword = this.changeToRegex(keyword);
 		
+		// Find the link in the list of links that contains the keyword if possible
 		for(String link: linkList) {
 			if(link.matches(keyword))
 				answer = link;
@@ -228,6 +310,12 @@ public class Parser {
 		return answer;
 	}
 	
+	/**
+	 * Receives the URL to connect to and after successfully 
+	 * connecting, returns the document object.
+	 * @param url
+	 * @return document
+	 */
 	protected Document getURLDoc(String url) {
 		Document doc = null;
 		try {
@@ -240,6 +328,14 @@ public class Parser {
 		return doc;
 	}
 	
+	/**
+	 * Finds the deadline from the received parameters.
+	 * Returns "N/A" if no match is found.
+	 * @param separated
+	 * @param toFind
+	 * @param pattern
+	 * @return deadline
+	 */
 	protected String findDeadline(String[] separated, String toFind, Pattern pattern) {
 		String found = "N/A";
 		Matcher matcher;
@@ -256,6 +352,14 @@ public class Parser {
 		return found;
 	}
 	
+	/**
+	 * Finds the deadline from the received parameters.
+	 * Returns "N/A" if no match is found.
+	 * @param separated
+	 * @param toFind
+	 * @param pattern
+	 * @return deadline
+	 */
 	private String findDeadline(ArrayList<String> separated, String toFind, Pattern pattern) {
 		String found = "N/A";
 		Matcher matcher;

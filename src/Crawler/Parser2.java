@@ -1,7 +1,6 @@
 package Crawler;
 
 import java.util.ArrayList;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jsoup.nodes.Document;
@@ -19,6 +18,7 @@ public class Parser2 extends Parser {
 	@Override
 	public String getDescription() {
 		Document doc = null;
+		// Connect to the home page
         doc = this.getURLDoc(linkList.get(0));
 		String meta = "", parsedMeta = "";
 		try {
@@ -48,6 +48,7 @@ public class Parser2 extends Parser {
 		ArrayList<String> deadlines = new ArrayList<>();
 		Pattern pattern = Pattern.compile("\\w+.\\s\\d{1,2},\\s\\d{4}");
 		String[] separated;
+		// Connect to the home page
 		doc = this.getURLDoc(linkList.get(0));
 		// Select the div with "Important Dates"
 		Element el = doc.select("div:contains(Important Dates)").last();
@@ -73,14 +74,17 @@ public class Parser2 extends Parser {
 		Document doc = null;
 		this.addNewSearchWords();
 		
+		// Connect to the home page
 		doc = this.getURLDoc(linkList.get(0));
 		Element el = doc.select("div:contains(Important Dates)").last();
 		
+		// Get the content of the paragraph (if available)
 		String elementString = el.select("p").toString();
 		if(elementString.isEmpty()) {
 			return additionalInfo;
 		} else {
 			elementString = elementString.replaceAll("\n", "");
+			// Find matching information in the string by searching the keywords
 			for(String keyword: searchDeadlines) {
 				if(elementString.matches(keyword))
 					additionalInfo.add("Yes");
@@ -95,6 +99,7 @@ public class Parser2 extends Parser {
 	public String getAntiquity(String description) {
 		String antiquity = "";
 	
+		// Connect to the home page
 		Document doc = this.getURLDoc(linkList.get(0));
 		Element el = doc.select("div:contains(Previous)").last();
 		Elements ele = el.select("ul li");
@@ -102,6 +107,7 @@ public class Parser2 extends Parser {
 			return antiquity;
 		else {
 			int currentYear = 1;
+			// Count the number of previously held conferences
 			currentYear += ele.size();
 			antiquity = this.toOrdinal(currentYear);
 			

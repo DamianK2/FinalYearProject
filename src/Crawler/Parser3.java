@@ -72,14 +72,17 @@ public class Parser3 extends Parser {
 		Document doc = null;
 		this.addNewSearchWords();
 		
+		// Connect to the home page
 		doc = this.getURLDoc(linkList.get(0));
 		Element el = doc.select("div:contains(Important Dates)").last();
 		
+		// Get the content of the list (if available)
 		String elementString = el.select("ul li").toString();
 		if(elementString.isEmpty()) {
 			return additionalInfo;
 		} else {
 			elementString = elementString.replaceAll("\n", "");
+			// Find matching information in the string by searching the keywords
 			for(String keyword: searchDeadlines) {
 				if(elementString.matches(keyword))
 					additionalInfo.add("Yes");
