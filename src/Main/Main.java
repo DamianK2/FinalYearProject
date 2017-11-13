@@ -74,16 +74,20 @@ public class Main {
 			row.createCell(0).setCellValue(createHelper.createRichTextString(url));
 			String title = parsers.get(0).getTitle();
 			row.createCell(1).setCellValue(createHelper.createRichTextString(title));
-			
-			
-			row.createCell(3).setCellValue(createHelper.createRichTextString("Not implemented"));
+			String proceedings;
+			int k = 0;
+			do {
+				proceedings = parsers.get(k).getProceedings();
+	        	k++;
+	        } while(proceedings == "" && k < parsers.size());  
+			row.createCell(3).setCellValue(createHelper.createRichTextString(proceedings));
 			
 			String description;
-			int k = 0;
+			k = 0;
 			do {
 	        	description = parsers.get(k).getDescription();
 	        	k++;
-	        } while(description == "" && k < parsers.size());	      
+	        } while(description == "" && k < parsers.size());   
 	        
 	        row.createCell(4).setCellValue(createHelper.createRichTextString(description));
 	        

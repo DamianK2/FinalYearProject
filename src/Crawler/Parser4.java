@@ -16,6 +16,8 @@ public class Parser4 extends Parser {
 	public String getVenue(String title, String description, Country country) {
 		String venue = "", header;
 		Document doc = null;
+		
+		// Connect to the home page
         doc = this.getURLDoc(linkList.get(0));
 		header = doc.select("div#header").text();
 		

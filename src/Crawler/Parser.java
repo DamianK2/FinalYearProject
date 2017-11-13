@@ -15,7 +15,7 @@ import venue.Country;
 
 public class Parser {
 	protected static ArrayList<String> linkList = new ArrayList<>();
-	protected static ArrayList<String> searchDeadlines = new ArrayList<>();
+	protected static ArrayList<String> searchKeywords = new ArrayList<>();
 	private static final ArrayList<String> SPECIAL_CASES = new ArrayList<>(
 															Arrays.asList(
 															"Zeroth","First", "Second", "Third", 
@@ -32,19 +32,6 @@ public class Parser {
 	
 	public Parser(ArrayList<String> links) {
 		linkList = links;		
-		this.addSearchWords();
-	}
-	
-	/**
-	 * Adds search keywords to the ArrayList that will be
-	 * used for searching the important dates
-	 * i.e. submission, notification, camera
-	 */
-	private void addSearchWords() {
-		searchDeadlines.clear();
-		searchDeadlines.add(this.changeToRegex("[sS]ubmission"));
-		searchDeadlines.add(this.changeToRegex("[nN]otification"));
-		searchDeadlines.add(this.changeToRegex("[cC]amera"));
 	}
 	
 	/**
@@ -58,6 +45,12 @@ public class Parser {
 		return doc.title();
 	}
 	
+	/**
+	 * Extracts the sponsors from the title or the description.
+	 * @param title
+	 * @param description
+	 * @return sponsors
+	 */
 	public String getSponsors(String title, String description) {
 		String sponsors = "";
 		
@@ -73,8 +66,35 @@ public class Parser {
 	}
 	
 	/**
+	 * Searches and parses different links to find the proceedings.
+	 * @return proceedings
+	 */
+	public String getProceedings() {
+		String proceedings = "";
+		this.addLinkKeywords();
+		Document doc;
+		int keyword = 0;
+		while(proceedings == "" && keyword < searchKeywords.size()) {
+			String url = this.searchLinks(searchKeywords.get(keyword));
+			if(!url.isEmpty()) {
+				doc = this.getURLDoc(url);
+				String elementString = doc.select("*p").text();
+				for(String sponsor: SPONSORS) {
+					if(elementString.matches(changeToRegex(sponsor)))
+						if(proceedings.isEmpty())
+							proceedings += sponsor;
+						else
+							proceedings += "/" + sponsor;
+				}
+			}
+			keyword++;
+		}
+		return proceedings;
+	}
+	
+	/**
 	 * Parses the description from the home page 
-	 * or the head of the website
+	 * or the head of the website.
 	 * @return description
 	 */
 	public String getDescription() {
@@ -132,6 +152,7 @@ public class Parser {
 		ArrayList<String> otherSeparated = new ArrayList<>();
 		Pattern pattern = Pattern.compile("\\w+.\\s\\d{1,2},\\s\\d{4}");
 		String[] separated;
+		this.addSearchWords();
 		
 		String link = this.searchLinks("[iI]mportant");
 		if(link.isEmpty())
@@ -168,7 +189,7 @@ public class Parser {
 			}
 
 			// Search for the deadlines in the above extracted information
-			for(String toFind: searchDeadlines) {
+			for(String toFind: searchKeywords) {
 				String found = this.findDeadline(otherSeparated, toFind, pattern);
 				deadlines.add(found);
 			}
@@ -197,7 +218,7 @@ public class Parser {
 			String html = el.html();
 			html = html.replaceAll("\n", "");
 			// Search for the keywords in the string
-			for(String keyword: searchDeadlines) {
+			for(String keyword: searchKeywords) {
 				if(html.matches(keyword))
 					additionalInfo.add("Yes");
 				else
@@ -249,16 +270,35 @@ public class Parser {
 	}
 	
 	// ------------- HELPER METHODS START HERE -------------
+	private void addLinkKeywords() {
+		searchKeywords.clear();
+		searchKeywords.add("[sS]ubmissions");
+		searchKeywords.add("[pP]roceedings");
+		searchKeywords.add("[pP]aper");
+	}
+	
+	/**
+	 * Adds search keywords to the ArrayList that will be
+	 * used for searching the important dates
+	 * i.e. submission, notification, camera
+	 */
+	protected void addSearchWords() {
+		searchKeywords.clear();
+		searchKeywords.add(this.changeToRegex("[sS]ubmission"));
+		searchKeywords.add(this.changeToRegex("[nN]otification"));
+		searchKeywords.add(this.changeToRegex("[cC]amera"));
+	}
+	
 	/**
 	 * Overwrites the ArrayList with the "submission, notification and
 	 * camera" keywords with new keywords. Used for searching the
 	 * website for papers like "Work in progress", "Tools", "Workshops".
 	 */
 	protected void addNewSearchWords() {
-		searchDeadlines.clear();
-		searchDeadlines.add(this.changeToRegex("[wW]ork-[iI]n-[pP]rogress"));
-		searchDeadlines.add(this.changeToRegex("[tT]ools"));
-		searchDeadlines.add(this.changeToRegex("[wW]orkshop"));
+		searchKeywords.clear();
+		searchKeywords.add(this.changeToRegex("[wW]ork-[iI]n-[pP]rogress"));
+		searchKeywords.add(this.changeToRegex("[tT]ools"));
+		searchKeywords.add(this.changeToRegex("[wW]orkshop"));
 	}
 	
 	/**

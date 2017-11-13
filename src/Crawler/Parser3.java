@@ -47,6 +47,9 @@ public class Parser3 extends Parser {
 		ArrayList<String> deadlines = new ArrayList<>();
 		Pattern pattern = Pattern.compile("\\w+.\\s\\d{1,2},\\s\\d{4}");
 		String[] separated;
+		this.addSearchWords();
+		
+		// Connect to the home page
 		doc = this.getURLDoc(linkList.get(0));
 		// Select the div with "Important Dates"
 		Element el = doc.select("div:contains(Important Dates)").last();
@@ -57,7 +60,7 @@ public class Parser3 extends Parser {
 			// Split into multiple lines on seeing the new line
 			separated = elementString.split("\n");
 			// Search for the deadlines
-			for(String toFind: searchDeadlines) {
+			for(String toFind: searchKeywords) {
 				String found = this.findDeadline(separated, toFind, pattern);
 				deadlines.add(found);
 			}
@@ -83,7 +86,7 @@ public class Parser3 extends Parser {
 		} else {
 			elementString = elementString.replaceAll("\n", "");
 			// Find matching information in the string by searching the keywords
-			for(String keyword: searchDeadlines) {
+			for(String keyword: searchKeywords) {
 				if(elementString.matches(keyword))
 					additionalInfo.add("Yes");
 				else
