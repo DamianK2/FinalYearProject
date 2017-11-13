@@ -15,9 +15,21 @@ import venue.Country;
 public class Parser {
 	private static ArrayList<String> linkList = new ArrayList<>();
 	private static ArrayList<String> searchDeadlines = new ArrayList<>();
+	private static final String[] SPECIAL_CASES = {"Zeroth","First", "Second", "Third", 
+												"Fourth", "Fifth", "Sixth", "Seventh", 
+												"Eighth", "Ninth", "Tenth", "Eleventh", 
+												"Twelfth", "Thirteenth", "Fourteenth", 
+												"Fifteenth", "Sixteenth", "Seventeenth", 
+												"Eighteenth", "Nineteenth"};
+	private static final String[] TENS = {"Twent", "Thirt", "Fort", "Fift", 
+										"Sixt", "Sevent", "Eight", "Ninet"};
 	
 	public Parser(ArrayList<String> links) {
 		linkList = links;		
+		this.addSearchWords();
+	}
+	
+	private void addSearchWords() {
 		searchDeadlines.clear();
 		searchDeadlines.add(".*[sS]ubmission.*");
 		searchDeadlines.add(".*[nN]otification.*");
@@ -169,8 +181,6 @@ public class Parser {
 			
 			String elementString = el.select("p").toString();
 			if(!elementString.isEmpty()) {
-				this.removeFromString(elementString, "<p>");
-				this.removeFromString(elementString, "</p>");
 				separated = elementString.split("<br> ");
 				for(String toFind: searchDeadlines) {
 					String found = this.findDeadline(separated, toFind, pattern);
@@ -180,8 +190,6 @@ public class Parser {
 			
 			elementString = el.select("ul li").toString();
 			if(!elementString.isEmpty()) {
-				this.removeFromString(elementString, "<li>");
-				this.removeFromString(elementString, "</li>");
 				separated = elementString.split("\n");
 				for(String toFind: searchDeadlines) {
 					String found = this.findDeadline(separated, toFind, pattern);
@@ -208,22 +216,41 @@ public class Parser {
 		Pattern pattern = Pattern.compile("\\d{1,2}(?:st|nd|rd|th)|\\w+(?:st|nd|rd|th)|\\w+-\\w+(?:st|nd|rd|th)");
 		Matcher matcher;
 		matcher = pattern.matcher(description);
-		if(matcher.find())
+		if(matcher.find()) {
 			antiquity = matcher.group(0);
-		
+			if(antiquity.matches("\\d{1,2}(?:st|nd|rd|th)")) {
+				String[] number = antiquity.split("(?:st|nd|rd|th)");
+				antiquity = this.toOrdinal(Integer.parseInt(number[0]));
+			}
+		}
+			
 		if(antiquity.equals("")) {
 			Document doc = this.getURLDoc(linkList.get(0));
 			Element el = doc.select("div:contains(Previous)").last();
 			Elements ele = el.select("ul li");
 			int currentYear = 1;
 			currentYear += ele.size();
-			antiquity = Integer.toString(currentYear);
+			antiquity = this.toOrdinal(currentYear);
 		}
 		
 		return antiquity;
 	}
 	
 	// Helper methods start here
+	/**
+	 * Changes an integer to its ordinal.
+	 * @param number
+	 * @return ordinal
+	 */
+	private String toOrdinal(int number) {
+		if(number < 20)
+			return SPECIAL_CASES[number];
+		else if(number % 10 == 0)
+			return TENS[(number/10 - 2)] + "ieth";
+		else
+			return TENS[(number/10) - 2] + "y-" + SPECIAL_CASES[number % 10];
+	}
+	
 	private String searchCountries(String string, Country country) {
 		String venue = "", countryRegex;
 		for(String countryName: country.getCountries()) {
@@ -296,10 +323,5 @@ public class Parser {
 			}
 		}
 		return found;
-	}
-	
-	//TODO not working
-	private void removeFromString(String fromString, String remove) {
-		fromString.replaceAll(remove, "");
 	}
 }
