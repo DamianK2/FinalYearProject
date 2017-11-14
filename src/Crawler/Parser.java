@@ -16,6 +16,8 @@ import venue.Country;
 public class Parser {
 	protected static ArrayList<String> linkList = new ArrayList<>();
 	protected static ArrayList<String> searchKeywords = new ArrayList<>();
+	private static ArrayList<String> searchWords = new ArrayList<>(Arrays.asList("work-in-progress", 
+																				"tools", "workshop")); 
 	private static final ArrayList<String> SPECIAL_CASES = new ArrayList<>(
 															Arrays.asList(
 															"Zeroth","First", "Second", "Third", 
@@ -200,11 +202,15 @@ public class Parser {
 	/**
 	 * Parses information about additional papers, from the /Important_Dates
 	 * link (if available) or the home page to see if they can be submitted or not.
-	 * @return list containing "Yes/No" strings
+	 * @return list containing "Yes/No" + deadlines strings
 	 */
 	public ArrayList<String> getAdditionalDeadlineInfo() {
 		ArrayList<String> additionalInfo = new ArrayList<>();
+		ArrayList<String> otherSeparated = new ArrayList<>();
+		String[] separated;
+		Pattern pattern = Pattern.compile("\\w+.\\s\\d{1,2},\\s\\d{4}");
 		Document doc = null;
+		// State the keywords you want to search for
 		this.addNewSearchWords();
 		
 		String link = this.searchLinks("[iI]mportant");
@@ -213,16 +219,55 @@ public class Parser {
 		} else {
 			// Connect to the target link
 			doc = this.getURLDoc(link);
-			// Parse the elements to receive a string
+			// Parse the element to receive a string
 			Element el = doc.select("div:contains(Important Dates)").last();
-			String html = el.html();
-			html = html.replaceAll("\n", "");
+			String html = el.html().replaceAll("\n", "");
 			// Search for the keywords in the string
-			for(String keyword: searchKeywords) {
-				if(html.matches(keyword))
+			for(int i = 0; i < searchKeywords.size(); i++) {
+				// Overwrite the ArrayList with the submission keywords
+				this.addNewSearchWords();
+				otherSeparated.clear();
+				// Add the appropriate strings based on the evaluation
+				if(html.matches(searchKeywords.get(i)))
 					additionalInfo.add("Yes");
 				else
 					additionalInfo.add("No");
+				
+				// Get the row that contains the search word
+				Element row = el.select("tr:contains(" + searchWords.get(i) + ")").first();
+				Elements tds = null;
+				try {
+					// Gets the <td> elements for the next row
+					tds = row.nextElementSibling().select("td");
+					
+					for(Element td: tds) {
+						// Split and add the first paragraph to the ArrayList
+						if(otherSeparated.isEmpty()) {
+							separated = td.toString().split("<br>");
+							for(String s: separated) {
+								otherSeparated.add(s);
+							}	
+						} else {
+							// Split and add the second paragraph to the ArrayList
+							separated = td.toString().split("<br>");
+							for(int j = 0; j < separated.length; j++) {
+								String newString = otherSeparated.get(j) + separated[j];
+								otherSeparated.remove(j);
+								otherSeparated.add(j, newString);
+							}
+						}
+					}
+				} catch(NullPointerException e) {
+					   System.out.println("No <td> for" + searchWords.get(i));
+				}
+
+				// Overwrite the ArrayList with the deadline keywords that we are looking for
+				this.addSearchWords();
+				// Add the appropriate information
+				for(String toFind: searchKeywords) {
+					String found = findDeadline(otherSeparated, toFind, pattern);
+					additionalInfo.add(found);
+				}
 			}
 			return additionalInfo;
 		}
@@ -270,6 +315,15 @@ public class Parser {
 	}
 	
 	// ------------- HELPER METHODS START HERE -------------
+	
+	// No workshops, tools or work in progress available on several sites.
+	// Therefore, I need to store an empty string 3 times for the
+	// output to look nice in excel
+	protected void tempMethod(ArrayList<String> additionalInfo) {
+		for(int i = 0; i < 3; i++)
+			additionalInfo.add("");
+	}
+	
 	private void addLinkKeywords() {
 		searchKeywords.clear();
 		searchKeywords.add("[sS]ubmissions");
@@ -343,7 +397,7 @@ public class Parser {
 		keyword = ".*" + keyword +".*";
 		return keyword;
 	}
-
+	
 	/**
 	 * Receives a keyword that we want to find in the link
 	 * and returns the link if it has been found in the list
@@ -393,7 +447,7 @@ public class Parser {
 	 * @return deadline
 	 */
 	protected String findDeadline(String[] separated, String toFind, Pattern pattern) {
-		String found = "N/A";
+		String found = "";
 		Matcher matcher;
 		for(String string: separated) {
 			if(string.matches(toFind)) {
@@ -417,11 +471,11 @@ public class Parser {
 	 * @return deadline
 	 */
 	private String findDeadline(ArrayList<String> separated, String toFind, Pattern pattern) {
-		String found = "N/A";
+		String found = "";
 		Matcher matcher;
 		for(String string: separated) {
 			if(string.matches(toFind)) {
-				System.out.println("Found: " + string);
+//				System.out.println("Found: " + string);
 				matcher = pattern.matcher(string);
 				
 				if(matcher.find())

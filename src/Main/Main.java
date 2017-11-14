@@ -51,10 +51,19 @@ public class Main {
         row.createCell(7).setCellValue(createHelper.createRichTextString("Notification deadline"));
         row.createCell(8).setCellValue(createHelper.createRichTextString("Camera ready deadline"));
         row.createCell(9).setCellValue(createHelper.createRichTextString("Work in progress papers"));
-        row.createCell(10).setCellValue(createHelper.createRichTextString("Tool papers"));
-        row.createCell(11).setCellValue(createHelper.createRichTextString("Workshop papers"));
-        row.createCell(12).setCellValue(createHelper.createRichTextString("Current Year"));
-        row.createCell(13).setCellValue(createHelper.createRichTextString("Antiquity"));
+        row.createCell(10).setCellValue(createHelper.createRichTextString("Submission deadline"));
+        row.createCell(11).setCellValue(createHelper.createRichTextString("Notification deadline"));
+        row.createCell(12).setCellValue(createHelper.createRichTextString("Camera ready deadline"));
+        row.createCell(13).setCellValue(createHelper.createRichTextString("Tool papers"));
+        row.createCell(14).setCellValue(createHelper.createRichTextString("Submission deadline"));
+        row.createCell(15).setCellValue(createHelper.createRichTextString("Notification deadline"));
+        row.createCell(16).setCellValue(createHelper.createRichTextString("Camera ready deadline")); 
+        row.createCell(17).setCellValue(createHelper.createRichTextString("Workshop papers"));
+        row.createCell(18).setCellValue(createHelper.createRichTextString("Submission deadline"));
+        row.createCell(19).setCellValue(createHelper.createRichTextString("Notification deadline"));
+        row.createCell(20).setCellValue(createHelper.createRichTextString("Camera ready deadline"));
+        row.createCell(21).setCellValue(createHelper.createRichTextString("Current Year"));
+        row.createCell(22).setCellValue(createHelper.createRichTextString("Antiquity"));
         
         ArrayList<Parser> parsers = new ArrayList<>();
         int i = 0;
@@ -136,7 +145,7 @@ public class Main {
 	        }
 	        
 	        String year = parsers.get(0).getConferenceYear(title);
-	        row.createCell(12).setCellValue(createHelper.createRichTextString(year));
+	        row.createCell(21).setCellValue(createHelper.createRichTextString(year));
 	        
 	        String antiquity; 
 	        k = 0;
@@ -145,7 +154,7 @@ public class Main {
 	        	k++;
 	        } while(antiquity == "" && k < parsers.size());
 	        
-	        row.createCell(13).setCellValue(createHelper.createRichTextString(antiquity));
+	        row.createCell(22).setCellValue(createHelper.createRichTextString(antiquity));
 			i++;
 		}
         

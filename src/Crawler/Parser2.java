@@ -102,10 +102,13 @@ public class Parser2 extends Parser {
 			elementString = elementString.replaceAll("\n", "");
 			// Find matching information in the string by searching the keywords
 			for(String keyword: searchKeywords) {
-				if(elementString.matches(keyword))
+				if(elementString.matches(keyword)) {
 					additionalInfo.add("Yes");
-				else
+					this.tempMethod(additionalInfo);
+				} else {
 					additionalInfo.add("No");
+					this.tempMethod(additionalInfo);
+				}
 			}
 			return additionalInfo;
 		}	
