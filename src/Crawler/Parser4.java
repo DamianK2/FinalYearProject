@@ -27,5 +27,10 @@ public class Parser4 extends Parser {
 		
 		return venue;
 	}
+	
+	public String getConferenceDays(String title, String description) {		
+		Document doc = this.getURLDoc(linkList.get(0));
+		return this.findConfDays(doc.select("p").text());
+	}
 
 }

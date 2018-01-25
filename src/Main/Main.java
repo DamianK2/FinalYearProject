@@ -64,6 +64,7 @@ public class Main {
         row.createCell(20).setCellValue(createHelper.createRichTextString("Camera ready deadline"));
         row.createCell(21).setCellValue(createHelper.createRichTextString("Current Year"));
         row.createCell(22).setCellValue(createHelper.createRichTextString("Antiquity"));
+        row.createCell(23).setCellValue(createHelper.createRichTextString("Conference Days"));
         
         ArrayList<Parser> parsers = new ArrayList<>();
         int i = 0;
@@ -155,7 +156,16 @@ public class Main {
 	        } while(antiquity == "" && k < parsers.size());
 	        
 	        row.createCell(22).setCellValue(createHelper.createRichTextString(antiquity));
+			
+			String date;
+			k = 0;
+	        do {
+	        	date = parsers.get(k).getConferenceDays(title, description);
+	        	k++;
+	        } while(date == "" && k < parsers.size());
+	        row.createCell(23).setCellValue(createHelper.createRichTextString(date));
 			i++;
+			
 		}
         
         // Write the output to a file

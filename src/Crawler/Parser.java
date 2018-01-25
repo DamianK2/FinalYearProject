@@ -314,6 +314,15 @@ public class Parser {
 		return antiquity;
 	}
 	
+	/**
+	 * Finds the days on which the conference is ongoing.
+	 * @param title, description
+	 * @return date
+	 */
+	public String getConferenceDays(String title, String description) {		
+		return this.findConfDays(title);
+	}
+	
 	// ------------- HELPER METHODS START HERE -------------
 	
 	// No workshops, tools or work in progress available on several sites.
@@ -487,5 +496,18 @@ public class Parser {
 			}
 		}
 		return found;
+	}
+	
+	
+	protected String findConfDays(String toCheck) {		
+		Pattern pattern = Pattern.compile("\\d+-\\d+.+\\w+.+\\d{4}|(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?).+\\d+-\\d+.+\\d{4}");
+		Matcher matcher;
+		// Match the pattern with the description
+		matcher = pattern.matcher(toCheck);
+		if(matcher.find()) {
+			return matcher.group(0);	
+		} else {
+			return "";
+		}
 	}
 }

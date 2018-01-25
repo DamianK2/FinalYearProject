@@ -1,6 +1,7 @@
 package Crawler;
 
 import java.util.ArrayList;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jsoup.nodes.Document;
@@ -97,5 +98,10 @@ public class Parser3 extends Parser {
 			}
 			return additionalInfo;
 		}
+	}
+	
+	public String getConferenceDays(String title, String description) {		
+		Document doc = this.getURLDoc(linkList.get(0));
+		return this.findConfDays(doc.select("#header").text());
 	}
 }
