@@ -42,6 +42,7 @@ public class Parser3 extends Parser {
 	public ArrayList<String> getDeadlines(ArrayList<String> linkList) {
 		Document doc = null;
 		ArrayList<String> deadlines = new ArrayList<>();
+		ArrayList<String> deadlinesEmpty = new ArrayList<>();
 		Pattern pattern = Pattern.compile("\\w+.\\s\\d{1,2},\\s\\d{4}");
 		String[] separated;
 		this.addSearchWords();
@@ -51,6 +52,8 @@ public class Parser3 extends Parser {
 		// Select the div with "Important Dates"
 		Element el = doc.select("div:contains(Important Dates)").last();
 		
+		// Counter to see how many empty spaces are returned
+		int count = 1;
 		// Extract the list
 		String elementString = el.select("ul li").toString();
 		if(!elementString.isEmpty()) {
@@ -60,10 +63,12 @@ public class Parser3 extends Parser {
 			for(String toFind: searchKeywords) {
 				String found = this.findDeadline(separated, toFind, pattern);
 				deadlines.add(found);
+				if(found.equals(""))
+					count++;
 			}
 		}
 		
-		return deadlines;
+		return count < 3 ? deadlines : deadlinesEmpty;
 	}
 	
 	@Override
@@ -75,13 +80,21 @@ public class Parser3 extends Parser {
 		// Connect to the home page
 		doc = this.getURLDoc(linkList.get(0));
 		Element el = doc.select("div:contains(Important Dates)").last();
+
 		
 		// Get the content of the list (if available)
 		String elementString = el.select("ul li").toString();
+		elementString = elementString.replaceAll("\n|\r", "");
+		
 		if(elementString.isEmpty()) {
 			return additionalInfo;
+		} else if(!elementString.matches(".*\\d+.+(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|[mM][aA][yY]"
+				+ "|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?).+\\d{4}.*"
+				+ "|.*(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|[mM][aA][yY]|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?"
+				+ "|Oct(ober)?|Nov(ember)?|Dec(ember)?)(.+\\d+\\d{4}|.+\\d+,.+\\d{4}).*")) {
+			System.out.println("here!!!");
+			return additionalInfo;
 		} else {
-			elementString = elementString.replaceAll("\n", "");
 			// Find matching information in the string by searching the keywords
 			for(String keyword: searchKeywords) {
 				if(elementString.matches(keyword)) {
