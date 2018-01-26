@@ -62,8 +62,18 @@ public class Crawler {
 	
 	// Add the newly fetched links into an ArrayList
 	private void addToLinkList(Elements links) {
-		for(Element link: links) {
-			linkList.add(link.attr("abs:href"));
+		for(Element link: links) {			
+			if(!this.checkDuplicates(link.attr("abs:href")))
+				linkList.add(link.attr("abs:href"));
 		}
+	}
+	
+	private boolean checkDuplicates(String link) {
+		boolean check = false;
+		for(String l: linkList) {
+			if(link.equals(l))
+				check = true;
+		}
+		return check;
 	}
 }
