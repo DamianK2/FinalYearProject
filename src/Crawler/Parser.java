@@ -31,6 +31,8 @@ public class Parser {
 	protected static final ArrayList<String> SPONSORS = new ArrayList<>(Arrays.asList("ACM", "SPEC", 
 																		"UNESCO", "Springer", "IEEE"));
 	
+	private static final int MAX_CHARS_IN_DATE = 30;
+	
 	/**
 	 * Parses the title from the home page of the website.
 	 * @return title
@@ -498,7 +500,10 @@ public class Parser {
 		// Match the pattern with the description
 		matcher = pattern.matcher(toCheck);
 		if(matcher.find()) {
-			return matcher.group(0);	
+			if(matcher.group(0).length() < MAX_CHARS_IN_DATE)
+				return matcher.group(0);
+			else
+				return "";
 		} else {
 			return "";
 		}
