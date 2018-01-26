@@ -86,8 +86,7 @@ class ParserTest {
 		ArrayList<String> deadlines = new ArrayList<>(Arrays.asList("Yes", "Jan 10, 2018", "Feb 08, 2018", "Feb 19, 2018", "No", "", "", "",
 				"Yes", "Oct 13, 2017", "Oct 31, 2017", ""));
 		ArrayList<String> empty = new ArrayList<>();
-//		ArrayList<String> deadlines2 = new ArrayList<>(Arrays.asList("No", "", "", "", "No", "", "", "", "No", "", "", ""));
-//		ArrayList<String> deadlines3 = new ArrayList<>(Arrays.asList("No", "", "", "", "No", "", "", "", "No", "", "", ""));
+
 		assertEquals(deadlines, parser.getAdditionalDeadlineInfo(links1));
 		assertEquals(empty, parser.getAdditionalDeadlineInfo(links2));
 		assertEquals(empty, parser.getAdditionalDeadlineInfo(links3));

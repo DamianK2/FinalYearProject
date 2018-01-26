@@ -31,16 +31,14 @@ public class Parser2 extends Parser {
 		Document doc = null;
 		// Connect to the home page
         doc = this.getURLDoc(homeLink);
-		String meta = "", parsedMeta = "";
+		String meta = "";
 		try {
-			parsedMeta = doc.select("meta[property=og:description]").first().attr("content");
-			// Limit the string to 100 characters
-			//parsedMeta = meta.replaceAll("(.{100})", "$1\n");
-			System.out.println("Description: " + parsedMeta);
+			meta = doc.select("meta[property=og:description]").first().attr("content");
+			System.out.println("Description: " + meta);
 		} catch(NullPointerException e) {
 			System.out.println("No meta with attribute \"property\"");
 		}
-		return parsedMeta;
+		return meta;
 	}
 	
 	@Override
@@ -117,8 +115,14 @@ public class Parser2 extends Parser {
 	
 		// Connect to the home page
 		Document doc = this.getURLDoc(homeLink);
-		Element el = doc.select("div:contains(Previous)").last();
-		Elements ele = el.select("ul li");
+		Elements ele = null;
+		try {
+			Element el = doc.select("div:contains(Previous)").last();
+			ele = el.select("ul li");
+		} catch(NullPointerException e) {
+			return antiquity;
+		}
+		
 		if(ele.isEmpty())
 			return antiquity;
 		else {
