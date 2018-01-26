@@ -76,18 +76,18 @@ public class Main {
 			deadlines.clear();
 			crawl = new Crawler(url);
 			links = crawl.getAllLinks();
-	        parsers.add(new Parser(links));
-	        parsers.add(new Parser2(links));
-	        parsers.add(new Parser3(links));
-	        parsers.add(new Parser4(links));
+	        parsers.add(new Parser());
+	        parsers.add(new Parser2());
+	        parsers.add(new Parser3());
+	        parsers.add(new Parser4());
 	        row = sheet.createRow(i+1);
 			row.createCell(0).setCellValue(createHelper.createRichTextString(url));
-			String title = parsers.get(0).getTitle();
+			String title = parsers.get(0).getTitle(links.get(0));
 			row.createCell(1).setCellValue(createHelper.createRichTextString(title));
 			String proceedings;
 			int k = 0;
 			do {
-				proceedings = parsers.get(k).getProceedings();
+				proceedings = parsers.get(k).getProceedings(links);
 	        	k++;
 	        } while(proceedings == "" && k < parsers.size());  
 			row.createCell(3).setCellValue(createHelper.createRichTextString(proceedings));
@@ -95,7 +95,7 @@ public class Main {
 			String description;
 			k = 0;
 			do {
-	        	description = parsers.get(k).getDescription();
+	        	description = parsers.get(k).getDescription(links.get(0));
 	        	k++;
 	        } while(description == "" && k < parsers.size());   
 	        
@@ -113,7 +113,7 @@ public class Main {
 	        String venue;
 	        k = 0;
 			do {
-				venue = parsers.get(k).getVenue(title, description, country);
+				venue = parsers.get(k).getVenue(title, description, country, links);
 	        	k++;
 	        } while(venue == "" && k < parsers.size());	
 
@@ -121,7 +121,7 @@ public class Main {
 	        
 	        k = 0;
 	        do {
-	        	deadlines = parsers.get(k).getDeadlines();	
+	        	deadlines = parsers.get(k).getDeadlines(links);	
 	        	k++;
 	        } while(deadlines.isEmpty() && k < parsers.size());
 	        		
@@ -135,7 +135,7 @@ public class Main {
 	        deadlines.clear();
 	        k = 0;
 	        do {
-	        	deadlines = parsers.get(k).getAdditionalDeadlineInfo();	
+	        	deadlines = parsers.get(k).getAdditionalDeadlineInfo(links);	
 	        	k++;
 	        } while(deadlines.isEmpty() && k < parsers.size());
 	        
@@ -151,7 +151,7 @@ public class Main {
 	        String antiquity; 
 	        k = 0;
 	        do {
-	        	antiquity = parsers.get(k).getAntiquity(description);
+	        	antiquity = parsers.get(k).getAntiquity(description, links.get(0));
 	        	k++;
 	        } while(antiquity == "" && k < parsers.size());
 	        
@@ -160,12 +160,11 @@ public class Main {
 			String date;
 			k = 0;
 	        do {
-	        	date = parsers.get(k).getConferenceDays(title, description);
+	        	date = parsers.get(k).getConferenceDays(title, description, links.get(0));
 	        	k++;
 	        } while(date == "" && k < parsers.size());
 	        row.createCell(23).setCellValue(createHelper.createRichTextString(date));
 			i++;
-			
 		}
         
         // Write the output to a file

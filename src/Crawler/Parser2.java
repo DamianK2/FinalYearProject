@@ -11,10 +11,6 @@ import org.jsoup.select.Elements;
 import venue.Country;
 
 public class Parser2 extends Parser {
-
-	public Parser2(ArrayList<String> links) {
-		super(links);
-	}
 	
 	public String getSponsors(String title, String description) {
 		String sponsors = "";
@@ -31,10 +27,10 @@ public class Parser2 extends Parser {
 	}
 	
 	@Override
-	public String getDescription() {
+	public String getDescription(String homeLink) {
 		Document doc = null;
 		// Connect to the home page
-        doc = this.getURLDoc(linkList.get(0));
+        doc = this.getURLDoc(homeLink);
 		String meta = "", parsedMeta = "";
 		try {
 			parsedMeta = doc.select("meta[property=og:description]").first().attr("content");
@@ -48,7 +44,7 @@ public class Parser2 extends Parser {
 	}
 	
 	@Override
-	public String getVenue(String title, String description, Country country) {
+	public String getVenue(String title, String description, Country country, ArrayList<String> linkList) {
 		String venue = "";
 		// Search the title for the country of the conference
 		if(!title.equals(""))
@@ -58,7 +54,7 @@ public class Parser2 extends Parser {
 	}
 	
 	@Override
-	public ArrayList<String> getDeadlines() {
+	public ArrayList<String> getDeadlines(ArrayList<String> linkList) {
 		Document doc = null;
 		ArrayList<String> deadlines = new ArrayList<>();
 		Pattern pattern = Pattern.compile("\\w+.\\s\\d{1,2},\\s\\d{4}");
@@ -86,7 +82,7 @@ public class Parser2 extends Parser {
 	}
 	
 	@Override
-	public ArrayList<String> getAdditionalDeadlineInfo() {
+	public ArrayList<String> getAdditionalDeadlineInfo(ArrayList<String> linkList) {
 		ArrayList<String> additionalInfo = new ArrayList<>();
 		Document doc = null;
 		this.addNewSearchWords();
@@ -116,11 +112,11 @@ public class Parser2 extends Parser {
 	}
 	
 	@Override
-	public String getAntiquity(String description) {
+	public String getAntiquity(String description, String homeLink) {
 		String antiquity = "";
 	
 		// Connect to the home page
-		Document doc = this.getURLDoc(linkList.get(0));
+		Document doc = this.getURLDoc(homeLink);
 		Element el = doc.select("div:contains(Previous)").last();
 		Elements ele = el.select("ul li");
 		if(ele.isEmpty())
@@ -135,7 +131,7 @@ public class Parser2 extends Parser {
 		}
 	}
 	
-	public String getConferenceDays(String title, String description) {		
+	public String getConferenceDays(String title, String description, String homeLink) {		
 		return this.findConfDays(description);
 	}
 }

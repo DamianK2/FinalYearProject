@@ -8,12 +8,8 @@ import venue.Country;
 
 public class Parser4 extends Parser {
 
-	public Parser4(ArrayList<String> links) {
-		super(links);
-	}
-	
 	@Override
-	public String getVenue(String title, String description, Country country) {
+	public String getVenue(String title, String description, Country country, ArrayList<String> linkList) {
 		String venue = "", header;
 		Document doc = null;
 		
@@ -28,8 +24,8 @@ public class Parser4 extends Parser {
 		return venue;
 	}
 	
-	public String getConferenceDays(String title, String description) {		
-		Document doc = this.getURLDoc(linkList.get(0));
+	public String getConferenceDays(String title, String description, String homeLink) {		
+		Document doc = this.getURLDoc(homeLink);
 		return this.findConfDays(doc.select("p").text());
 	}
 

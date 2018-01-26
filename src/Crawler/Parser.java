@@ -14,7 +14,6 @@ import org.jsoup.select.Elements;
 import venue.Country;
 
 public class Parser {
-	protected static ArrayList<String> linkList = new ArrayList<>();
 	protected static ArrayList<String> searchKeywords = new ArrayList<>();
 	private static ArrayList<String> searchWords = new ArrayList<>(Arrays.asList("work-in-progress", 
 																				"tools", "workshop")); 
@@ -32,18 +31,14 @@ public class Parser {
 	protected static final ArrayList<String> SPONSORS = new ArrayList<>(Arrays.asList("ACM", "SPEC", 
 																		"UNESCO", "Springer", "IEEE"));
 	
-	public Parser(ArrayList<String> links) {
-		linkList = links;		
-	}
-	
 	/**
 	 * Parses the title from the home page of the website.
 	 * @return title
 	 */
-	public String getTitle() {
+	public String getTitle(String homeLink) {
 		Document doc = null;
 		// Connect to the home page
-        doc = this.getURLDoc(linkList.get(0));
+        doc = this.getURLDoc(homeLink);
 		return doc.title();
 	}
 	
@@ -71,13 +66,13 @@ public class Parser {
 	 * Searches and parses different links to find the proceedings.
 	 * @return proceedings
 	 */
-	public String getProceedings() {
+	public String getProceedings(ArrayList<String> linkList) {
 		String proceedings = "";
 		this.addLinkKeywords();
 		Document doc;
 		int keyword = 0;
 		while(proceedings == "" && keyword < searchKeywords.size()) {
-			String url = this.searchLinks(searchKeywords.get(keyword));
+			String url = this.searchLinks(searchKeywords.get(keyword), linkList);
 			if(!url.isEmpty()) {
 				doc = this.getURLDoc(url);
 				String elementString = doc.select("*p").text();
@@ -99,21 +94,19 @@ public class Parser {
 	 * or the head of the website.
 	 * @return description
 	 */
-	public String getDescription() {
+	public String getDescription(String homeLink) {
 		Document doc = null;
 		// Connect to the home page
-        doc = this.getURLDoc(linkList.get(0));
-		String meta = "", parsedMeta = "";
+        doc = this.getURLDoc(homeLink);
+		String meta = "";
 		try {
-			parsedMeta = doc.select("meta[name=description]").first().attr("content");
-			// Limit the string to 100 characters
-			//parsedMeta = meta.replaceAll("(.{100})", "$1\n");
-			System.out.println("Decription: " + parsedMeta);
+			meta = doc.select("meta[name=description]").first().attr("content");
+			System.out.println("Decription: " + meta);
 		} catch(NullPointerException e) {
 		   System.out.println("No meta with attribute \"name\"");
 		}
 	
-		return parsedMeta;
+		return meta;
 	}
 	
 	/**
@@ -125,11 +118,11 @@ public class Parser {
 	 * @param country
 	 * @return venue
 	 */
-	public String getVenue(String title, String description, Country country) {
+	public String getVenue(String title, String description, Country country, ArrayList<String> linkList) {
 		String venue = "", link, temp;
 		Document doc = null;
 		// Search the venue website
-		link = this.searchLinks("[vV]enue");
+		link = this.searchLinks("[vV]enue", linkList);
 		if(!link.equals("")) {
 			// Connect to the target link
 			doc = this.getURLDoc(link);
@@ -148,7 +141,7 @@ public class Parser {
 	 * returns a list in the format (month dd, yyyy).
 	 * @return list of deadlines
 	 */
-	public ArrayList<String> getDeadlines() {
+	public ArrayList<String> getDeadlines(ArrayList<String> linkList) {
 		Document doc = null;
 		ArrayList<String> deadlines = new ArrayList<>();
 		ArrayList<String> otherSeparated = new ArrayList<>();
@@ -156,7 +149,7 @@ public class Parser {
 		String[] separated;
 		this.addSearchWords();
 		
-		String link = this.searchLinks("[iI]mportant");
+		String link = this.searchLinks("[iI]mportant", linkList);
 		if(link.isEmpty())
 			return deadlines;
 		else {
@@ -204,7 +197,7 @@ public class Parser {
 	 * link (if available) or the home page to see if they can be submitted or not.
 	 * @return list containing "Yes/No" + deadlines strings
 	 */
-	public ArrayList<String> getAdditionalDeadlineInfo() {
+	public ArrayList<String> getAdditionalDeadlineInfo(ArrayList<String> linkList) {
 		ArrayList<String> additionalInfo = new ArrayList<>();
 		ArrayList<String> otherSeparated = new ArrayList<>();
 		String[] separated;
@@ -213,7 +206,7 @@ public class Parser {
 		// State the keywords you want to search for
 		this.addNewSearchWords();
 		
-		String link = this.searchLinks("[iI]mportant");
+		String link = this.searchLinks("[iI]mportant", linkList);
 		if(link.isEmpty()) {
 			return additionalInfo;
 		} else {
@@ -295,7 +288,7 @@ public class Parser {
 	 * @param description
 	 * @return antiquity
 	 */
-	public String getAntiquity(String description) {
+	public String getAntiquity(String description, String homeLink) {
 		String antiquity = "";
 		Pattern pattern = Pattern.compile("\\d{1,2}(?:st|nd|rd|th)|\\w+(?:st|nd|rd|th)|\\w+-\\w+(?:st|nd|rd|th)");
 		Matcher matcher;
@@ -319,7 +312,7 @@ public class Parser {
 	 * @param title, description
 	 * @return date
 	 */
-	public String getConferenceDays(String title, String description) {		
+	public String getConferenceDays(String title, String description, String homeLink) {		
 		return this.findConfDays(title);
 	}
 	
@@ -416,7 +409,7 @@ public class Parser {
 	 * @param keyword
 	 * @return link
 	 */
-	private String searchLinks(String keyword) {
+	private String searchLinks(String keyword, ArrayList<String> linkList) {
 		String answer = "";
 		keyword = this.changeToRegex(keyword);
 		

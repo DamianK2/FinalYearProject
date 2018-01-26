@@ -11,14 +11,10 @@ import venue.Country;
 
 public class Parser3 extends Parser {
 
-	public Parser3(ArrayList<String> links) {
-		super(links);
-	}
-	
 	@Override
-	public String getDescription() {
+	public String getDescription(String homeLink) {
 		Document doc = null;
-        doc = this.getURLDoc(linkList.get(0));
+        doc = this.getURLDoc(homeLink);
 		String meta = "", parsedMeta = "";
 		try {
 			parsedMeta = doc.select(".site-description").text();
@@ -32,7 +28,7 @@ public class Parser3 extends Parser {
 	}
 
 	@Override
-	public String getVenue(String title, String description, Country country) {
+	public String getVenue(String title, String description, Country country, ArrayList<String> linkList) {
 		String venue = "";
 		
 		// Search the description for the country of the conference
@@ -43,7 +39,7 @@ public class Parser3 extends Parser {
 	}
 	
 	@Override
-	public ArrayList<String> getDeadlines() {
+	public ArrayList<String> getDeadlines(ArrayList<String> linkList) {
 		Document doc = null;
 		ArrayList<String> deadlines = new ArrayList<>();
 		Pattern pattern = Pattern.compile("\\w+.\\s\\d{1,2},\\s\\d{4}");
@@ -71,7 +67,7 @@ public class Parser3 extends Parser {
 	}
 	
 	@Override
-	public ArrayList<String> getAdditionalDeadlineInfo() {
+	public ArrayList<String> getAdditionalDeadlineInfo(ArrayList<String> linkList) {
 		ArrayList<String> additionalInfo = new ArrayList<>();
 		Document doc = null;
 		this.addNewSearchWords();
@@ -100,8 +96,8 @@ public class Parser3 extends Parser {
 		}
 	}
 	
-	public String getConferenceDays(String title, String description) {		
-		Document doc = this.getURLDoc(linkList.get(0));
+	public String getConferenceDays(String title, String description, String homeLink) {		
+		Document doc = this.getURLDoc(homeLink);
 		return this.findConfDays(doc.select("#header").text());
 	}
 }
