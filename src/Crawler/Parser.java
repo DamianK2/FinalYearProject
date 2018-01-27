@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
 import venue.Country;
@@ -32,6 +33,8 @@ public class Parser {
 										"Sixt", "Sevent", "Eight", "Ninet"));
 	protected static final ArrayList<String> SPONSORS = new ArrayList<>(Arrays.asList("ACM", "SPEC", 
 																		"UNESCO", "Springer", "IEEE"));
+	private static final String[] COMMITTEES = {"[cC][oO][mM][mM][iI][tT][tT][eE][eE]", 
+			"[cC][hH][aA][iI][rR]", "[pP][aA][pP][eE][rR]"};
 	
 	private static final int MAX_CHARS_IN_DATE = 30;
 	
@@ -320,8 +323,68 @@ public class Parser {
 		return this.findConfDays(title);
 	}
 	
-	public LinkedHashMap<String, List<String>> getOrganisers() {
-		return null;
+	/**
+	 * Finds the organizers on the websites.
+	 * @param linkList
+	 * @param country
+	 * @return a map with organizer teams as key and members as value
+	 */
+	public LinkedHashMap<String, List<String>> getOrganisers(ArrayList<String> linkList, Country country) {
+		List<String> potentialLinks = new ArrayList<>();
+		// Find the links on the websites that contain the organizers
+		this.addCommitteeSearchWords();
+		for(String keyword: searchKeywords) {
+			String link = this.searchLinks(keyword, linkList);
+			if(!link.isEmpty())
+				potentialLinks.add(link);
+		}
+		
+		String tempSubteam = "";
+		LinkedHashMap<String, List<String>> committees = new LinkedHashMap<>();
+		List<String> members = new ArrayList<>();
+		
+		for(String link: potentialLinks) {
+			// Get the document
+			Document doc = this.getURLDoc(link);
+			// Find all elements and text nodes
+			for(Element node: doc.getAllElements()) {
+				for(TextNode textNode: node.textNodes()) {
+					// Search for committee names in the text node
+					if(this.searchForCommittees(textNode.text())) {
+						// If the subteam isn't empty and there are members in the list add them to the map to be returned later
+						if(!tempSubteam.equals("") && !members.isEmpty()) {
+							committees.put(tempSubteam, new ArrayList<String>(members));
+							members.clear();
+						}
+						// Add the subteam found for later use as a key
+						tempSubteam = textNode.text();
+//						System.out.println("FOUND: " + textNode.text());
+//						System.out.println(tempSubteam);
+					}
+					// Check the string for a country to find if it is a member or not
+					else if(this.checkStringForCountry(textNode.text(), country)) {
+						// Add the member to the list if a valid subteam is present
+						if(!tempSubteam.equals("")) {
+							members.add(textNode.text());
+						}
+//						System.out.println(textNode.text());
+//						System.out.println(members);
+					}
+					// Do nothing with empty strings
+					else if(textNode.text().matches("^\\s+$")); 
+					else {
+						// If it's neither a member or a subteam then everything gathered so far to the map and clear the variables
+						if(!tempSubteam.equals("") && !members.isEmpty()) {
+							committees.put(tempSubteam, new ArrayList<String>(members));
+						}
+						members.clear();
+						tempSubteam = "";
+					}
+				}
+			}
+		}
+		
+		return committees;
 	}
 	
 	// ------------- HELPER METHODS START HERE -------------
@@ -366,6 +429,19 @@ public class Parser {
 	}
 	
 	/**
+	 * Adds search keywords to the ArrayList that will be
+	 * used for searching the important dates
+	 * i.e. submission, notification, camera
+	 */
+	protected void addCommitteeSearchWords() {
+		searchKeywords.clear();
+		searchKeywords.add(this.changeToRegex("[oO]rganiz"));
+		searchKeywords.add(this.changeToRegex("[pP]rogram"));
+		searchKeywords.add(this.changeToRegex("[pP]eople"));
+		searchKeywords.add(this.changeToRegex("[cC]ommittee"));
+	}
+	
+	/**
 	 * Changes an integer to its ordinal.
 	 * @param number
 	 * @return ordinal
@@ -395,6 +471,25 @@ public class Parser {
 				venue = countryName;
 		}
 		return venue;
+	}
+	
+	/**
+	 * Checks whether a string contains a country.
+	 * @param string
+	 * @param country
+	 * @return true/false
+	 */
+	private boolean checkStringForCountry(String string, Country country) {
+		String countryRegex;
+		// Go through the list of countries
+		for(String countryName: country.getCountries()) {
+			countryRegex = changeToRegex(countryName);
+			// Check if the string contains the country name
+			if(string.matches(countryRegex))
+				return true;
+		}
+		
+		return false;
 	}
 	
 	/**
@@ -500,6 +595,11 @@ public class Parser {
 	}
 	
 	
+	/**
+	 * Looks through the string to find a date.
+	 * @param toCheck
+	 * @return date or empty string
+	 */
 	protected String findConfDays(String toCheck) {		
 		Pattern pattern = Pattern.compile("\\d+-\\d+.+\\w+.+\\d{4}|(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?).+\\d+-\\d+.+\\d{4}");
 		Matcher matcher;
@@ -513,5 +613,20 @@ public class Parser {
 		} else {
 			return "";
 		}
+	}
+	
+	/**
+	 * Receives a string and checks whether it contains a committee or chair keyword.
+	 * @param string
+	 * @return true/false
+	 */
+	private boolean searchForCommittees(String string) {
+		String subteamRegex;
+		for(String subteam: COMMITTEES) {
+			subteamRegex = this.changeToRegex(subteam);
+			if(string.matches(subteamRegex))
+				return true;
+		}
+		return false;
 	}
 }

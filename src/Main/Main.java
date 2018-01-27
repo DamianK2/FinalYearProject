@@ -5,6 +5,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.CreationHelper;
@@ -164,7 +166,31 @@ public class Main {
 	        	k++;
 	        } while(date == "" && k < parsers.size());
 	        row.createCell(23).setCellValue(createHelper.createRichTextString(date));
+	        
+	        LinkedHashMap<String, List<String>> committees;
+	        k = 0;
+	        do {
+	        	committees = parsers.get(k).getOrganisers(links, country);
+	        	k++;
+	        } while(committees.isEmpty() && k < parsers.size());
+	        
+	        j = 24;
+	        String allMembers = "";
+	        if(!committees.isEmpty()) {
+	        	for(String subteam: committees.keySet()) {
+	        		allMembers += subteam + ": ";
+					List<String> subteamMembers = committees.get(subteam);
+					for(String subteamMember: subteamMembers) {
+						allMembers += subteamMember + " //// ";
+					}
+					System.out.println("(wtf) " + allMembers);
+		        	row.createCell(j).setCellValue(createHelper.createRichTextString(allMembers));
+		        	j++;
+		        	allMembers = "";
+				}
+	        }	        
 			i++;
+			System.out.println("i: " + i);
 		}
         
         // Write the output to a file
