@@ -1,8 +1,10 @@
-package Crawler;
+package crawler;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -316,6 +318,10 @@ public class Parser {
 	 */
 	public String getConferenceDays(String title, String description, String homeLink) {		
 		return this.findConfDays(title);
+	}
+	
+	public LinkedHashMap<String, List<String>> getOrganisers() {
+		return null;
 	}
 	
 	// ------------- HELPER METHODS START HERE -------------

@@ -1,4 +1,4 @@
-package Main;
+package main;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -12,11 +12,11 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 
-import Crawler.Crawler;
-import Crawler.Parser;
-import Crawler.Parser2;
-import Crawler.Parser3;
-import Crawler.Parser4;
+import crawler.Crawler;
+import crawler.Parser;
+import crawler.Parser2;
+import crawler.Parser3;
+import crawler.Parser4;
 import venue.Country;
 
 public class Main {

@@ -1,11 +1,12 @@
 package venue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Locale;
 
 public class Country {
-	
-	private static final ArrayList<String> countries = new ArrayList<>();
+	// Add country exceptions at the start
+	private static final ArrayList<String> countries = new ArrayList<>(Arrays.asList("USA", "US", "UK", "Catalonia", "European Union"));
 
 	public Country() {
 		this.storeCountries();

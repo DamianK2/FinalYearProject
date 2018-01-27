@@ -1,4 +1,4 @@
-package Crawler;
+package crawler;
 
 import java.util.ArrayList;
 import java.util.regex.Matcher;
