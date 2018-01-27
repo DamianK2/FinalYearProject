@@ -1,14 +1,14 @@
 package crawler;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.regex.Pattern;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -30,7 +30,6 @@ class ParserTest {
 	private ArrayList<String> links3 = new ArrayList<>(Arrays.asList("https://unescoprivacychair.urv.cat/psd2018/index.php?m=organization",
 			"https://unescoprivacychair.urv.cat/psd2018/index.php?m=topics", "https://unescoprivacychair.urv.cat/psd2018/index.php?m=proceedings",
 			"https://unescoprivacychair.urv.cat/psd2018/index.php?m=venue"));
-	
 	
 	@Test
 	void testGetTitle() {
@@ -112,23 +111,50 @@ class ParserTest {
 		assertEquals("25-27 June 2018", parser.getConferenceDays(titles.get(1), descriptions.get(1), "https://unescoprivacychair.urv.cat/psd2018/index.php"));
 		assertEquals("", parser.getConferenceDays(titles.get(2), "", "http://lsds.hesge.ch/ISPDC2018/"));
 	}
+	
+	@Test
+	void testgetOrganisers() {
+		Country country = new Country();
+		
+		LinkedHashMap<String, List<String>> committees = parser.getOrganisers(links2, country);
+		assertTrue(committees.containsKey("General Chair"));
+		assertTrue(committees.containsKey("Local Chair"));
+		assertTrue(committees.containsKey("Steering Committee"));
+		assertTrue(committees.containsKey("Program Committee"));
+		
+		List<String> members = committees.get("General Chair");
+		assertEquals("Nabil Abdennadher, University of Applied Sciences and Arts, Western Switzerland", members.get(0));
+		members = committees.get("Steering Committee");
+		assertEquals("John Morrison, University College Cork, Ireland", members.get(5));
+		assertEquals("Dana Petcu, Western Univ. of Timisoara and e-Austria, Timisoara, Romania", members.get(7));
+		assertEquals("Marek Tudruj, Polish Acad. of Sciences and PJIIT, Warsaw, Poland", members.get(9));
+		members = committees.get("Program Committee");
+		assertEquals(" Aniello Castiglione, Department of Computer Science, University of Salerno, Italy", members.get(5));
+		assertEquals(" Valentin Cristea, University Politehnica of Bucharest, Romania", members.get(12));
+	}
 
 	@Disabled("This method is temporary only")
 	@Test
 	void testTempMethod() {
-		fail("Not yet implemented");
+
 	}
 
 	@Disabled("This method simply overwrites the array in the class")
 	@Test
 	void testAddSearchWords() {
-		fail("Not yet implemented");
+
 	}
 
 	@Disabled("This method simply overwrites the array in the class")
 	@Test
 	void testAddNewSearchWords() {
-		fail("Not yet implemented");
+
+	}
+	
+	@Disabled("This method simply overwrites the array in the class")
+	@Test
+	void testAddCommitteeSearchWords() {
+		
 	}
 
 	@Test
@@ -160,7 +186,7 @@ class ParserTest {
 	@Disabled("This method uses JSoup library functions only")
 	@Test
 	void testGetURLDoc() {
-		fail("Not yet implemented");
+
 	}
 
 	

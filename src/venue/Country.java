@@ -6,7 +6,7 @@ import java.util.Locale;
 
 public class Country {
 	// Add country exceptions at the start
-	private static final ArrayList<String> countries = new ArrayList<>(Arrays.asList("USA", "US", "UK", "Catalonia", "European Union"));
+	private static final ArrayList<String> countries = new ArrayList<>(Arrays.asList("USA", "US", "UK", "Catalonia", "European Union", "Goias"));
 
 	public Country() {
 		this.storeCountries();
