@@ -43,7 +43,7 @@ public class Main {
         Sheet sheet = wb.createSheet("new sheet");
         // Create a row and put some cells in it. Rows are 0 based.
         Row row = sheet.createRow(0);
-        row.createCell(0).setCellValue(createHelper.createRichTextString("Link"));
+        row.createCell(0).setCellValue(createHelper.createRichTextString("Acronym"));
         row.createCell(1).setCellValue(createHelper.createRichTextString("Title"));
         row.createCell(2).setCellValue(createHelper.createRichTextString("Sponsors"));
         row.createCell(3).setCellValue(createHelper.createRichTextString("Proceedings"));
@@ -83,9 +83,11 @@ public class Main {
 	        parsers.add(new Parser3());
 	        parsers.add(new Parser4());
 	        row = sheet.createRow(i+1);
-			row.createCell(0).setCellValue(createHelper.createRichTextString(url));
+	        
 			String title = parsers.get(0).getTitle(links.get(0));
 			row.createCell(1).setCellValue(createHelper.createRichTextString(title));
+			row.createCell(0).setCellValue(createHelper.createRichTextString(parsers.get(0).getAcronym(title)));
+			
 			String proceedings;
 			int k = 0;
 			do {
@@ -190,7 +192,6 @@ public class Main {
 				}
 	        }	        
 			i++;
-			System.out.println("i: " + i);
 		}
         
         // Write the output to a file

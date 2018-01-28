@@ -49,6 +49,25 @@ public class Parser {
 		return doc.title();
 	}
 	
+	public String getAcronym(String title) {
+		String acronymWithYear = "";
+		String acronym = "";
+		Pattern pattern = Pattern.compile("[A-Z]+.\\d{4}");
+		Matcher matcher;
+		// Match the pattern with the title
+		matcher = pattern.matcher(title);
+		if(matcher.find())
+			acronymWithYear = matcher.group(0);
+		
+		pattern = Pattern.compile("[A-Z]+");
+		// Match the pattern with the title
+		matcher = pattern.matcher(acronymWithYear);
+		if(matcher.find())
+			acronym = matcher.group(0);
+		
+		return acronym;
+	}
+	
 	/**
 	 * Extracts the sponsors from the title or the description.
 	 * @param title
