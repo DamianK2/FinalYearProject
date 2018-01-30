@@ -51,7 +51,7 @@ class Parser2Test {
 
 	@Test
 	void testGetDeadlines() {
-		ArrayList<String> deadlines = new ArrayList<>(Arrays.asList("January 29, 2018", "April 10, 2018", "April 30, 2018"));
+		ArrayList<String> deadlines = new ArrayList<>(Arrays.asList("February 12, 2018", "April 10, 2018", "April 30, 2018"));
 		ArrayList<String> empty = new ArrayList<>();
 		assertEquals(empty, parser.getDeadlines(links1));
 		assertEquals(deadlines, parser.getDeadlines(links2));
