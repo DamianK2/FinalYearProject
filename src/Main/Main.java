@@ -121,6 +121,7 @@ public class Main {
 	        	k++;
 	        } while(venue == "" && k < parsers.size());	
 
+			System.out.println("VENUE: " + venue);
 	        row.createCell(5).setCellValue(createHelper.createRichTextString(venue));
 	        
 	        k = 0;

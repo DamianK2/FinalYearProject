@@ -65,7 +65,9 @@ public class Parser2 extends Parser {
 		Element el = doc.select("div:contains(Important Dates)").last();
 		
 		// Extract the paragraph
-		String elementString = el.select("p").toString();
+		String elementString = el.select("p").toString().replaceAll("\r|\n", "");
+		elementString = elementString.replaceAll("<strike>(.*?|.*\\n.*\\n)<\\/strike>|<del>(.*?|.*\\n.*\\n)<\\/del>", "");
+		
 		if(!elementString.isEmpty()) {
 			// Split into multiple lines on seeing the <br> tag
 			separated = elementString.split("<br> ");
