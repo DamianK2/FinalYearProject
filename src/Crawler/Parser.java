@@ -152,10 +152,17 @@ public class Parser {
 		if(!link.equals("")) {
 			// Connect to the target link
 			doc = this.getURLDoc(link);
-			// Select the paragraphs from the website
-			temp = doc.select("*p").text();
-			if(!temp.equals(""))
-				venue = this.searchCountries(temp, country);
+			
+			for(Element e: doc.getAllElements()) {
+				for(TextNode textNode: e.textNodes()) {
+//					searchCountries(textNode.text(), country);
+					if(!textNode.text().matches("^\\s+$")) {
+						venue = searchCountries(textNode.text(), country);
+						if(!venue.equals(""))
+							return venue;
+					}
+				}
+			}
 		}
 		
 		return venue;
