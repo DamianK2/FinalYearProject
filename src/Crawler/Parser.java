@@ -537,7 +537,6 @@ public class Parser {
 		
 		// Find the link in the list of links that contains the keyword if possible
 		for(String link: linkList) {
-			System.out.println("LINK: " + link + "     keyword: " + keyword);
 			if(link.matches(keyword))
 				return link;
 		}

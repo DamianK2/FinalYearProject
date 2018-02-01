@@ -26,7 +26,8 @@ public class Main {
 	public static final ArrayList<String> URLS = new ArrayList<>(
 							Arrays.asList("https://icpe2018.spec.org/home.html", 
 										"http://lsds.hesge.ch/ISPDC2018/", 
-										"https://unescoprivacychair.urv.cat/psd2018/index.php"));
+										"https://unescoprivacychair.urv.cat/psd2018/index.php",
+										"https://2018.splashcon.org/home"));
 			
 	public static void main(String[] args) {
 		//long tStart = System.currentTimeMillis();

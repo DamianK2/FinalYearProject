@@ -36,18 +36,20 @@ public class Worker implements Runnable {
 		Elements sublinks = null;
 			try {
 				doc = Jsoup.connect(link.attr("abs:href")).ignoreContentType(true).get();
+				sublinks = doc.select("ul li ul a[href]");
 				
+				if(!(sublinks == null) && !sublinks.isEmpty())
+					this.addToLinkList(sublinks);
 			} catch (IOException e) {
-				System.out.println("Something went wrong while fetching the sublinks.");
-				e.printStackTrace();
+				System.err.println(e.getMessage() + "\nError on: " + link.attr("abs:href"));
+//				e.printStackTrace();
+				
 			}	
-			sublinks = doc.select("ul li ul a[href]");
-			if(!sublinks.isEmpty())
-				this.addToLinkList(sublinks);
+			
 	}
 	
 	// Adds the newly fetched links into an ArrayList
-	private void addToLinkList(Elements links) {
+	private synchronized void addToLinkList(Elements links) {
 		for(Element link: links) {
 			// Change element to string
 			String sublink = link.attr("abs:href");
@@ -57,9 +59,10 @@ public class Worker implements Runnable {
 		}
 	}
 	
-	private boolean checkDuplicates(String sublink) {
+	private synchronized boolean checkDuplicates(String sublink) {
 		boolean check = false;
-		for(String link: linkList) {
+		ArrayList<String> copyOfLinkList = new ArrayList<>(linkList);
+		for(String link: copyOfLinkList) {
 			if(sublink.equals(link))
 				check = true;
 		}
