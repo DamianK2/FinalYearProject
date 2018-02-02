@@ -41,9 +41,12 @@ public class Crawler {
         // Create threads for each link just fetched to decrease crawling time
         Thread thread;
         for(Element link: links) {
-        	thread = new Thread(new Worker(link, linkList));
-        	threads.add(thread);
-        	thread.start();
+        	if(!link.text().matches(".*[oO]ther [eE]dition.*")) {
+	        	thread = new Thread(new Worker(link, linkList));
+	        	threads.add(thread);
+	        	thread.start();
+        	} else
+        		break;
         }
         
         // Join the threads to prevent the program from finishing before the threads do

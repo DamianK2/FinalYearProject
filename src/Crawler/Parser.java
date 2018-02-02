@@ -323,7 +323,11 @@ public class Parser {
 	 */
 	public String getAntiquity(String description, String homeLink) {
 		String antiquity = "";
-		Pattern pattern = Pattern.compile("\\d{1,2}(?:st|nd|rd|th)|\\w+(?:st|nd|rd|th)|\\w+-\\w+(?:st|nd|rd|th)");
+		Pattern pattern = Pattern.compile("\\d{1,2}(?:st|nd|rd|th)|([tT]wenty-?|[tT]hirty-?|[fF]orty-?|"
+				+ "[fF]ifty-?|[sS]ixty-?|[sS]eventy-?|[eE]ighty-?|[nN]inety-?)*([fF]ir?|[sS]eco|[tT]hi?|"
+				+ "[fF]our?|[fF]if?|[sS]ix?|[sS]even?|[eE]igh?|[nN]in?|[tT]en?|[eE]leven?|[tT]welf?|"
+				+ "[tT]hirteen?|[fF]ourteen?|[fF]ifteen?|[sS]ixteen?|[sS]eventeen?|[eE]ighteen?|[nN]ineteen?)"
+				+ "(?:st|nd|rd|th)|(twentieth?|thirtieth?|fourtieth?|fiftieth?|sixtieth?|seventieth?|eightieth?|ninetieth)");
 		Matcher matcher;
 		// Match the pattern with the description
 		matcher = pattern.matcher(description);
@@ -428,6 +432,7 @@ public class Parser {
 		searchKeywords.add("[sS]ubmissions");
 		searchKeywords.add("[pP]roceedings");
 		searchKeywords.add("[pP]aper");
+		searchKeywords.add("[iI]nstructions");
 	}
 	
 	/**
@@ -627,7 +632,7 @@ public class Parser {
 	 * @return date or empty string
 	 */
 	protected String findConfDays(String toCheck) {		
-		Pattern pattern = Pattern.compile("\\d+-\\d+.+\\w+.+\\d{4}|(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?).+\\d+-\\d+.+\\d{4}");
+		Pattern pattern = Pattern.compile("\\d+-\\d+.+\\w+.+\\d{4}|(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)).+\\d{1,2}-\\d{1,2}.+?\\d{4}");
 		Matcher matcher;
 		// Match the pattern with the description
 		matcher = pattern.matcher(toCheck);

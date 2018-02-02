@@ -15,16 +15,13 @@ public class Parser3 extends Parser {
 	public String getDescription(String homeLink) {
 		Document doc = null;
         doc = this.getURLDoc(homeLink);
-		String meta = "", parsedMeta = "";
+		String meta = "";
 		try {
-			parsedMeta = doc.select(".site-description").text();
-			// Limit the string to 100 characters
-			//parsedMeta = meta.replaceAll("(.{100})", "$1\n");
-			System.out.println("Description: " + parsedMeta);
+			meta = doc.select(".site-description").text();
 		} catch(NullPointerException e) {
 			System.out.println("No class with name \"site-description\"");
 		}
-		return parsedMeta;
+		return meta;
 	}
 
 	@Override

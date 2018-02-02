@@ -27,7 +27,8 @@ public class Main {
 							Arrays.asList("https://icpe2018.spec.org/home.html", 
 										"http://lsds.hesge.ch/ISPDC2018/", 
 										"https://unescoprivacychair.urv.cat/psd2018/index.php",
-										"https://2018.splashcon.org/home"));
+										"https://2018.splashcon.org/home",
+										"https://pldi18.sigplan.org/home"));
 			
 	public static void main(String[] args) {
 		//long tStart = System.currentTimeMillis();
@@ -102,7 +103,7 @@ public class Main {
 			do {
 	        	description = parsers.get(k).getDescription(links.get(0));
 	        	k++;
-	        } while(description == "" && k < parsers.size());   
+	        } while(description.equals("") && k < parsers.size());   
 	        
 	        row.createCell(4).setCellValue(createHelper.createRichTextString(description));
 	        
