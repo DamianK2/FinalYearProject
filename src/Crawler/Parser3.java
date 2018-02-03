@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import venue.Country;
 
@@ -84,6 +85,21 @@ public class Parser3 extends Parser {
 //		}
 		
 		return allDeadlines;
+	}
+	
+	public String getAntiquity(String description, String homeLink) {
+		String antiquity = "";
+		Document doc = this.getURLDoc(homeLink);
+		Elements el = doc.select(":contains(Other Editions)").next();
+		
+		for(Element e: el) {
+			if(e.text().matches(".*\\d{4}.*")) {
+				String[] split = e.text().split("\\d{4}");
+				return this.toOrdinal(split.length);
+			}
+		}
+		
+		return antiquity;
 	}
 	
 	public String getConferenceDays(String title, String description, String homeLink) {		

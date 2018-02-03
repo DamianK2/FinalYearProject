@@ -51,12 +51,17 @@ class Parser3Test {
 //		assertEquals(empty, parser.getDeadlines(links2));
 //		assertEquals(deadlines, parser.getDeadlines(links3));
 //	}
+	
+	@Test
+	void testGetAntiquity() {
+		
+		assertEquals("Nineteenth", parser.getAntiquity("SPLASH 2018", "https://2018.splashcon.org/home"));
+	}
 
 	@Test
 	void testGetConferenceDays() {
 		assertEquals("", parser.getConferenceDays(titles.get(0), descriptions.get(0), "https://icpe2018.spec.org/home.html"));
 		assertEquals("", parser.getConferenceDays(titles.get(2), "", "http://lsds.hesge.ch/ISPDC2018/"));
 		assertEquals("September 26-28, 2018", parser.getConferenceDays(titles.get(1), descriptions.get(1), "https://unescoprivacychair.urv.cat/psd2018/index.php"));
-	}
-
+	}	
 }

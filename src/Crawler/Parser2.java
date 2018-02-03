@@ -103,36 +103,6 @@ public class Parser2 extends Parser {
 		return allDeadlines;
 	}
 	
-//	@Override
-//	public ArrayList<String> getAdditionalDeadlineInfo(ArrayList<String> linkList) {
-//		ArrayList<String> additionalInfo = new ArrayList<>();
-//		Document doc = null;
-//		this.addNewSearchWords();
-//		
-//		// Connect to the home page
-//		doc = this.getURLDoc(linkList.get(0));
-//		Element el = doc.select("div:contains(Important Dates)").last();
-//		
-//		// Get the content of the paragraph (if available)
-//		String elementString = el.select("p").toString();
-//		if(elementString.isEmpty()) {
-//			return additionalInfo;
-//		} else {
-//			elementString = elementString.replaceAll("\n", "");
-//			// Find matching information in the string by searching the keywords
-//			for(String keyword: searchKeywords) {
-//				if(elementString.matches(keyword)) {
-//					additionalInfo.add("Yes");
-//					this.tempMethod(additionalInfo);
-//				} else {
-//					additionalInfo.add("No");
-//					this.tempMethod(additionalInfo);
-//				}
-//			}
-//			return additionalInfo;
-//		}	
-//	}
-	
 	@Override
 	public String getAntiquity(String description, String homeLink) {
 		String antiquity = "";
