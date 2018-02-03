@@ -19,6 +19,7 @@ import crawler.Parser;
 import crawler.Parser2;
 import crawler.Parser3;
 import crawler.Parser4;
+import crawler.Parser5;
 import venue.Country;
 
 public class Main {
@@ -84,6 +85,7 @@ public class Main {
 	        parsers.add(new Parser2());
 	        parsers.add(new Parser3());
 	        parsers.add(new Parser4());
+	        parsers.add(new Parser5());
 	        row = sheet.createRow(i+1);
 	        
 			String title = parsers.get(0).getTitle(links.get(0));

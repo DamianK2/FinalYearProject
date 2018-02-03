@@ -267,11 +267,11 @@ public class Parser {
 	 */
 	public String getAntiquity(String description, String homeLink) {
 		String antiquity = "";
-		Pattern pattern = Pattern.compile("\\d{1,2}(?:st|nd|rd|th)|([tT]wenty-?|[tT]hirty-?|[fF]orty-?|"
-				+ "[fF]ifty-?|[sS]ixty-?|[sS]eventy-?|[eE]ighty-?|[nN]inety-?)*([fF]ir?|[sS]eco|[tT]hi?|"
-				+ "[fF]our?|[fF]if?|[sS]ix?|[sS]even?|[eE]igh?|[nN]in?|[tT]en?|[eE]leven?|[tT]welf?|"
-				+ "[tT]hirteen?|[fF]ourteen?|[fF]ifteen?|[sS]ixteen?|[sS]eventeen?|[eE]ighteen?|[nN]ineteen?)"
-				+ "(?:st|nd|rd|th)|(twentieth?|thirtieth?|fourtieth?|fiftieth?|sixtieth?|seventieth?|eightieth?|ninetieth)");
+		Pattern pattern = Pattern.compile("\\d{1,2}(st|nd|rd|th)|([tT]wenty-|[tT]hirty-|[fF]orty-"
+				+ "|[fF]ifty-|[sS]ixty-|[sS]eventy-|[eE]ighty-|[nN]inety-)*([fF]ir|[sS]eco|[tT]hi|"
+				+ "[fF]our|[fF]if|[sS]ix|[sS]even|[eE]igh|[nN]in|[tT]en|[eE]leven|[tT]welf|[tT]hirteen|"
+				+ "[fF]ourteen|[fF]ifteen|[sS]ixteen|[sS]eventeen|[eE]ighteen|[nN]ineteen)(st|nd|rd|th)|"
+				+ "(twentieth|thirtieth|fourtieth|fiftieth|sixtieth|seventieth|eightieth|ninetieth)", Pattern.CASE_INSENSITIVE);
 		Matcher matcher;
 		// Match the pattern with the description
 		matcher = pattern.matcher(description);
@@ -537,33 +537,6 @@ public class Parser {
 		return found;
 	}
 	
-	/**
-	 * Finds the deadline from the received parameters.
-	 * Returns "N/A" if no match is found.
-	 * @param separated
-	 * @param toFind
-	 * @param pattern
-	 * @return deadline
-	 */
-	private String findDeadline(ArrayList<String> separated, String toFind, Pattern pattern) {
-		String found = "";
-		Matcher matcher;
-		for(String string: separated) {
-			if(string.matches(toFind)) {
-//				System.out.println("Found: " + string);
-				matcher = pattern.matcher(string);
-				
-				if(matcher.find())
-					found = matcher.group(0);
-				if(matcher.find())
-					found = matcher.group(0);		
-	
-				break;
-			}
-		}
-		return found;
-	}
-	
 	
 	/**
 	 * Looks through the string to find a date.
@@ -571,7 +544,11 @@ public class Parser {
 	 * @return date or empty string
 	 */
 	protected String findConfDays(String toCheck) {		
-		Pattern pattern = Pattern.compile("\\d+-\\d+.+\\w+.+\\d{4}|(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?).+\\d{1,2}-\\d{1,2}.+?\\d{4}");
+		Pattern pattern = Pattern.compile("\\d+-\\d+.+\\w+.+\\d{4}|(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?"
+				+ "|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?).+\\d{1,2}-"
+				+ "\\d{1,2}.+?\\d{4}|(Mon(day)?|Tue(sday)?|Wed(nesday)?|Thu(rsday)?|Fri(day)?|Sat(urday)?|Sun(day)?)"
+				+ "(\\s+?|,\\s+?).+?\\d{1,2}\\s+?(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?"
+				+ "|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\\s+?\\d{4}");
 		Matcher matcher;
 		// Match the pattern with the description
 		matcher = pattern.matcher(toCheck);

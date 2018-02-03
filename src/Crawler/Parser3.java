@@ -95,7 +95,9 @@ public class Parser3 extends Parser {
 		for(Element e: el) {
 			if(e.text().matches(".*\\d{4}.*")) {
 				String[] split = e.text().split("\\d{4}");
-				return this.toOrdinal(split.length);
+				
+				// Add all the found editions and the current one to find the conference antiquity
+				return this.toOrdinal(split.length + 1);
 			}
 		}
 		
