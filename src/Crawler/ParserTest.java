@@ -68,28 +68,18 @@ class ParserTest {
 		Country country = new Country();
 		assertEquals("Germany", parser.getVenue(titles.get(0), descriptions.get(0), country, links1));
 		assertEquals("Switzerland", parser.getVenue(titles.get(1), descriptions.get(1), country, links2));
-		assertEquals("", parser.getVenue(titles.get(2), "", country, links3));
+		assertEquals("Spain", parser.getVenue(titles.get(2), "", country, links3));
 	}
 
-	@Test
-	void testGetDeadlines() {
-		ArrayList<String> deadlines = new ArrayList<>(Arrays.asList("Oct 25, 2017", "Dec 08, 2017", "Feb 14, 2018"));
-		ArrayList<String> empty = new ArrayList<>();
-		assertEquals(deadlines, parser.getDeadlines(links1));
-		assertEquals(empty, parser.getDeadlines(links2));
-		assertEquals(empty, parser.getDeadlines(links3));
-	}
-
-	@Test
-	void testGetAdditionalDeadlineInfo() {
-		ArrayList<String> deadlines = new ArrayList<>(Arrays.asList("Yes", "Jan 10, 2018", "Feb 08, 2018", "Feb 19, 2018", "No", "", "", "",
-				"Yes", "Oct 13, 2017", "Oct 31, 2017", ""));
-		ArrayList<String> empty = new ArrayList<>();
-
-		assertEquals(deadlines, parser.getAdditionalDeadlineInfo(links1));
-		assertEquals(empty, parser.getAdditionalDeadlineInfo(links2));
-		assertEquals(empty, parser.getAdditionalDeadlineInfo(links3));
-	}
+	//TODO test the map
+//	@Test
+//	void testGetDeadlines() {
+//		LinkedHashMap<String, LinkedHashMap<String, String>> deadlines = new LinkedHashMap<>();
+//		LinkedHashMap<String, LinkedHashMap<String, String>> empty = new LinkedHashMap<>();
+//		assertEquals(deadlines, parser.getDeadlines(links1));
+//		assertEquals(empty, parser.getDeadlines(links2));
+//		assertEquals(empty, parser.getDeadlines(links3));
+//	}
 
 	@Test
 	void testGetConferenceYear() {
@@ -186,17 +176,16 @@ class ParserTest {
 	@Disabled("This method uses JSoup library functions only")
 	@Test
 	void testGetURLDoc() {
-
+		
 	}
 
 	
 	@Test
 	void testFindDeadline() {
-		String[] test = {"submission deadline: 2019", "camera ready papers: 2018", "notification deadline: 2020"};
 		Pattern pattern = Pattern.compile("\\d{4}");
-		assertEquals("2018", parser.findDeadline(test, ".*camera.*", pattern));
-		assertEquals("2020", parser.findDeadline(test, ".*notification.*", pattern));
-		assertEquals("2019", parser.findDeadline(test, ".*submission.*", pattern));
+		assertEquals("2018", parser.findDeadline("submission deadline: 2018", pattern));
+		assertEquals("2020", parser.findDeadline("camera ready papers: 2020", pattern));
+		assertEquals("2019", parser.findDeadline("notification deadline: 2019", pattern));
 	}
 
 	@Test

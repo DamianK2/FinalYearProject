@@ -41,24 +41,16 @@ class Parser3Test {
 		assertEquals("", parser.getVenue(titles.get(2), "", country, links3));
 	}
 
-	@Test
-	void testGetDeadlines() {
-		ArrayList<String> deadlines = new ArrayList<>(Arrays.asList("MAY 27, 2018", "June 29, 2018", ""));
-		ArrayList<String> empty = new ArrayList<>();
-		
-		assertEquals(empty, parser.getDeadlines(links1));
-		assertEquals(empty, parser.getDeadlines(links2));
-		assertEquals(deadlines, parser.getDeadlines(links3));
-	}
-
-	@Test
-	void testGetAdditionalDeadlineInfo() {
-		ArrayList<String> empty = new ArrayList<>();
-		ArrayList<String> deadlines2 = new ArrayList<>(Arrays.asList("No", "", "", "", "No", "", "", "", "No", "", "", ""));
-		assertEquals(empty, parser.getAdditionalDeadlineInfo(links1));
-		assertEquals(empty, parser.getAdditionalDeadlineInfo(links2));
-		assertEquals(deadlines2, parser.getAdditionalDeadlineInfo(links3));
-	}
+	//TODO test the map
+//	@Test
+//	void testGetDeadlines() {
+//		ArrayList<String> deadlines = new ArrayList<>(Arrays.asList("MAY 27, 2018", "June 29, 2018", ""));
+//		ArrayList<String> empty = new ArrayList<>();
+//		
+//		assertEquals(empty, parser.getDeadlines(links1));
+//		assertEquals(empty, parser.getDeadlines(links2));
+//		assertEquals(deadlines, parser.getDeadlines(links3));
+//	}
 
 	@Test
 	void testGetConferenceDays() {

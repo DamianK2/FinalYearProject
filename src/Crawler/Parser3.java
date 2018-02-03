@@ -1,9 +1,11 @@
 package crawler;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -36,74 +38,52 @@ public class Parser3 extends Parser {
 	}
 	
 	@Override
-	public ArrayList<String> getDeadlines(ArrayList<String> linkList) {
+	public LinkedHashMap<String, LinkedHashMap<String, String>> getDeadlines(ArrayList<String> linkList) {
 		Document doc = null;
-		ArrayList<String> deadlines = new ArrayList<>();
-		ArrayList<String> deadlinesEmpty = new ArrayList<>();
-		Pattern pattern = Pattern.compile("\\w+.\\s\\d{1,2},\\s\\d{4}");
+		LinkedHashMap<String, String> deadlines = new LinkedHashMap<>();
+		LinkedHashMap<String, LinkedHashMap<String, String>> allDeadlines = new LinkedHashMap<>();
+		Pattern pattern = Pattern.compile("(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\\s+\\d{1,2}(\\s+|,)\\s+\\d{4}", Pattern.CASE_INSENSITIVE);
 		String[] separated;
 		this.addSearchWords();
 		
 		// Connect to the home page
 		doc = this.getURLDoc(linkList.get(0));
-		// Select the div with "Important Dates"
-		Element el = doc.select("div:contains(Important Dates)").last();
 		
-		// Counter to see how many empty spaces are returned
-		int count = 1;
-		// Extract the list
-		String elementString = el.select("ul li").toString();
-		if(!elementString.isEmpty()) {
-			// Split into multiple lines on seeing the new line
-			separated = elementString.split("\n");
-			// Search for the deadlines
-			for(String toFind: searchKeywords) {
-				String found = this.findDeadline(separated, toFind, pattern);
-				deadlines.add(found);
-				if(found.equals(""))
-					count++;
-			}
-		}
-		
-		return count < 3 ? deadlines : deadlinesEmpty;
-	}
-	
-	@Override
-	public ArrayList<String> getAdditionalDeadlineInfo(ArrayList<String> linkList) {
-		ArrayList<String> additionalInfo = new ArrayList<>();
-		Document doc = null;
-		this.addNewSearchWords();
-		
-		// Connect to the home page
-		doc = this.getURLDoc(linkList.get(0));
-		Element el = doc.select("div:contains(Important Dates)").last();
-
-		
-		// Get the content of the list (if available)
-		String elementString = el.select("ul li").toString();
-		elementString = elementString.replaceAll("\n|\r", "");
-		
-		if(elementString.isEmpty()) {
-			return additionalInfo;
-		} else if(!elementString.matches(".*\\d+.+(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|[mM][aA][yY]"
-				+ "|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?).+\\d{4}.*"
-				+ "|.*(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|[mM][aA][yY]|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?"
-				+ "|Oct(ober)?|Nov(ember)?|Dec(ember)?)(.+\\d+\\d{4}|.+\\d+,.+\\d{4}).*")) {
-			System.out.println("here!!!");
-			return additionalInfo;
-		} else {
-			// Find matching information in the string by searching the keywords
-			for(String keyword: searchKeywords) {
-				if(elementString.matches(keyword)) {
-					additionalInfo.add("Yes");
-					this.tempMethod(additionalInfo);
-				} else {
-					additionalInfo.add("No");
-					this.tempMethod(additionalInfo);
+		try {
+			// Select the div with "Important Dates"
+			Element el = doc.select("div:contains(Important Dates)").last();
+			
+			String elementString = el.select("ul li").toString().replaceAll("\r|\n", "");
+			
+			if(!elementString.isEmpty()) {
+				elementString = elementString.replaceAll("<strike>(.*?|.*\\n.*\\n)<\\/strike>|<del>(.*?|.*\\n.*\\\\n)<\\/del>|line-through.+?>.+?<\\/.+?>", "");
+				
+				separated = elementString.split("</li>");
+				
+				int i = 0;
+				for(String string: separated) {
+					String found = this.findDeadline(Jsoup.parse(string).text(), pattern);
+					if(!found.equals("")) {
+						deadlines.put(Jsoup.parse(string.replaceAll(found, "")).text(), found);
+						allDeadlines.put(Integer.toString(i), new LinkedHashMap<String, String>(deadlines));
+						deadlines.clear();
+						i++;
+					}
 				}
 			}
-			return additionalInfo;
+		} catch(NullPointerException e) {
+			return allDeadlines;
 		}
+			
+//		for(String key: allDeadlines.keySet()) {
+//			System.out.println("Heading: " + key);
+//			LinkedHashMap<String, String> deadlines1 = allDeadlines.get(key);
+//			for(String d: deadlines1.keySet()) {
+//				System.out.println(d + ": " + deadlines1.get(d));
+//			}
+//		}
+		
+		return allDeadlines;
 	}
 	
 	public String getConferenceDays(String title, String description, String homeLink) {		

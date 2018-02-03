@@ -33,6 +33,17 @@ class Parser4Test {
 		assertEquals("", parser.getVenue(titles.get(1), descriptions.get(1), country, links2));
 		assertEquals("Spain", parser.getVenue(titles.get(2), "", country, links3));
 	}
+	
+	//TODO test the map
+//	@Test
+//	void testGetDeadlines() {
+//		ArrayList<String> deadlines = new ArrayList<>(Arrays.asList("MAY 27, 2018", "June 29, 2018", ""));
+//		ArrayList<String> empty = new ArrayList<>();
+//		
+//		assertEquals(empty, parser.getDeadlines(links1));
+//		assertEquals(empty, parser.getDeadlines(links2));
+//		assertEquals(deadlines, parser.getDeadlines(links3));
+//	}
 
 	@Test
 	void testGetConferenceDays() {

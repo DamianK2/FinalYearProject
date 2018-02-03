@@ -1,6 +1,7 @@
 package crawler;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,21 +45,22 @@ public class Parser4 extends Parser {
 	}
 	
 	@Override
-	public ArrayList<String> getDeadlines(ArrayList<String> linkList) {
+	public LinkedHashMap<String, LinkedHashMap<String, String>> getDeadlines(ArrayList<String> linkList) {
 		Document doc = null;
 		Elements el;
+		LinkedHashMap<String, String> deadlines = new LinkedHashMap<>();
+		LinkedHashMap<String, LinkedHashMap<String, String>> allDeadlines = new LinkedHashMap<>();
 		
 		try {
 			doc = getURLDoc(linkList.get(0));
 			el = doc.select("div:contains(Upcoming Important Dates)").next();
 		} catch(NullPointerException e) {
 			System.err.println("Couldn't find \"Upcoming Important Dates\"");
-			return new ArrayList<String>();
+			return new LinkedHashMap<String, LinkedHashMap<String, String>>();
 		}
 		
 		if(el != null) {
 			boolean finished = false;
-			ArrayList<String> deadlines = new ArrayList<>();
 			String regex = "(Mon(day)?|Tue(sday)?|Wed(nesday)?|Thu(rsday)?|Fri(day)?|"
 					+ "Sat(urday)?|Sun(day)?)\\s\\d{1,2}.(Jan(uary)?|Feb(ruary)?|Mar(ch)?|"
 					+ "Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|"
@@ -69,22 +71,28 @@ public class Parser4 extends Parser {
 			// Split the string removing the regex
 			String[] split = el.text().split(regex);
 			int i = 1;
+			int position = 0;
 			while(!finished) {
 				if(matcher.find()) {
-					deadlines.add(split[i] + ": " + matcher.group());
+					deadlines.put(split[i], matcher.group());
+					allDeadlines.put(Integer.toString(position), new LinkedHashMap<String, String>(deadlines));
+					deadlines.clear();
 					i++;
+					position++;
 				} else
 					finished = true;
 			}
-			
-			//TODO delete this and add actual code for retrieving deadlines
-			for(String s: deadlines) {
-				System.out.println(s);
-			}
 		}
 		
-		//TODO change the return
-		return new ArrayList<String>();
+//		for(String key: allDeadlines.keySet()) {
+//			System.out.println("Heading: " + key);
+//			LinkedHashMap<String, String> deadlines1 = allDeadlines.get(key);
+//			for(String d: deadlines1.keySet()) {
+//				System.out.println(d + ": " + deadlines1.get(d));
+//			}
+//		}
+		
+		return allDeadlines;
 	}
 	
 	public String getConferenceDays(String title, String description, String homeLink) {		

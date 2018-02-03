@@ -1,9 +1,12 @@
 package crawler;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -52,64 +55,83 @@ public class Parser2 extends Parser {
 	}
 	
 	@Override
-	public ArrayList<String> getDeadlines(ArrayList<String> linkList) {
+	public LinkedHashMap<String, LinkedHashMap<String, String>> getDeadlines(ArrayList<String> linkList) {
 		Document doc = null;
-		ArrayList<String> deadlines = new ArrayList<>();
-		Pattern pattern = Pattern.compile("\\w+.\\s\\d{1,2},\\s\\d{4}");
-		String[] separated;
-		this.addSearchWords();
+		LinkedHashMap<String, String> deadlines = new LinkedHashMap<>();
+		LinkedHashMap<String, LinkedHashMap<String, String>> allDeadlines = new LinkedHashMap<>();
+		Pattern pattern = Pattern.compile("(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\\s+\\d{1,2}(\\s+|,)\\s+\\d{4}", Pattern.CASE_INSENSITIVE);
+		String[] separated, split;
 		
 		// Connect to the home page
 		doc = this.getURLDoc(linkList.get(0));
 		// Select the div with "Important Dates"
 		Element el = doc.select("div:contains(Important Dates)").last();
 		
-		// Extract the paragraph
-		String elementString = el.select("p").toString().replaceAll("\r|\n", "");
-		elementString = elementString.replaceAll("<strike>(.*?|.*\\n.*\\n)<\\/strike>|<del>(.*?|.*\\n.*\\n)<\\/del>", "");
-		
-		if(!elementString.isEmpty()) {
-			// Split into multiple lines on seeing the <br> tag
-			separated = elementString.split("<br> ");
-			// Search for the deadlines
-			for(String toFind: searchKeywords) {
-				String found = this.findDeadline(separated, toFind, pattern);
-				deadlines.add(found);
-			}
-		}
-		
-		return deadlines;
-	}
-	
-	@Override
-	public ArrayList<String> getAdditionalDeadlineInfo(ArrayList<String> linkList) {
-		ArrayList<String> additionalInfo = new ArrayList<>();
-		Document doc = null;
-		this.addNewSearchWords();
-		
-		// Connect to the home page
-		doc = this.getURLDoc(linkList.get(0));
-		Element el = doc.select("div:contains(Important Dates)").last();
-		
-		// Get the content of the paragraph (if available)
-		String elementString = el.select("p").toString();
-		if(elementString.isEmpty()) {
-			return additionalInfo;
-		} else {
-			elementString = elementString.replaceAll("\n", "");
-			// Find matching information in the string by searching the keywords
-			for(String keyword: searchKeywords) {
-				if(elementString.matches(keyword)) {
-					additionalInfo.add("Yes");
-					this.tempMethod(additionalInfo);
-				} else {
-					additionalInfo.add("No");
-					this.tempMethod(additionalInfo);
+		try {
+			// Extract the paragraph
+			String elementString = el.select("p").toString().replaceAll("\r|\n", "");
+			elementString = elementString.replaceAll("<strike>(.*?|.*\\n.*\\n)<\\/strike>|<del>(.*?|.*\\n.*\\\\n)<\\/del>|line-through.+?>.+?<\\/.+?>", "");
+			
+			if(!elementString.isEmpty()) {
+				// Split into multiple lines on seeing the <br> tag
+				separated = elementString.split("<br> ");
+				int i = 0;
+				for(String string: separated) {
+					String found = this.findDeadline(Jsoup.parse(string).text(), pattern);
+					if(!found.equals("")) {
+						split = Jsoup.parse(string).text().split(":");
+						deadlines.put(split[0], found);
+						allDeadlines.put(Integer.toString(i), new LinkedHashMap<String, String>(deadlines));
+						deadlines.clear();
+						i++;
+					}
 				}
 			}
-			return additionalInfo;
-		}	
+		} catch(NullPointerException e) {
+			return allDeadlines;
+		}
+		
+		
+//		for(String key: allDeadlines.keySet()) {
+//			System.out.println("Heading: " + key);
+//			LinkedHashMap<String, String> deadlines1 = allDeadlines.get(key);
+//			for(String d: deadlines1.keySet()) {
+//				System.out.println(d + ": " + deadlines1.get(d));
+//			}
+//		}
+		
+		return allDeadlines;
 	}
+	
+//	@Override
+//	public ArrayList<String> getAdditionalDeadlineInfo(ArrayList<String> linkList) {
+//		ArrayList<String> additionalInfo = new ArrayList<>();
+//		Document doc = null;
+//		this.addNewSearchWords();
+//		
+//		// Connect to the home page
+//		doc = this.getURLDoc(linkList.get(0));
+//		Element el = doc.select("div:contains(Important Dates)").last();
+//		
+//		// Get the content of the paragraph (if available)
+//		String elementString = el.select("p").toString();
+//		if(elementString.isEmpty()) {
+//			return additionalInfo;
+//		} else {
+//			elementString = elementString.replaceAll("\n", "");
+//			// Find matching information in the string by searching the keywords
+//			for(String keyword: searchKeywords) {
+//				if(elementString.matches(keyword)) {
+//					additionalInfo.add("Yes");
+//					this.tempMethod(additionalInfo);
+//				} else {
+//					additionalInfo.add("No");
+//					this.tempMethod(additionalInfo);
+//				}
+//			}
+//			return additionalInfo;
+//		}	
+//	}
 	
 	@Override
 	public String getAntiquity(String description, String homeLink) {

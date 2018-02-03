@@ -174,130 +174,74 @@ public class Parser {
 	 * returns a list in the format (month dd, yyyy).
 	 * @return list of deadlines
 	 */
-	public ArrayList<String> getDeadlines(ArrayList<String> linkList) {
+	public LinkedHashMap<String, LinkedHashMap<String, String>> getDeadlines(ArrayList<String> linkList) {
 		Document doc = null;
-		ArrayList<String> deadlines = new ArrayList<>();
-		ArrayList<String> otherSeparated = new ArrayList<>();
-		Pattern pattern = Pattern.compile("\\w+.\\s\\d{1,2},\\s\\d{4}");
-		String[] separated;
-		this.addSearchWords();
+		LinkedHashMap<String, String> deadlines = new LinkedHashMap<>();
+		LinkedHashMap<String, LinkedHashMap<String, String>> allDeadlines = new LinkedHashMap<>();
 		
 		String link = this.searchLinks("[iI]mportant", linkList);
 		if(link.isEmpty())
-			return deadlines;
+			return allDeadlines;
 		else {
 			doc = this.getURLDoc(link);
 			
 			// Selects the last table on the website
 			Element el = doc.select("table").last();
-			// Gets the first row from the table
-			Element row = el.select("tr").get(1);
-			// Gets the <td> elements from the row
-			Elements tds = row.select("td");
+			// Gets the rows from the table
+			Elements rows = el.select("tr");
+			// Gets the <td> elements from the rows
+			Elements tds = rows.select("td");
 			
+			boolean wasSplit = false;
+			String[] split = null;
+			String keyHeading = "";
 			for(Element td: tds) {
-				// Extract the paragraph from the <td> element
-				String selectedHtml = td.select("p").html();
-				// Split and add the first paragraph to the ArrayList
-				if(!selectedHtml.isEmpty() && otherSeparated.isEmpty()) {
-					separated = selectedHtml.split("<br>");
-					for(String s: separated) {
-						otherSeparated.add(s);
-					}	
-				} else if(!selectedHtml.isEmpty()) {
-					// Split and add the second paragraph to the ArrayList
-					separated = selectedHtml.split("<br>");
-					for(int i = 0; i < separated.length; i++) {
-						String newString = otherSeparated.get(i) + separated[i];
-						otherSeparated.remove(i);
-						otherSeparated.add(i, newString);
+				// Replace all uneeded tags with empty strings
+				String filteredTd = td.toString().replaceAll("\r|\n", "");
+				filteredTd = filteredTd.replaceAll("<strike>(.*?|.*\\n.*\\n)<\\/strike>|<del>(.*?|.*\\n.*\\n)<\\/del>|line-through.+?>.+?<\\/.+?>", "");
+				// Use Jsoup to remove the rest of the tags
+				filteredTd = Jsoup.parse(filteredTd).text();
+//				System.out.println(filteredTd);
+				
+				String dateRegex = "(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\\s+\\d{1,2}(\\s+|,)\\s+\\d{4}";
+				
+				boolean finished = false;
+				if(filteredTd.matches(".+?:")) {
+					split = filteredTd.split(":");
+					wasSplit = true;
+				} else if(wasSplit == true) {
+					Pattern pattern = Pattern.compile(dateRegex);
+					Matcher matcher = pattern.matcher(filteredTd);
+					int i = 0;
+					while(!finished) {
+						if(matcher.find()) {
+							deadlines.put(split[i], matcher.group());
+							i++;
+						} else
+							finished = true;
 					}
-				}
-				
-			}
-
-			// Search for the deadlines in the above extracted information
-			for(String toFind: searchKeywords) {
-				String found = this.findDeadline(otherSeparated, toFind, pattern);
-				deadlines.add(found);
-			}
-			return deadlines;
-		}
-	}
-	
-	/**
-	 * Parses information about additional papers, from the /Important_Dates
-	 * link (if available) or the home page to see if they can be submitted or not.
-	 * @return list containing "Yes/No" + deadlines strings
-	 */
-	public ArrayList<String> getAdditionalDeadlineInfo(ArrayList<String> linkList) {
-		ArrayList<String> additionalInfo = new ArrayList<>();
-		ArrayList<String> otherSeparated = new ArrayList<>();
-		String[] separated;
-		Pattern pattern = Pattern.compile("\\w+.\\s\\d{1,2},\\s\\d{4}");
-		Document doc = null;
-		// State the keywords you want to search for
-		this.addNewSearchWords();
-		
-		String link = this.searchLinks("[iI]mportant", linkList);
-		if(link.isEmpty()) {
-			return additionalInfo;
-		} else {
-			// Connect to the target link
-			doc = this.getURLDoc(link);
-			// Parse the element to receive a string
-			Element el = doc.select("div:contains(Important Dates)").last();
-			String html = el.html().replaceAll("\n", "");
-			// Search for the keywords in the string
-			for(int i = 0; i < searchKeywords.size(); i++) {
-				// Overwrite the ArrayList with the submission keywords
-				this.addNewSearchWords();
-				otherSeparated.clear();
-				// Add the appropriate strings based on the evaluation
-				if(html.matches(searchKeywords.get(i)))
-					additionalInfo.add("Yes");
-				else
-					additionalInfo.add("No");
-				
-				// Get the row that contains the search word
-				Element row = el.select("tr:contains(" + searchWords.get(i) + ")").first();
-				Elements tds = null;
-				try {
-					// Gets the <td> elements for the next row
-					tds = row.nextElementSibling().select("td");
+					allDeadlines.put(new String(keyHeading), new LinkedHashMap<String, String>(deadlines));
 					
-					for(Element td: tds) {
-						// Split and add the first paragraph to the ArrayList
-						if(otherSeparated.isEmpty()) {
-							separated = td.toString().split("<br>");
-							for(String s: separated) {
-								otherSeparated.add(s);
-							}	
-						} else {
-							// Split and add the second paragraph to the ArrayList
-							separated = td.toString().split("<br>");
-							for(int j = 0; j < separated.length; j++) {
-								String newString = otherSeparated.get(j) + separated[j];
-								otherSeparated.remove(j);
-								otherSeparated.add(j, newString);
-							}
-						}
-					}
-				} catch(NullPointerException e) {
-					   System.out.println("No <td> for" + searchWords.get(i));
-				}
-
-				// Overwrite the ArrayList with the deadline keywords that we are looking for
-				this.addSearchWords();
-				// Add the appropriate information
-				for(String toFind: searchKeywords) {
-					String found = findDeadline(otherSeparated, toFind, pattern);
-					additionalInfo.add(found);
+					// Reset the values for the next iteration of deadlines
+					deadlines.clear();
+					wasSplit = false;
+					keyHeading = "";
+				} else if(filteredTd.matches("^\\s+$") || filteredTd.matches(""));
+				else {
+					keyHeading = filteredTd;
 				}
 			}
-			return additionalInfo;
+			
+//			for(String key: allDeadlines.keySet()) {
+//				System.out.println("Heading: " + key);
+//				LinkedHashMap<String, String> deadlines1 = allDeadlines.get(key);
+//				for(String d: deadlines1.keySet()) {
+//					System.out.println(d + ": " + deadlines1.get(d));
+//				}
+//			}
+				
+			return allDeadlines;
 		}
-		
 	}
 	
 	/**
@@ -582,19 +526,14 @@ public class Parser {
 	 * @param pattern
 	 * @return deadline
 	 */
-	protected String findDeadline(String[] separated, String toFind, Pattern pattern) {
+	protected String findDeadline(String string, Pattern pattern) {
 		String found = "";
 		Matcher matcher;
-		for(String string: separated) {
-			if(string.matches(toFind)) {
-				//System.out.println("Found: " + string);
-				matcher = pattern.matcher(string);
-				
-				if(matcher.find())
-					found = matcher.group(0);
-				break;
-			}
-		}
+		matcher = pattern.matcher(string);
+		
+		if(matcher.find())
+			found = matcher.group(0);
+
 		return found;
 	}
 	
@@ -632,7 +571,7 @@ public class Parser {
 	 * @return date or empty string
 	 */
 	protected String findConfDays(String toCheck) {		
-		Pattern pattern = Pattern.compile("\\d+-\\d+.+\\w+.+\\d{4}|(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)).+\\d{1,2}-\\d{1,2}.+?\\d{4}");
+		Pattern pattern = Pattern.compile("\\d+-\\d+.+\\w+.+\\d{4}|(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?).+\\d{1,2}-\\d{1,2}.+?\\d{4}");
 		Matcher matcher;
 		// Match the pattern with the description
 		matcher = pattern.matcher(toCheck);
