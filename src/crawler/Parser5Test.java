@@ -24,6 +24,12 @@ class Parser5Test {
 			"https://unescoprivacychair.urv.cat/psd2018/index.php?m=topics", "https://unescoprivacychair.urv.cat/psd2018/index.php?m=proceedings",
 			"https://unescoprivacychair.urv.cat/psd2018/index.php?m=venue", "https://unescoprivacychair.urv.cat/psd2018/index.php"));
 
+//	@Test
+//	void testGetDeadlines() {
+//		
+//		parser.getDeadlines(new ArrayList<String>(Arrays.asList("https://itrust.sutd.edu.sg/hase2017/important-dates/")));
+//	}
+	
 	@Test
 	void testGetConferenceDays() {
 		assertEquals("Mon 18 - Fri 22 June 2018", parser.getConferenceDays("", "", "https://pldi18.sigplan.org/home"));	
