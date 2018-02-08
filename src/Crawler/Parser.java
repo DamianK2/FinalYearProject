@@ -297,7 +297,7 @@ public class Parser {
 	 * @param title, description
 	 * @return date
 	 */
-	public String getConferenceDays(String title, String description, String homeLink) {		
+	public String getConferenceDays(String title, String description, ArrayList<String> linkList) {		
 		return this.findConfDays(title);
 	}
 	
@@ -329,6 +329,7 @@ public class Parser {
 			// Find all elements and text nodes
 			for(Element node: doc.getAllElements()) {
 				for(TextNode textNode: node.textNodes()) {
+					System.out.println(textNode.text());
 					// Search for committee names in the text node
 					if(this.searchForCommittees(textNode.text())) {
 						// If the subteam isn't empty and there are members in the list add them to the map to be returned later
@@ -364,7 +365,9 @@ public class Parser {
 				}
 			}
 		}
-		return committees;
+		
+		// If only 2 committees are returned then it must be an error
+		return committees.size() < 3 ? new LinkedHashMap<String, List<String>>() : committees;
 	}
 	
 	// ------------- HELPER METHODS START HERE -------------
@@ -540,11 +543,11 @@ public class Parser {
 	 * @return date or empty string
 	 */
 	protected String findConfDays(String toCheck) {		
-		Pattern pattern = Pattern.compile("\\d+-\\d+.+\\w+.+\\d{4}|(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?"
-				+ "|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?).+\\d{1,2}-"
-				+ "\\d{1,2}.+?\\d{4}|(Mon(day)?|Tue(sday)?|Wed(nesday)?|Thu(rsday)?|Fri(day)?|Sat(urday)?|Sun(day)?)"
-				+ "(\\s+?|,\\s+?).+?\\d{1,2}\\s+?(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?"
-				+ "|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\\s+?\\d{4}");
+		Pattern pattern = Pattern.compile("\\d+\\s*?(-|–)\\s*?\\d+.+\\w+.\\d{4}|(Jan(uary)?|Feb(ruary)?|Mar(ch)?|"
+				+ "Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?).+\\d{1,2}"
+				+ "-\\d{1,2}.+?\\d{4}|(Mon(day)?|Tue(sday)?|Wed(nesday)?|Thu(rsday)?|Fri(day)?|Sat(urday)?|Sun(day)?)"
+				+ "(\\s+?|,\\s+?).+?\\d{1,2}\\s+?(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|"
+				+ "Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\\s+?\\d{4}");
 		Matcher matcher;
 		// Match the pattern with the description
 		matcher = pattern.matcher(toCheck);

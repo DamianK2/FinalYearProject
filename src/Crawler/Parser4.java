@@ -119,8 +119,8 @@ public class Parser4 extends Parser {
 		
 	}
 	
-	public String getConferenceDays(String title, String description, String homeLink) {		
-		Document doc = this.getURLDoc(homeLink);
+	public String getConferenceDays(String title, String description, ArrayList<String> linkList) {		
+		Document doc = this.getURLDoc(linkList.get(0));
 		return this.findConfDays(doc.select("p").text());
 	}
 

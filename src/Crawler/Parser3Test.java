@@ -60,8 +60,8 @@ class Parser3Test {
 
 	@Test
 	void testGetConferenceDays() {
-		assertEquals("", parser.getConferenceDays(titles.get(0), descriptions.get(0), "https://icpe2018.spec.org/home.html"));
-		assertEquals("", parser.getConferenceDays(titles.get(2), "", "http://lsds.hesge.ch/ISPDC2018/"));
-		assertEquals("September 26-28, 2018", parser.getConferenceDays(titles.get(1), descriptions.get(1), "https://unescoprivacychair.urv.cat/psd2018/index.php"));
+		assertEquals("", parser.getConferenceDays(titles.get(0), descriptions.get(0), new ArrayList<String>(Arrays.asList("https://icpe2018.spec.org/home.html"))));
+		assertEquals("", parser.getConferenceDays(titles.get(2), "", new ArrayList<String>(Arrays.asList("http://lsds.hesge.ch/ISPDC2018/"))));
+		assertEquals("September 26-28, 2018", parser.getConferenceDays(titles.get(1), descriptions.get(1), new ArrayList<String>(Arrays.asList("https://unescoprivacychair.urv.cat/psd2018/index.php"))));
 	}	
 }

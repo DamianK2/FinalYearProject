@@ -69,9 +69,9 @@ public class Parser5 extends Parser {
 	}
 
 	@Override
-	public String getConferenceDays(String title, String description, String homeLink) {
+	public String getConferenceDays(String title, String description, ArrayList<String> linkList) {
 		
-		Document doc = this.getURLDoc(homeLink);
+		Document doc = this.getURLDoc(linkList.get(0));
 		
 		for(Element el: doc.getAllElements()) {
 			for(TextNode textNode: el.textNodes()) {

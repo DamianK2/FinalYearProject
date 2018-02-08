@@ -20,6 +20,7 @@ import crawler.Parser2;
 import crawler.Parser3;
 import crawler.Parser4;
 import crawler.Parser5;
+import crawler.Parser6;
 import venue.Country;
 
 public class Main {
@@ -86,6 +87,7 @@ public class Main {
 	        parsers.add(new Parser3());
 	        parsers.add(new Parser4());
 	        parsers.add(new Parser5());
+	        parsers.add(new Parser6());
 	        row = sheet.createRow(i+1);
 	        
 			String title = parsers.get(0).getTitle(links.get(0));
@@ -161,7 +163,7 @@ public class Main {
 			String date;
 			k = 0;
 	        do {
-	        	date = parsers.get(k).getConferenceDays(title, description, links.get(0));
+	        	date = parsers.get(k).getConferenceDays(title, description, links);
 	        	k++;
 	        } while(date == "" && k < parsers.size());
 	        row.createCell(++j).setCellValue(createHelper.createRichTextString(date));

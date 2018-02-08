@@ -131,7 +131,7 @@ public class Parser2 extends Parser {
 		}
 	}
 	
-	public String getConferenceDays(String title, String description, String homeLink) {		
+	public String getConferenceDays(String title, String description, ArrayList<String> linkList) {		
 		return this.findConfDays(description);
 	}
 	
@@ -225,17 +225,17 @@ public class Parser2 extends Parser {
 			}
 		}
 		
-		// Test print
-		String allMembers = "";
-		for(String subteam: committees.keySet()) {
-    		allMembers += subteam + ": ";
-			List<String> subteamMembers = committees.get(subteam);
-			for(String subteamMember: subteamMembers) {
-				allMembers += subteamMember + " //// ";
-			}
-			System.out.println(allMembers);
-        	allMembers = "";
-		}
+//		// Test print
+//		String allMembers = "";
+//		for(String subteam: committees.keySet()) {
+//    		allMembers += subteam + ": ";
+//			List<String> subteamMembers = committees.get(subteam);
+//			for(String subteamMember: subteamMembers) {
+//				allMembers += subteamMember + " //// ";
+//			}
+//			System.out.println(allMembers);
+//        	allMembers = "";
+//		}
 		
 		return committees;
 	}

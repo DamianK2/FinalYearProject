@@ -7,9 +7,8 @@ import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
 
-class Parser5Test {
-	
-	private Parser parser = new Parser5();
+class Parser6Test {
+	private Parser parser = new Parser6();
 	private ArrayList<String> titles = new ArrayList<>(Arrays.asList("International Conference on Performance Engineering (ICPE) 2018: ICPE 2018", 
 			"ISPDC 2018 – The 17th IEEE International Symposium on Parallel and Distributed Computing, 25-27 June 2018, Geneva, Switzerland", 
 			"PSD2018 - Privacy in Statistical Databases - UNESCO Privacy Chair"));
@@ -23,16 +22,10 @@ class Parser5Test {
 	private ArrayList<String> links3 = new ArrayList<>(Arrays.asList("https://unescoprivacychair.urv.cat/psd2018/index.php?m=organization",
 			"https://unescoprivacychair.urv.cat/psd2018/index.php?m=topics", "https://unescoprivacychair.urv.cat/psd2018/index.php?m=proceedings",
 			"https://unescoprivacychair.urv.cat/psd2018/index.php?m=venue", "https://unescoprivacychair.urv.cat/psd2018/index.php"));
-
-//	@Test
-//	void testGetDeadlines() {
-//		
-//		parser.getDeadlines(new ArrayList<String>(Arrays.asList("https://itrust.sutd.edu.sg/hase2017/important-dates/")));
-//	}
 	
 	@Test
 	void testGetConferenceDays() {
-		assertEquals("Mon 18 - Fri 22 June 2018", parser.getConferenceDays("", "", new ArrayList<String>(Arrays.asList("https://pldi18.sigplan.org/home"))));	
+		parser.getConferenceDays("", "", new ArrayList<String>(Arrays.asList("https://itrust.sutd.edu.sg/hase2017/important-dates/")));
 	}
 
 }
