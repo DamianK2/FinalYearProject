@@ -329,7 +329,6 @@ public class Parser {
 			// Find all elements and text nodes
 			for(Element node: doc.getAllElements()) {
 				for(TextNode textNode: node.textNodes()) {
-					System.out.println(textNode.text());
 					// Search for committee names in the text node
 					if(this.searchForCommittees(textNode.text())) {
 						// If the subteam isn't empty and there are members in the list add them to the map to be returned later

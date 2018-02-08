@@ -89,8 +89,10 @@ public class Main {
 	        parsers.add(new Parser5());
 	        parsers.add(new Parser6());
 	        row = sheet.createRow(i+1);
-	        
-			String title = parsers.get(0).getTitle(links.get(0));
+	        // Use this in the database to store the link to be used with the acronym as a[href] on the webpage
+	        String mainLink = links.get(0);
+	       
+			String title = parsers.get(0).getTitle(mainLink);
 			row.createCell(1).setCellValue(createHelper.createRichTextString(title));
 			row.createCell(0).setCellValue(createHelper.createRichTextString(parsers.get(0).getAcronym(title)));
 			
@@ -105,7 +107,7 @@ public class Main {
 			String description;
 			k = 0;
 			do {
-	        	description = parsers.get(k).getDescription(links.get(0));
+	        	description = parsers.get(k).getDescription(mainLink);
 	        	k++;
 	        } while(description.equals("") && k < parsers.size());   
 	        
@@ -188,7 +190,7 @@ public class Main {
 		        	j++;
 		        	allMembers = "";
 				}
-	        }	        
+	        }	
 			i++;
 		}
         
