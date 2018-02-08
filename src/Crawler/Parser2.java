@@ -3,12 +3,14 @@ package crawler;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
 import venue.Country;
@@ -131,5 +133,126 @@ public class Parser2 extends Parser {
 	
 	public String getConferenceDays(String title, String description, String homeLink) {		
 		return this.findConfDays(description);
+	}
+	
+	/**
+	 * Finds the organizers on the websites.
+	 * @param linkList
+	 * @param country
+	 * @return a map with organizer teams as key and members as value
+	 */
+	public LinkedHashMap<String, List<String>> getOrganisers(ArrayList<String> linkList, Country country) {
+		List<String> potentialLinks = new ArrayList<>();
+		this.addCommitteeSearchWords();
+		
+		// Find the links containing the search keywords (i.e. committee, chair etc.)
+		for(String keyword: searchKeywords) {
+			ArrayList<String> links = this.findAllLinks(keyword, linkList);
+			if(!links.isEmpty())
+				// Iterate through the links to make sure no duplicates are added
+				for(String link: links)
+					if(!potentialLinks.contains(link))
+						potentialLinks.add(link);
+		}
+		
+		// Initialize variables
+		String tempSubteam = "";
+		LinkedHashMap<String, List<String>> committees = new LinkedHashMap<>();
+		List<String> members = new ArrayList<>();
+		StringBuilder sb = new StringBuilder();
+		int memberCounter = 0;
+		
+		for(String link: potentialLinks) {
+			// Get the document
+			Document doc = this.getURLDoc(link);
+			
+			// Find all elements and text nodes
+			for(Element node: doc.getAllElements()) {
+				for(TextNode textNode: node.textNodes()) {
+//					System.out.println(textNode.text());
+					// Search for committee names in the text node
+					if(this.searchForCommittees(textNode.text())) {
+						// If the subteam isn't empty and there are members in the list add them to the map to be returned later
+						if(!tempSubteam.equals("") && !members.isEmpty()) {
+							// Avoid overwriting the same key in the map, and add members to the existing list instead
+							this.addToCommittees(committees, tempSubteam, members);
+							members.clear();
+						}
+						// Add the subteam found for later use as a key
+						tempSubteam = textNode.text();
+					}
+					// Do nothing with empty text nodes
+					else if(textNode.text().matches("^\\s+$"));
+					else if(!tempSubteam.equals("") && memberCounter < 4) {
+						// Check if this text node is a country
+						boolean isCountry = this.checkStringForCountry(textNode.text(), country);
+						// If it is not the first text node to be appended (counter > 0), then add a comma and increase the counter
+						if(memberCounter > 0 && !isCountry) {
+							sb.append(", " + textNode.text());
+							memberCounter++;
+						}
+						// If the text node contains a country then we concatenated a full string and we can add it to the list of members
+						else if(memberCounter > 0 && isCountry) {
+							// Add the member to the list
+							sb.append(", " + textNode.text());
+							members.add(new String(sb.toString()));
+							// Reset the string builder and counter
+							sb.setLength(0);
+							memberCounter = 0;
+						}
+						// The counter is 0, add the raw string
+						else {
+							sb.append(textNode.text());
+							memberCounter++;
+						}
+					}
+					else {
+						// If it's neither a member or a subteam then add everything gathered so far to the map and clear the variables
+						if(!tempSubteam.equals("") && !members.isEmpty()) {
+							// Avoid overwriting the same key in the map, and add members to the existing list instead
+							this.addToCommittees(committees, tempSubteam, members);
+						}
+						
+						// Reset the variables
+						members.clear();
+						tempSubteam = "";
+						memberCounter = 0;
+						sb.setLength(0);
+					}
+				}
+			}
+		}
+		
+		// Test print
+//		String allMembers = "";
+//		for(String subteam: committees.keySet()) {
+//    		allMembers += subteam + ": ";
+//			List<String> subteamMembers = committees.get(subteam);
+//			for(String subteamMember: subteamMembers) {
+//				allMembers += subteamMember + " //// ";
+//			}
+//			System.out.println(allMembers);
+//        	allMembers = "";
+//		}
+		
+		return committees;
+	}
+	
+	/**
+	 * Add the given parameters to the map
+	 * @param committees
+	 * @param tempSubteam
+	 * @param members
+	 */
+	private void addToCommittees(LinkedHashMap<String, List<String>> committees, String tempSubteam, List<String> members) {
+		List<String> membs = null;
+		if(committees.containsKey(tempSubteam)) {
+			membs = committees.get(tempSubteam);
+			membs.addAll(members);
+			if(membs != null)
+				committees.put(tempSubteam, new ArrayList<String>(membs));
+		} else {
+			committees.put(tempSubteam, new ArrayList<String>(members));
+		}
 	}
 }

@@ -72,5 +72,13 @@ class Parser2Test {
 		assertEquals("25-27 June 2018", parser.getConferenceDays(titles.get(1), descriptions.get(1), "http://lsds.hesge.ch/ISPDC2018/"));
 		assertEquals("", parser.getConferenceDays(titles.get(2), "", "https://unescoprivacychair.urv.cat/psd2018/index.php"));
 	}
+	
+	@Test
+	void testGetOrganisers() {
+		Country country = new Country();
+		ArrayList<String> linkList = new ArrayList<>(Arrays.asList("https://2018.splashcon.org/committee/splash-2018-organizing-committee", "https://2018.splashcon.org/committee/splash-2018-steering-committee",
+				"https://2018.splashcon.org/committee/splash-2018-oopsla-committee", "https://2018.splashcon.org/committee/splash-2018-oopsla-external-program-committee"));
+		parser.getOrganisers(linkList, country);
+	}
 
 }

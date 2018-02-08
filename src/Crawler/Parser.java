@@ -308,9 +308,11 @@ public class Parser {
 		// Find the links on the websites that contain the organizers
 		this.addCommitteeSearchWords();
 		for(String keyword: searchKeywords) {
-			String link = this.searchLinks(keyword, linkList);
-			if(!link.isEmpty())
-				potentialLinks.add(link);
+			ArrayList<String> links = this.findAllLinks(keyword, linkList);
+			if(!links.isEmpty())
+				for(String link: links)
+					if(!potentialLinks.contains(link))
+						potentialLinks.add(link);
 		}
 		
 		String tempSubteam = "";
@@ -338,8 +340,9 @@ public class Parser {
 					// Check the string for a country to find if it is a member or not
 					else if(this.checkStringForCountry(textNode.text(), country)) {
 						// Add the member to the list if a valid subteam is present
-						if(!tempSubteam.equals("")) {
-							members.add(textNode.text());
+						if(textNode.text().matches(".*?(,|\\().*?,.*$")) {
+							if(!tempSubteam.equals(""))
+								members.add(textNode.text());
 						}
 //						System.out.println(textNode.text());
 //						System.out.println(members);
@@ -363,44 +366,12 @@ public class Parser {
 	
 	// ------------- HELPER METHODS START HERE -------------
 	
-	// No workshops, tools or work in progress available on several sites.
-	// Therefore, I need to store an empty string 3 times for the
-	// output to look nice in excel
-	protected void tempMethod(ArrayList<String> additionalInfo) {
-		for(int i = 0; i < 3; i++)
-			additionalInfo.add("");
-	}
-	
 	private void addLinkKeywords() {
 		searchKeywords.clear();
 		searchKeywords.add("[sS]ubmissions");
 		searchKeywords.add("[pP]roceedings");
 		searchKeywords.add("[pP]aper");
 		searchKeywords.add("[iI]nstructions");
-	}
-	
-	/**
-	 * Adds search keywords to the ArrayList that will be
-	 * used for searching the important dates
-	 * i.e. submission, notification, camera
-	 */
-	protected void addSearchWords() {
-		searchKeywords.clear();
-		searchKeywords.add(this.changeToRegex("[sS]ubmission"));
-		searchKeywords.add(this.changeToRegex("[nN]otification"));
-		searchKeywords.add(this.changeToRegex("[cC]amera"));
-	}
-	
-	/**
-	 * Overwrites the ArrayList with the "submission, notification and
-	 * camera" keywords with new keywords. Used for searching the
-	 * website for papers like "Work in progress", "Tools", "Workshops".
-	 */
-	protected void addNewSearchWords() {
-		searchKeywords.clear();
-		searchKeywords.add(this.changeToRegex("[wW]ork-[iI]n-[pP]rogress"));
-		searchKeywords.add(this.changeToRegex("[tT]ools"));
-		searchKeywords.add(this.changeToRegex("[wW]orkshop"));
 	}
 	
 	/**
@@ -454,7 +425,7 @@ public class Parser {
 	 * @param country
 	 * @return true/false
 	 */
-	private boolean checkStringForCountry(String string, Country country) {
+	protected boolean checkStringForCountry(String string, Country country) {
 		String countryRegex;
 		// Go through the list of countries
 		for(String countryName: country.getCountries()) {
@@ -495,6 +466,28 @@ public class Parser {
 		for(String link: linkList) {
 			if(link.matches(keyword))
 				return link;
+		}
+		
+		return answer;
+	}
+	
+	/**
+	 * Receives a keyword that we want to find in the link
+	 * and returns the list of links if it has been found.
+	 * e.g. passing in "venue" can return a link like
+	 * www.example.com/venue/
+	 * @param keyword
+	 * @param linkList
+	 * @return list of links
+	 */
+	protected ArrayList<String> findAllLinks(String keyword, ArrayList<String> linkList) {
+		ArrayList<String> answer = new ArrayList<>();
+		keyword = this.changeToRegex(keyword);
+		
+		// Find the link in the list of links that contains the keyword if possible
+		for(String link: linkList) {
+			if(link.matches(keyword) && !answer.contains(link))
+				answer.add(link);
 		}
 		
 		return answer;
@@ -567,7 +560,7 @@ public class Parser {
 	 * @param string
 	 * @return true/false
 	 */
-	private boolean searchForCommittees(String string) {
+	protected boolean searchForCommittees(String string) {
 		String subteamRegex;
 		for(String subteam: COMMITTEES) {
 			subteamRegex = this.changeToRegex(subteam);

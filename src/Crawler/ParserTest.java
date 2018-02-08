@@ -194,5 +194,4 @@ class ParserTest {
 		assertEquals("February, 12-14, 2018", parser.findConfDays("The conference will take place between February, 12-14, 2018."));
 		assertEquals("February 12-14, 2018", parser.findConfDays("The conference will take place between February 12-14, 2018."));
 	}
-
 }
