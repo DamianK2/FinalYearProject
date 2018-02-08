@@ -86,9 +86,10 @@ public class Parser3 extends Parser {
 		return allDeadlines;
 	}
 	
-	public String getAntiquity(String description, String homeLink) {
+	@Override
+	public String getAntiquity(String description, ArrayList<String> linkList) {
 		String antiquity = "";
-		Document doc = this.getURLDoc(homeLink);
+		Document doc = this.getURLDoc(linkList.get(0));
 		Elements el = doc.select(":contains(Other Editions)").next();
 		
 		for(Element e: el) {

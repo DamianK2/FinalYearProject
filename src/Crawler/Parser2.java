@@ -106,11 +106,11 @@ public class Parser2 extends Parser {
 	}
 	
 	@Override
-	public String getAntiquity(String description, String homeLink) {
+	public String getAntiquity(String description, ArrayList<String> linkList) {
 		String antiquity = "";
 	
 		// Connect to the home page
-		Document doc = this.getURLDoc(homeLink);
+		Document doc = this.getURLDoc(linkList.get(0));
 		Elements ele = null;
 		try {
 			Element el = doc.select("div:contains(Previous)").last();
@@ -151,8 +151,10 @@ public class Parser2 extends Parser {
 			if(!links.isEmpty())
 				// Iterate through the links to make sure no duplicates are added
 				for(String link: links)
-					if(!potentialLinks.contains(link))
+					if(!potentialLinks.contains(link)) {
+//						System.out.println(link);
 						potentialLinks.add(link);
+					}	
 		}
 		
 		// Initialize variables
@@ -224,16 +226,16 @@ public class Parser2 extends Parser {
 		}
 		
 		// Test print
-//		String allMembers = "";
-//		for(String subteam: committees.keySet()) {
-//    		allMembers += subteam + ": ";
-//			List<String> subteamMembers = committees.get(subteam);
-//			for(String subteamMember: subteamMembers) {
-//				allMembers += subteamMember + " //// ";
-//			}
-//			System.out.println(allMembers);
-//        	allMembers = "";
-//		}
+		String allMembers = "";
+		for(String subteam: committees.keySet()) {
+    		allMembers += subteam + ": ";
+			List<String> subteamMembers = committees.get(subteam);
+			for(String subteamMember: subteamMembers) {
+				allMembers += subteamMember + " //// ";
+			}
+			System.out.println(allMembers);
+        	allMembers = "";
+		}
 		
 		return committees;
 	}
@@ -248,7 +250,10 @@ public class Parser2 extends Parser {
 		List<String> membs = null;
 		if(committees.containsKey(tempSubteam)) {
 			membs = committees.get(tempSubteam);
-			membs.addAll(members);
+			for(String member: members) {
+				if(!membs.contains(member))
+					membs.add(member);
+			}
 			if(membs != null)
 				committees.put(tempSubteam, new ArrayList<String>(membs));
 		} else {

@@ -52,14 +52,14 @@ public class Parser {
 	public String getAcronym(String title) {
 		String acronymWithYear = "";
 		String acronym = "";
-		Pattern pattern = Pattern.compile("[A-Z]+.\\d{4}");
+		Pattern pattern = Pattern.compile("[A-Za-z]+.\\d{4}");
 		Matcher matcher;
 		// Match the pattern with the title
 		matcher = pattern.matcher(title);
 		if(matcher.find())
 			acronymWithYear = matcher.group(0);
 		
-		pattern = Pattern.compile("[A-Z]+");
+		pattern = Pattern.compile("[A-Za-z]+");
 		// Match the pattern with the title
 		matcher = pattern.matcher(acronymWithYear);
 		if(matcher.find())
@@ -170,8 +170,7 @@ public class Parser {
 	
 	/**
 	 * Parses the important deadlines from the /Important_Dates
-	 * link (if available) or the home page and 
-	 * returns a list in the format (month dd, yyyy).
+	 * link (if available) or the home page
 	 * @return list of deadlines
 	 */
 	public LinkedHashMap<String, LinkedHashMap<String, String>> getDeadlines(ArrayList<String> linkList) {
@@ -185,12 +184,17 @@ public class Parser {
 		else {
 			doc = this.getURLDoc(link);
 			
-			// Selects the last table on the website
-			Element el = doc.select("table").last();
-			// Gets the rows from the table
-			Elements rows = el.select("tr");
-			// Gets the <td> elements from the rows
-			Elements tds = rows.select("td");
+			Elements tds;
+			try {
+				// Selects the last table on the website
+				Element el = doc.select("table").last();
+				// Gets the rows from the table
+				Elements rows = el.select("tr");
+				// Gets the <td> elements from the rows
+				tds = rows.select("td");
+			} catch(NullPointerException e) {
+				return allDeadlines;
+			}
 			
 			boolean wasSplit = false;
 			String[] split = null;
@@ -201,7 +205,6 @@ public class Parser {
 				filteredTd = filteredTd.replaceAll("<strike>(.*?|.*\\n.*\\n)<\\/strike>|<del>(.*?|.*\\n.*\\n)<\\/del>|line-through.+?>.+?<\\/.+?>", "");
 				// Use Jsoup to remove the rest of the tags
 				filteredTd = Jsoup.parse(filteredTd).text();
-//				System.out.println(filteredTd);
 				
 				String dateRegex = "(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\\s+\\d{1,2}(\\s+|,)\\s+\\d{4}";
 				
@@ -220,6 +223,7 @@ public class Parser {
 						} else
 							finished = true;
 					}
+					System.out.println();
 					allDeadlines.put(new String(keyHeading), new LinkedHashMap<String, String>(deadlines));
 					
 					// Reset the values for the next iteration of deadlines
@@ -232,13 +236,13 @@ public class Parser {
 				}
 			}
 			
-//			for(String key: allDeadlines.keySet()) {
-//				System.out.println("Heading: " + key);
-//				LinkedHashMap<String, String> deadlines1 = allDeadlines.get(key);
-//				for(String d: deadlines1.keySet()) {
-//					System.out.println(d + ": " + deadlines1.get(d));
-//				}
-//			}
+			for(String key: allDeadlines.keySet()) {
+				System.out.println("Heading: " + key);
+				LinkedHashMap<String, String> deadlines1 = allDeadlines.get(key);
+				for(String d: deadlines1.keySet()) {
+					System.out.println(d + ": " + deadlines1.get(d));
+				}
+			}
 				
 			return allDeadlines;
 		}
@@ -265,7 +269,7 @@ public class Parser {
 	 * @param description
 	 * @return antiquity
 	 */
-	public String getAntiquity(String description, String homeLink) {
+	public String getAntiquity(String description, ArrayList<String> linkList) {
 		String antiquity = "";
 		Pattern pattern = Pattern.compile("\\d{1,2}(st|nd|rd|th)|([tT]wenty-|[tT]hirty-|[fF]orty-"
 				+ "|[fF]ifty-|[sS]ixty-|[sS]eventy-|[eE]ighty-|[nN]inety-)*([fF]ir|[sS]eco|[tT]hi|"
@@ -360,7 +364,6 @@ public class Parser {
 				}
 			}
 		}
-		
 		return committees;
 	}
 	
@@ -368,7 +371,7 @@ public class Parser {
 	
 	private void addLinkKeywords() {
 		searchKeywords.clear();
-		searchKeywords.add("[sS]ubmissions");
+		searchKeywords.add("[sS]ubmission");
 		searchKeywords.add("[pP]roceedings");
 		searchKeywords.add("[pP]aper");
 		searchKeywords.add("[iI]nstructions");
@@ -458,7 +461,7 @@ public class Parser {
 	 * @param keyword
 	 * @return link
 	 */
-	private String searchLinks(String keyword, ArrayList<String> linkList) {
+	protected String searchLinks(String keyword, ArrayList<String> linkList) {
 		String answer = "";
 		keyword = this.changeToRegex(keyword);
 		

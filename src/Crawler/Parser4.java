@@ -5,8 +5,10 @@ import java.util.LinkedHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
 import venue.Country;
@@ -93,6 +95,28 @@ public class Parser4 extends Parser {
 //		}
 		
 		return allDeadlines;
+	}
+	
+	@Override
+	public String getAntiquity(String description, ArrayList<String> linkList) {
+		String link = this.searchLinks("[hH]istory", linkList);
+		System.out.println(link);
+		Document doc;
+		if(!link.equals(""))
+			doc = this.getURLDoc(link);
+		else
+			return "";
+	
+		int antiquity = 1;
+		for(Element el: doc.getAllElements()) {
+			for(TextNode textNode: el.textNodes()) {
+				if(textNode.text().matches(this.changeToRegex("\\d{1,2}(?:st|nd|rd|th)")))
+					antiquity++;
+			}
+		}
+		
+		return this.toOrdinal(antiquity);
+		
 	}
 	
 	public String getConferenceDays(String title, String description, String homeLink) {		

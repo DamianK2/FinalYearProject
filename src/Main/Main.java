@@ -29,7 +29,7 @@ public class Main {
 										"http://lsds.hesge.ch/ISPDC2018/", 
 										"https://unescoprivacychair.urv.cat/psd2018/index.php",
 										"https://2018.splashcon.org/home",
-										"https://pldi18.sigplan.org/home"));
+										"https://itrust.sutd.edu.sg/hase2017/"));
 			
 	public static void main(String[] args) {
 		//long tStart = System.currentTimeMillis();
@@ -152,7 +152,7 @@ public class Main {
 	        String antiquity; 
 	        k = 0;
 	        do {
-	        	antiquity = parsers.get(k).getAntiquity(description, links.get(0));
+	        	antiquity = parsers.get(k).getAntiquity(description, links);
 	        	k++;
 	        } while(antiquity == "" && k < parsers.size());
 	        

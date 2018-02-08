@@ -44,6 +44,11 @@ class Parser4Test {
 //		assertEquals(empty, parser.getDeadlines(links2));
 //		assertEquals(deadlines, parser.getDeadlines(links3));
 //	}
+	
+	@Test
+	void testGetAntiquity() {
+		assertEquals("Eighteenth", parser.getAntiquity("", new ArrayList<String>(Arrays.asList("https://itrust.sutd.edu.sg/hase2017/hase-history/"))));
+	}
 
 	@Test
 	void testGetConferenceDays() {

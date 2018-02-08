@@ -61,9 +61,9 @@ class Parser2Test {
 
 	@Test
 	void testGetAntiquity() {
-		assertEquals("", parser.getAntiquity(descriptions.get(0), "https://icpe2018.spec.org/home.html"));
-		assertEquals("Eighth", parser.getAntiquity(descriptions.get(1), "https://unescoprivacychair.urv.cat/psd2018/index.php"));
-		assertEquals("", parser.getAntiquity("", "http://lsds.hesge.ch/ISPDC2018/"));
+		assertEquals("", parser.getAntiquity(descriptions.get(0), new ArrayList<String>(Arrays.asList("https://icpe2018.spec.org/home.html"))));
+		assertEquals("Eighth", parser.getAntiquity(descriptions.get(1), new ArrayList<String>(Arrays.asList("https://unescoprivacychair.urv.cat/psd2018/index.php"))));
+		assertEquals("", parser.getAntiquity("", new ArrayList<String>(Arrays.asList("http://lsds.hesge.ch/ISPDC2018/"))));
 	}
 
 	@Test
@@ -72,13 +72,14 @@ class Parser2Test {
 		assertEquals("25-27 June 2018", parser.getConferenceDays(titles.get(1), descriptions.get(1), "http://lsds.hesge.ch/ISPDC2018/"));
 		assertEquals("", parser.getConferenceDays(titles.get(2), "", "https://unescoprivacychair.urv.cat/psd2018/index.php"));
 	}
-	
-	@Test
-	void testGetOrganisers() {
-		Country country = new Country();
-		ArrayList<String> linkList = new ArrayList<>(Arrays.asList("https://2018.splashcon.org/committee/splash-2018-organizing-committee", "https://2018.splashcon.org/committee/splash-2018-steering-committee",
-				"https://2018.splashcon.org/committee/splash-2018-oopsla-committee", "https://2018.splashcon.org/committee/splash-2018-oopsla-external-program-committee"));
-		parser.getOrganisers(linkList, country);
-	}
 
+//	@Test
+//	void testGetOrganisers() {
+//		ArrayList<String> linkList = new ArrayList<>(Arrays.asList("https://pldi18.sigplan.org/committee/pldi-2018-organizing-committee",
+//				"https://pldi18.sigplan.org/committee/pldi-2018-program-committee", "https://pldi18.sigplan.org/committee/pldi-2018-external-program-committee", 
+//				"https://pldi18.sigplan.org/committee/pldi-2018-external-review-committee", "https://pldi18.sigplan.org/committee/pldi-2018-src-committee", 
+//				"https://pldi18.sigplan.org/committee/pldi-2018-artifact-evaluation-committee", "https://pldi18.sigplan.org/committee/pldi-2018-steering-committee"));
+//		Country country = new Country();
+//		parser.getOrganisers(linkList, country);
+//	}
 }
