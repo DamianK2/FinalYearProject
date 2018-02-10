@@ -158,69 +158,74 @@ public class Parser2 extends Parser {
 					}	
 		}
 		
-		// Initialize variables
-		String tempSubteam = "";
 		LinkedHashMap<String, List<String>> committees = new LinkedHashMap<>();
-		List<String> members = new ArrayList<>();
-		StringBuilder sb = new StringBuilder();
-		int memberCounter = 0;
 		
-		for(String link: potentialLinks) {
-			// Get the document
-			Document doc = this.getURLDoc(link);
+		if(!this.checkOrganiserFormat(potentialLinks.get(0), country))
+			return committees;
+		else {
+			// Initialize variables
+			String tempSubteam = "";
+			List<String> members = new ArrayList<>();
+			StringBuilder sb = new StringBuilder();
+			int memberCounter = 0;
 			
-			// Find all elements and text nodes
-			for(Element node: doc.getAllElements()) {
-				for(TextNode textNode: node.textNodes()) {
-//					System.out.println(textNode.text());
-					// Search for committee names in the text node
-					if(this.searchForCommittees(textNode.text())) {
-						// If the subteam isn't empty and there are members in the list add them to the map to be returned later
-						if(!tempSubteam.equals("") && !members.isEmpty()) {
-							// Avoid overwriting the same key in the map, and add members to the existing list instead
-							this.addToCommittees(committees, tempSubteam, members);
-							members.clear();
+			for(String link: potentialLinks) {
+				// Get the document
+				Document doc = this.getURLDoc(link);
+				
+				// Find all elements and text nodes
+				for(Element node: doc.getAllElements()) {
+					for(TextNode textNode: node.textNodes()) {
+//						System.out.println(textNode.text());
+						// Search for committee names in the text node
+						if(this.searchForCommittees(textNode.text())) {
+							// If the subteam isn't empty and there are members in the list add them to the map to be returned later
+							if(!tempSubteam.equals("") && !members.isEmpty()) {
+								// Avoid overwriting the same key in the map, and add members to the existing list instead
+								this.addToCommittees(committees, tempSubteam, members);
+								members.clear();
+							}
+							// Add the subteam found for later use as a key
+							tempSubteam = textNode.text();
 						}
-						// Add the subteam found for later use as a key
-						tempSubteam = textNode.text();
-					}
-					// Do nothing with empty text nodes
-					else if(textNode.text().matches("^\\s+$"));
-					else if(!tempSubteam.equals("") && memberCounter < 4) {
-						// Check if this text node is a country
-						boolean isCountry = this.checkStringForCountry(textNode.text(), country);
-						// If it is not the first text node to be appended (counter > 0), then add a comma and increase the counter
-						if(memberCounter > 0 && !isCountry) {
-							sb.append(", " + textNode.text());
-							memberCounter++;
+						// Do nothing with empty text nodes
+						else if(textNode.text().matches("^\\s+$"));
+						else if(!tempSubteam.equals("") && memberCounter < 4) {
+							// Check if this text node is a country
+							boolean isCountry = this.checkStringForCountry(textNode.text(), country);
+							// If it is not the first text node to be appended (counter > 0), then add a comma and increase the counter
+							if(memberCounter > 0 && !isCountry) {
+								sb.append(", " + textNode.text());
+								memberCounter++;
+							}
+							// If the text node contains a country then we concatenated a full string and we can add it to the list of members
+							else if(memberCounter > 0 && isCountry) {
+								// Add the member to the list
+								sb.append(", " + textNode.text());
+								members.add(new String(sb.toString()));
+								// Reset the string builder and counter
+								sb.setLength(0);
+								memberCounter = 0;
+							}
+							// The counter is 0, add the raw string
+							else {
+								sb.append(textNode.text());
+								memberCounter++;
+							}
 						}
-						// If the text node contains a country then we concatenated a full string and we can add it to the list of members
-						else if(memberCounter > 0 && isCountry) {
-							// Add the member to the list
-							sb.append(", " + textNode.text());
-							members.add(new String(sb.toString()));
-							// Reset the string builder and counter
-							sb.setLength(0);
-							memberCounter = 0;
-						}
-						// The counter is 0, add the raw string
 						else {
-							sb.append(textNode.text());
-							memberCounter++;
+							// If it's neither a member or a subteam then add everything gathered so far to the map and clear the variables
+							if(!tempSubteam.equals("") && !members.isEmpty()) {
+								// Avoid overwriting the same key in the map, and add members to the existing list instead
+								this.addToCommittees(committees, tempSubteam, members);
+							}
+							
+							// Reset the variables
+							members.clear();
+							tempSubteam = "";
+							memberCounter = 0;
+							sb.setLength(0);
 						}
-					}
-					else {
-						// If it's neither a member or a subteam then add everything gathered so far to the map and clear the variables
-						if(!tempSubteam.equals("") && !members.isEmpty()) {
-							// Avoid overwriting the same key in the map, and add members to the existing list instead
-							this.addToCommittees(committees, tempSubteam, members);
-						}
-						
-						// Reset the variables
-						members.clear();
-						tempSubteam = "";
-						memberCounter = 0;
-						sb.setLength(0);
 					}
 				}
 			}
@@ -261,5 +266,38 @@ public class Parser2 extends Parser {
 		} else {
 			committees.put(tempSubteam, new ArrayList<String>(members));
 		}
+	}
+	
+	@Override
+	protected boolean checkOrganiserFormat(String link, Country country) {
+		Document doc = this.getURLDoc(link);
+		int counter = 0;
+		// Find all elements and text nodes
+		for(Element node: doc.getAllElements()) {
+			for(TextNode textNode: node.textNodes()) {
+				System.out.println(textNode.text());
+				// Check if this text node contains the committee keywords
+				boolean isCommittee = this.searchForCommittees(textNode.text());
+				// Skip the whitespaces
+				if(textNode.text().matches("^\\s+$"));
+				// If it does then add 1 to the counter
+				else if(isCommittee && counter == 1) {
+					counter++;
+				} else if(isCommittee && counter != 1) {
+					counter = 0;
+				// Add 1 to the counter if the text node contains a country
+				} else if(this.checkStringForCountry(textNode.text(), country)) {
+					counter++;
+					if(counter == 3)
+						return true;
+					else
+						counter = 0;
+				} else {
+					counter++;
+				}
+					
+			}
+		}
+		return false;
 	}
 }

@@ -33,7 +33,7 @@ public class Parser {
 										"Sixt", "Sevent", "Eight", "Ninet"));
 	protected static final ArrayList<String> SPONSORS = new ArrayList<>(Arrays.asList("ACM", "SPEC", 
 																		"UNESCO", "Springer", "IEEE"));
-	private static final String[] COMMITTEES = {"[cC][oO][mM][mM][iI][tT][tT][eE][eE]", 
+	protected static final String[] COMMITTEES = {"[cC][oO][mM][mM][iI][tT][tT][eE][eE]", 
 			"[cC][hH][aA][iI][rR]", "[pP][aA][pP][eE][rR]"};
 	
 	private static final int MAX_CHARS_IN_DATE = 30;
@@ -319,49 +319,54 @@ public class Parser {
 						potentialLinks.add(link);
 		}
 		
-//		this.checkOrganiserFormat(potentialLinks)
-		
-		String tempSubteam = "";
 		LinkedHashMap<String, List<String>> committees = new LinkedHashMap<>();
-		List<String> members = new ArrayList<>();
 		
-		for(String link: potentialLinks) {
-			// Get the document
-			Document doc = this.getURLDoc(link);
-			// Find all elements and text nodes
-			for(Element node: doc.getAllElements()) {
-				for(TextNode textNode: node.textNodes()) {
-					// Search for committee names in the text node
-					if(this.searchForCommittees(textNode.text())) {
-						// If the subteam isn't empty and there are members in the list add them to the map to be returned later
-						if(!tempSubteam.equals("") && !members.isEmpty()) {
-							committees.put(tempSubteam, new ArrayList<String>(members));
+		// Check if the format of organisers is suitable for this code
+		if(!this.checkOrganiserFormat(potentialLinks.get(0), country))
+			return committees;
+		else {
+			String tempSubteam = "";
+			
+			List<String> members = new ArrayList<>();
+			
+			for(String link: potentialLinks) {
+				// Get the document
+				Document doc = this.getURLDoc(link);
+				// Find all elements and text nodes
+				for(Element node: doc.getAllElements()) {
+					for(TextNode textNode: node.textNodes()) {
+						// Search for committee names in the text node
+						if(this.searchForCommittees(textNode.text())) {
+							// If the subteam isn't empty and there are members in the list add them to the map to be returned later
+							if(!tempSubteam.equals("") && !members.isEmpty()) {
+								committees.put(tempSubteam, new ArrayList<String>(members));
+								members.clear();
+							}
+							// Add the subteam found for later use as a key
+							tempSubteam = textNode.text();
+	//						System.out.println("FOUND: " + textNode.text());
+	//						System.out.println(tempSubteam);
+						}
+						// Check the string for a country to find if it is a member or not
+						else if(this.checkStringForCountry(textNode.text(), country)) {
+							// Add the member to the list if a valid subteam is present
+							if(textNode.text().matches(".*?(,|\\().*?,.*$")) {
+								if(!tempSubteam.equals(""))
+									members.add(textNode.text());
+							}
+	//						System.out.println(textNode.text());
+	//						System.out.println(members);
+						}
+						// Do nothing with empty strings
+						else if(textNode.text().matches("^\\s+$")); 
+						else {
+							// If it's neither a member or a subteam then everything gathered so far to the map and clear the variables
+							if(!tempSubteam.equals("") && !members.isEmpty()) {
+								committees.put(tempSubteam, new ArrayList<String>(members));
+							}
 							members.clear();
+							tempSubteam = "";
 						}
-						// Add the subteam found for later use as a key
-						tempSubteam = textNode.text();
-//						System.out.println("FOUND: " + textNode.text());
-//						System.out.println(tempSubteam);
-					}
-					// Check the string for a country to find if it is a member or not
-					else if(this.checkStringForCountry(textNode.text(), country)) {
-						// Add the member to the list if a valid subteam is present
-						if(textNode.text().matches(".*?(,|\\().*?,.*$")) {
-							if(!tempSubteam.equals(""))
-								members.add(textNode.text());
-						}
-//						System.out.println(textNode.text());
-//						System.out.println(members);
-					}
-					// Do nothing with empty strings
-					else if(textNode.text().matches("^\\s+$")); 
-					else {
-						// If it's neither a member or a subteam then everything gathered so far to the map and clear the variables
-						if(!tempSubteam.equals("") && !members.isEmpty()) {
-							committees.put(tempSubteam, new ArrayList<String>(members));
-						}
-						members.clear();
-						tempSubteam = "";
 					}
 				}
 			}
@@ -578,7 +583,42 @@ public class Parser {
 		return false;
 	}
 	
-	protected int checkOrganiserFormat(ArrayList<String> potentialLinks) {
-		return 0;
+	/**
+	 * Checks if the organisers are in the format e.g. General Chair\nJohn Doe, UCD, Ireland
+	 * @param link
+	 * @param country
+	 * @return true/false
+	 */
+	protected boolean checkOrganiserFormat(String link, Country country) {
+		Document doc = this.getURLDoc(link);
+		int counter = 0;
+		// Find all elements and text nodes
+		for(Element node: doc.getAllElements()) {
+			for(TextNode textNode: node.textNodes()) {
+				// Check if this text node contains the committee keywords
+				boolean isCommittee = this.searchForCommittees(textNode.text());
+				// Skip the whitespaces
+				if(textNode.text().matches("^\\s+$"));
+				// If it does then add 1 to the counter
+				else if(isCommittee && counter == 0) {
+					counter++;
+				// If the previous text node was a committee then make sure the counter is at 1 for this text node
+				} else if(isCommittee && counter > 0) {
+					counter = 1;
+				// Add 1 to the counter if the text node contains a country i.e. it's a committee member
+				} else {
+					if(this.checkStringForCountry(textNode.text(), country)) {
+						counter++;
+						// Even if the counter reached 2, check if the text doesn't ONLY contain a country (has other words)
+						if(counter == 2 && textNode.text().matches(".*?(,|\\().*?,.*$"))
+							return true;
+					} else {
+						counter = 0;
+					}
+				}
+					
+			}
+		}
+		return false;
 	}
 }
