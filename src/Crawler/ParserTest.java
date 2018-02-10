@@ -120,7 +120,7 @@ class ParserTest {
 		assertEquals("Marek Tudruj, Polish Acad. of Sciences and PJIIT, Warsaw, Poland", members.get(9));
 		members = committees.get("Program Committee");
 		assertEquals(" Aniello Castiglione, Department of Computer Science, University of Salerno, Italy", members.get(5));
-		assertEquals(" Valentin Cristea, University Politehnica of Bucharest, Romania", members.get(12));
+		assertEquals(" Valentin Cristea, University Politehnica of Bucharest, Romania", members.get(11));
 	}
 
 	@Disabled("This method is temporary only")

@@ -275,7 +275,6 @@ public class Parser2 extends Parser {
 		// Find all elements and text nodes
 		for(Element node: doc.getAllElements()) {
 			for(TextNode textNode: node.textNodes()) {
-				System.out.println(textNode.text());
 				// Check if this text node contains the committee keywords
 				boolean isCommittee = this.searchForCommittees(textNode.text());
 				// Skip the whitespaces

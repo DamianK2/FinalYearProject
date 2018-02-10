@@ -321,6 +321,7 @@ public class Parser {
 		
 		LinkedHashMap<String, List<String>> committees = new LinkedHashMap<>();
 		
+		System.out.println("POTENTIAL LINKS MADAFAKA BICZ ASS SRAKA: " + potentialLinks.toString());
 		// Check if the format of organisers is suitable for this code
 		if(!this.checkOrganiserFormat(potentialLinks.get(0), country))
 			return committees;
@@ -332,8 +333,10 @@ public class Parser {
 			for(String link: potentialLinks) {
 				// Get the document
 				Document doc = this.getURLDoc(link);
+				// Replace the strong tags as they can cause wrong committees to be returned from certain websites
+				doc = Jsoup.parse(doc.toString().replaceAll("<strong>|</strong>", ""));
 				// Find all elements and text nodes
-				for(Element node: doc.getAllElements()) {
+				for(Element node: doc.getAllElements()) {	
 					for(TextNode textNode: node.textNodes()) {
 						// Search for committee names in the text node
 						if(this.searchForCommittees(textNode.text())) {
@@ -395,7 +398,7 @@ public class Parser {
 	protected void addCommitteeSearchWords() {
 		searchKeywords.clear();
 		searchKeywords.add(this.changeToRegex("[oO]rganiz"));
-		searchKeywords.add(this.changeToRegex("[pP]rogram"));
+//		searchKeywords.add(this.changeToRegex("[pP]rogram"));
 		searchKeywords.add(this.changeToRegex("[pP]eople"));
 		searchKeywords.add(this.changeToRegex("[cC]ommittee"));
 	}
