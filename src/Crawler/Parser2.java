@@ -17,6 +17,7 @@ import venue.Country;
 
 public class Parser2 extends Parser {
 	
+	@Override
 	public String getSponsors(String title, String description) {
 		String sponsors = "";
 		
@@ -106,7 +107,7 @@ public class Parser2 extends Parser {
 	}
 	
 	@Override
-	public String getAntiquity(String description, ArrayList<String> linkList) {
+	public String getAntiquity(String title, String description, ArrayList<String> linkList) {
 		String antiquity = "";
 	
 		// Connect to the home page

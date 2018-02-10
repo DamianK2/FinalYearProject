@@ -269,7 +269,7 @@ public class Parser {
 	 * @param description
 	 * @return antiquity
 	 */
-	public String getAntiquity(String description, ArrayList<String> linkList) {
+	public String getAntiquity(String title, String description, ArrayList<String> linkList) {
 		String antiquity = "";
 		Pattern pattern = Pattern.compile("\\d{1,2}(st|nd|rd|th)|([tT]wenty-|[tT]hirty-|[fF]orty-"
 				+ "|[fF]ifty-|[sS]ixty-|[sS]eventy-|[eE]ighty-|[nN]inety-)*([fF]ir|[sS]eco|[tT]hi|"
@@ -318,6 +318,8 @@ public class Parser {
 					if(!potentialLinks.contains(link))
 						potentialLinks.add(link);
 		}
+		
+//		this.checkOrganiserFormat(potentialLinks)
 		
 		String tempSubteam = "";
 		LinkedHashMap<String, List<String>> committees = new LinkedHashMap<>();
@@ -371,12 +373,13 @@ public class Parser {
 	
 	// ------------- HELPER METHODS START HERE -------------
 	
-	private void addLinkKeywords() {
+	protected void addLinkKeywords() {
 		searchKeywords.clear();
 		searchKeywords.add("[sS]ubmission");
 		searchKeywords.add("[pP]roceedings");
 		searchKeywords.add("[pP]aper");
 		searchKeywords.add("[iI]nstructions");
+		searchKeywords.add("[iI]nfo");
 	}
 	
 	/**
@@ -573,5 +576,9 @@ public class Parser {
 				return true;
 		}
 		return false;
+	}
+	
+	protected int checkOrganiserFormat(ArrayList<String> potentialLinks) {
+		return 0;
 	}
 }

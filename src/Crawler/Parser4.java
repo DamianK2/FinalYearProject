@@ -98,7 +98,7 @@ public class Parser4 extends Parser {
 	}
 	
 	@Override
-	public String getAntiquity(String description, ArrayList<String> linkList) {
+	public String getAntiquity(String title, String description, ArrayList<String> linkList) {
 		String link = this.searchLinks("[hH]istory", linkList);
 		System.out.println(link);
 		Document doc;

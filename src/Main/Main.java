@@ -30,7 +30,9 @@ public class Main {
 										"http://lsds.hesge.ch/ISPDC2018/", 
 										"https://unescoprivacychair.urv.cat/psd2018/index.php",
 										"https://2018.splashcon.org/home",
-										"https://itrust.sutd.edu.sg/hase2017/"));
+//										"https://itrust.sutd.edu.sg/hase2017/", TODO committees
+//										"http://www.ispass.org/ispass2018/" TODO find a way to get framesets
+										"https://www.computer.org/web/compsac2018"));
 			
 	public static void main(String[] args) {
 		//long tStart = System.currentTimeMillis();
@@ -89,7 +91,7 @@ public class Main {
 	        parsers.add(new Parser5());
 	        parsers.add(new Parser6());
 	        row = sheet.createRow(i+1);
-	        // Use this in the database to store the link to be used with the acronym as a[href] on the webpage
+	        // TODO Use this in the database to store the link to be used with the acronym as a[href] on the webpage
 	        String mainLink = links.get(0);
 	       
 			String title = parsers.get(0).getTitle(mainLink);
@@ -156,7 +158,7 @@ public class Main {
 	        String antiquity; 
 	        k = 0;
 	        do {
-	        	antiquity = parsers.get(k).getAntiquity(description, links);
+	        	antiquity = parsers.get(k).getAntiquity(title, description, links);
 	        	k++;
 	        } while(antiquity == "" && k < parsers.size());
 	        

@@ -55,7 +55,7 @@ class Parser3Test {
 	@Test
 	void testGetAntiquity() {
 		
-		assertEquals("Nineteenth", parser.getAntiquity("SPLASH 2018", new ArrayList<String>(Arrays.asList("https://2018.splashcon.org/home"))));
+		assertEquals("Nineteenth", parser.getAntiquity("", "SPLASH 2018", new ArrayList<String>(Arrays.asList("https://2018.splashcon.org/home"))));
 	}
 
 	@Test

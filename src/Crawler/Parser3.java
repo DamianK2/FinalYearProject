@@ -87,7 +87,7 @@ public class Parser3 extends Parser {
 	}
 	
 	@Override
-	public String getAntiquity(String description, ArrayList<String> linkList) {
+	public String getAntiquity(String title, String description, ArrayList<String> linkList) {
 		String antiquity = "";
 		Document doc = this.getURLDoc(linkList.get(0));
 		Elements el = doc.select(":contains(Other Editions)").next();

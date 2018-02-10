@@ -47,7 +47,7 @@ class Parser4Test {
 	
 	@Test
 	void testGetAntiquity() {
-		assertEquals("Eighteenth", parser.getAntiquity("", new ArrayList<String>(Arrays.asList("https://itrust.sutd.edu.sg/hase2017/hase-history/"))));
+		assertEquals("Eighteenth", parser.getAntiquity("", "", new ArrayList<String>(Arrays.asList("https://itrust.sutd.edu.sg/hase2017/hase-history/"))));
 	}
 
 	@Test

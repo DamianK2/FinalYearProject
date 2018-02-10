@@ -15,8 +15,8 @@ import org.jsoup.select.Elements;
  *
  */
 public class Crawler {
-	private static ArrayList<String> linkList = new ArrayList<>();
-	private static ArrayList<Thread> threads = new ArrayList<>();
+	protected static ArrayList<String> linkList = new ArrayList<>();
+	protected static ArrayList<Thread> threads = new ArrayList<>();
 
 	// Add the website that we want to crawl
 	public Crawler(String url) {
@@ -64,7 +64,7 @@ public class Crawler {
 	}
 	
 	// Add the newly fetched links into an ArrayList
-	private void addToLinkList(Elements links) {
+	protected void addToLinkList(Elements links) {
 		for(Element link: links) {			
 			if(!this.checkDuplicates(link.attr("abs:href")))
 				linkList.add(link.attr("abs:href"));

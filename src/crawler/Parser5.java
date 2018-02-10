@@ -2,6 +2,7 @@ package crawler;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
@@ -66,6 +67,30 @@ public class Parser5 extends Parser {
 		}
 		
 		return allDeadlines;
+	}
+	
+	@Override
+	public String getAntiquity(String title, String description, ArrayList<String> linkList) {
+		String antiquity = "";
+		Pattern pattern = Pattern.compile("\\d{1,2}(st|nd|rd|th)|([tT]wenty-|[tT]hirty-|[fF]orty-"
+				+ "|[fF]ifty-|[sS]ixty-|[sS]eventy-|[eE]ighty-|[nN]inety-)*([fF]ir|[sS]eco|[tT]hi|"
+				+ "[fF]our|[fF]if|[sS]ix|[sS]even|[eE]igh|[nN]in|[tT]en|[eE]leven|[tT]welf|[tT]hirteen|"
+				+ "[fF]ourteen|[fF]ifteen|[sS]ixteen|[sS]eventeen|[eE]ighteen|[nN]ineteen)(st|nd|rd|th)|"
+				+ "(twentieth|thirtieth|fourtieth|fiftieth|sixtieth|seventieth|eightieth|ninetieth)", Pattern.CASE_INSENSITIVE);
+		Matcher matcher;
+		// Match the pattern with the description
+		matcher = pattern.matcher(title);
+		if(matcher.find()) {
+			antiquity = matcher.group(0);
+			// If the string is in the format of "1st, 2nd, 3rd" etc.
+			// Change it to its ordinal form
+			if(antiquity.matches("\\d{1,2}(?:st|nd|rd|th)")) {
+				String[] number = antiquity.split("(?:st|nd|rd|th)");
+				antiquity = this.toOrdinal(Integer.parseInt(number[0]));
+			}
+		}
+		
+		return antiquity;
 	}
 
 	@Override

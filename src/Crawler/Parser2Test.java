@@ -61,9 +61,9 @@ class Parser2Test {
 
 	@Test
 	void testGetAntiquity() {
-		assertEquals("", parser.getAntiquity(descriptions.get(0), new ArrayList<String>(Arrays.asList("https://icpe2018.spec.org/home.html"))));
-		assertEquals("Eighth", parser.getAntiquity(descriptions.get(1), new ArrayList<String>(Arrays.asList("https://unescoprivacychair.urv.cat/psd2018/index.php"))));
-		assertEquals("", parser.getAntiquity("", new ArrayList<String>(Arrays.asList("http://lsds.hesge.ch/ISPDC2018/"))));
+		assertEquals("", parser.getAntiquity("", descriptions.get(0), new ArrayList<String>(Arrays.asList("https://icpe2018.spec.org/home.html"))));
+		assertEquals("Eighth", parser.getAntiquity("", descriptions.get(1), new ArrayList<String>(Arrays.asList("https://unescoprivacychair.urv.cat/psd2018/index.php"))));
+		assertEquals("", parser.getAntiquity("", "", new ArrayList<String>(Arrays.asList("http://lsds.hesge.ch/ISPDC2018/"))));
 	}
 
 	@Test
