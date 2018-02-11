@@ -7,8 +7,9 @@ import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
 
-class Parser6Test {
-	private Parser parser = new Parser6();
+class Parser7Test {
+
+	private Parser parser = new Parser7();
 	private ArrayList<String> titles = new ArrayList<>(Arrays.asList("International Conference on Performance Engineering (ICPE) 2018: ICPE 2018", 
 			"ISPDC 2018 – The 17th IEEE International Symposium on Parallel and Distributed Computing, 25-27 June 2018, Geneva, Switzerland", 
 			"PSD2018 - Privacy in Statistical Databases - UNESCO Privacy Chair"));
@@ -25,12 +26,7 @@ class Parser6Test {
 	
 	@Test
 	void testGetDeadlines() {
-		parser.getDeadlines(new ArrayList<String>(Arrays.asList("http://www.es.mdh.se/icst2018/")));
-	}
-	
-	@Test
-	void testGetConferenceDays() {
-		parser.getConferenceDays("", "", new ArrayList<String>(Arrays.asList("https://itrust.sutd.edu.sg/hase2017/important-dates/")));
+//		parser.getDeadlines(new ArrayList<String>(Arrays.asList("http://www.es.mdh.se/icst2018/")));
 	}
 
 }

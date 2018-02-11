@@ -18,8 +18,6 @@ import venue.Country;
 
 public class Parser {
 	protected static ArrayList<String> searchKeywords = new ArrayList<>();
-	private static ArrayList<String> searchWords = new ArrayList<>(Arrays.asList("work-in-progress", 
-																				"tools", "workshop")); 
 	private static final ArrayList<String> SPECIAL_CASES = new ArrayList<>(
 															Arrays.asList(
 															"Zeroth","First", "Second", "Third", 

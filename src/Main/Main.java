@@ -21,6 +21,7 @@ import crawler.Parser3;
 import crawler.Parser4;
 import crawler.Parser5;
 import crawler.Parser6;
+import crawler.Parser7;
 import venue.Country;
 
 public class Main {
@@ -92,6 +93,7 @@ public class Main {
 	        parsers.add(new Parser4());
 	        parsers.add(new Parser5());
 	        parsers.add(new Parser6());
+	        parsers.add(new Parser7());
 	        row = sheet.createRow(i+1);
 	        // TODO Use this in the database to store the link to be used with the acronym as a[href] on the webpage
 	        String mainLink = links.get(0);

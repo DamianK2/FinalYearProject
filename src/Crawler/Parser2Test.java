@@ -48,7 +48,7 @@ class Parser2Test {
 		assertEquals("Switzerland", parser.getVenue(titles.get(1), descriptions.get(1), country, links2));
 		assertEquals("", parser.getVenue(titles.get(2), "", country, links3));
 	}
-
+	
 	//TODO test the map
 //	@Test
 //	void testGetDeadlines() {
