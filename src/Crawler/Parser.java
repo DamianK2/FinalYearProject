@@ -102,7 +102,7 @@ public class Parser {
 				doc = this.getURLDoc(url);
 				String elementString = doc.select("*p").text();
 				for(String sponsor: SPONSORS) {
-					if(elementString.matches(changeToRegex(sponsor)))
+					if(elementString.matches(changeToRegex(" " + sponsor)))
 						if(proceedings.isEmpty())
 							proceedings += sponsor;
 						else
@@ -377,7 +377,8 @@ public class Parser {
 			}
 		}
 		
-		return committees;
+		// If only 1 committee is return then it must be an error
+		return committees.size() < 2 ? new LinkedHashMap<String, List<String>>() : committees;
 	}
 	
 	// ------------- HELPER METHODS START HERE -------------

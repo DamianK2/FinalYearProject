@@ -257,7 +257,8 @@ public class Parser2 extends Parser {
 //        	allMembers = "";
 //		}
 		
-		return committees;
+		// If only 1 committee is return then it must be an error
+		return committees.size() < 2 ? new LinkedHashMap<String, List<String>>() : committees;
 	}
 	
 	/**
