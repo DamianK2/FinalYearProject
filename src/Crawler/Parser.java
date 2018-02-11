@@ -320,8 +320,7 @@ public class Parser {
 		}
 		
 		LinkedHashMap<String, List<String>> committees = new LinkedHashMap<>();
-		
-		System.out.println("POTENTIAL LINKS MADAFAKA BICZ ASS SRAKA: " + potentialLinks.toString());
+
 		// Check if the format of organisers is suitable for this code
 		if(!this.checkOrganiserFormat(potentialLinks.get(0), country))
 			return committees;
@@ -387,7 +386,7 @@ public class Parser {
 		searchKeywords.add("[pP]roceedings");
 		searchKeywords.add("[pP]aper");
 		searchKeywords.add("[iI]nstructions");
-		searchKeywords.add("[iI]nfo");
+		searchKeywords.add("[iI]nformation");
 	}
 	
 	/**

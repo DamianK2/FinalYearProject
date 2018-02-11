@@ -24,6 +24,11 @@ class Parser6Test {
 			"https://unescoprivacychair.urv.cat/psd2018/index.php?m=venue", "https://unescoprivacychair.urv.cat/psd2018/index.php"));
 	
 	@Test
+	void testGetDeadlines() {
+		parser.getDeadlines(new ArrayList<String>(Arrays.asList("https://ieeecompsac.computer.org/2018/important-dates/")));
+	}
+	
+	@Test
 	void testGetConferenceDays() {
 		parser.getConferenceDays("", "", new ArrayList<String>(Arrays.asList("https://itrust.sutd.edu.sg/hase2017/important-dates/")));
 	}
