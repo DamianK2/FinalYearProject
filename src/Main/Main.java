@@ -22,6 +22,7 @@ import crawler.Parser4;
 import crawler.Parser5;
 import crawler.Parser6;
 import crawler.Parser7;
+import crawler.Parser8;
 import venue.Country;
 
 public class Main {
@@ -36,7 +37,9 @@ public class Main {
 										"https://www.computer.org/web/compsac2018",
 										"https://www.isf.cs.tu-bs.de/cms/events/sefm2018/",
 										"http://www.es.mdh.se/icst2018/",
-										"https://icssea.org/"));
+										"https://icssea.org/",
+//										"https://eseiw2018.wixsite.com/oulu",
+										"http://www.icsoft.org/"));
 			
 	public static void main(String[] args) {
 		//long tStart = System.currentTimeMillis();
@@ -95,6 +98,7 @@ public class Main {
 	        parsers.add(new Parser5());
 	        parsers.add(new Parser6());
 	        parsers.add(new Parser7());
+	        parsers.add(new Parser8());
 	        row = sheet.createRow(i+1);
 	        // TODO Use this in the database to store the link to be used with the acronym as a[href] on the webpage
 	        String mainLink = links.get(0);
@@ -146,7 +150,7 @@ public class Main {
 	        } while(deadlines.isEmpty() && k < parsers.size());
 	        		
 	        int j = 6;
-	        
+
 	        for(String key: deadlines.keySet()) {
 //				System.out.println("Heading: " + key);
 				LinkedHashMap<String, String> deadlines1 = deadlines.get(key);
@@ -156,9 +160,6 @@ public class Main {
 					j++;
 				}
 			}
-	        
-	        String year = parsers.get(0).getConferenceYear(title);
-	        row.createCell(j).setCellValue(createHelper.createRichTextString(year));
 	        
 	        String antiquity; 
 	        k = 0;
@@ -176,6 +177,15 @@ public class Main {
 	        	k++;
 	        } while(date == "" && k < parsers.size());
 	        row.createCell(++j).setCellValue(createHelper.createRichTextString(date));
+	        
+	        String year = "";
+	        k = 0;
+	        do {
+	        	 year = parsers.get(k).getConferenceYear(date, title);
+	        	 k++;
+	        } while(year == "" && k < parsers.size());
+	       
+	        row.createCell(++j).setCellValue(createHelper.createRichTextString(year));
 	        
 	        LinkedHashMap<String, List<String>> committees;
 	        k = 0;

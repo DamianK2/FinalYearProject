@@ -87,7 +87,6 @@ public class Parser5 extends Parser {
 	@Override
 	public String getAntiquity(String title, String description, ArrayList<String> linkList) {
 		String link = this.searchLinks("[hH]istory", linkList);
-		System.out.println(link);
 		Document doc;
 		if(!link.equals(""))
 			doc = this.getURLDoc(link);

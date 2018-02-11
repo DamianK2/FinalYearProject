@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 public class Parser7 extends Parser {
 	
@@ -87,16 +88,5 @@ public class Parser7 extends Parser {
 //		}
 		
 		return allDeadlines;
-	}
-	
-	private boolean isSubmission(String toCheck) {
-		String[] keywords = {"submis", "submit", "notification"};
-		
-		for(String key: keywords) {
-			if(toCheck.toLowerCase().matches(this.changeToRegex(key)))
-				return true;
-		}
-		
-		return false;
 	}
 }

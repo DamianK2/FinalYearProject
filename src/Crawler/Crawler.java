@@ -35,29 +35,29 @@ public class Crawler {
 			System.out.println("Something went wrong when getting the first element from the list of links.");
 			e.printStackTrace();
 		}
-        Elements links = doc.select("ul a[href]");
+        Elements links = doc.select("a[href]");
         this.addToLinkList(links);
         
-        // Create threads for each link just fetched to decrease crawling time
-        Thread thread;
-        for(Element link: links) {
-        	if(!link.text().matches(".*[oO]ther [eE]dition.*")) {
-	        	thread = new Thread(new Worker(link, linkList));
-	        	threads.add(thread);
-	        	thread.start();
-        	} else
-        		break;
-        }
-        
-        // Join the threads to prevent the program from finishing before the threads do
-        for(int i = 0; i < threads.size(); i++) {
-			try {
-				threads.get(i).join();
-			} catch (InterruptedException e) {
-				System.out.println("Something went wrong then joining the threads.");
-				e.printStackTrace();
-			}
-        }
+//        // Create threads for each link just fetched to decrease crawling time
+//        Thread thread;
+//        for(Element link: links) {
+//        	if(!link.text().matches(".*[oO]ther [eE]dition.*")) {
+//	        	thread = new Thread(new Worker(link, linkList));
+//	        	threads.add(thread);
+//	        	thread.start();
+//        	} else
+//        		break;
+//        }
+//        
+//        // Join the threads to prevent the program from finishing before the threads do
+//        for(int i = 0; i < threads.size(); i++) {
+//			try {
+//				threads.get(i).join();
+//			} catch (InterruptedException e) {
+//				System.out.println("Something went wrong then joining the threads.");
+//				e.printStackTrace();
+//			}
+//        }
         
         // Return the ArrayList with all the links from the given website
         return linkList;

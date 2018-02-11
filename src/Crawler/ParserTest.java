@@ -83,9 +83,9 @@ class ParserTest {
 
 	@Test
 	void testGetConferenceYear() {
-		assertEquals("2018", parser.getConferenceYear(titles.get(0)));
-		assertEquals("2018", parser.getConferenceYear(titles.get(1)));
-		assertEquals("2018", parser.getConferenceYear(titles.get(2)));
+		assertEquals("2018", parser.getConferenceYear("", titles.get(0)));
+		assertEquals("2018", parser.getConferenceYear("", titles.get(1)));
+		assertEquals("2018", parser.getConferenceYear("", titles.get(2)));
 	}
 
 	@Test

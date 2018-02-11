@@ -107,6 +107,18 @@ public class Parser2 extends Parser {
 	}
 	
 	@Override
+	public String getConferenceYear(String date, String title) {
+		String year = "";
+		Pattern pattern = Pattern.compile("\\d{4}");
+		Matcher matcher;
+		// Match the pattern with the title
+		matcher = pattern.matcher(title);
+		if(matcher.find())
+			year = matcher.group(0);
+		return year;
+	}
+	
+	@Override
 	public String getAntiquity(String title, String description, ArrayList<String> linkList) {
 		String antiquity = "";
 		Pattern pattern = Pattern.compile("\\d{1,2}(st|nd|rd|th)|([tT]wenty-|[tT]hirty-|[fF]orty-"

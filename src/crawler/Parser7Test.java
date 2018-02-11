@@ -27,6 +27,8 @@ class Parser7Test {
 	@Test
 	void testGetDeadlines() {
 //		parser.getDeadlines(new ArrayList<String>(Arrays.asList("http://www.es.mdh.se/icst2018/")));
+		parser.getDescription("https://eseiw2018.wixsite.com/oulu");
 	}
+	
 
 }

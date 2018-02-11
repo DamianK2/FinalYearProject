@@ -245,7 +245,7 @@ public class Parser {
 //				}
 //			}
 				
-			return allDeadlines;
+			return allDeadlines.size() < 3 ? new LinkedHashMap<String, LinkedHashMap<String, String>>() : allDeadlines;
 		}
 	}
 	
@@ -254,12 +254,12 @@ public class Parser {
 	 * @param title
 	 * @return conference year
 	 */
-	public String getConferenceYear(String title) {
+	public String getConferenceYear(String date, String title) {
 		String year = "";
 		Pattern pattern = Pattern.compile("\\d{4}");
 		Matcher matcher;
 		// Match the pattern with the title
-		matcher = pattern.matcher(title);
+		matcher = pattern.matcher(date);
 		if(matcher.find())
 			year = matcher.group(0);
 		return year;
@@ -389,6 +389,7 @@ public class Parser {
 		searchKeywords.add("[pP]aper");
 		searchKeywords.add("[iI]nstructions");
 		searchKeywords.add("[iI]nformation");
+		searchKeywords.add("[gG]uideline");
 	}
 	
 	/**
@@ -504,7 +505,7 @@ public class Parser {
 		
 		// Find the link in the list of links that contains the keyword if possible
 		for(String link: linkList) {
-			if(link.matches(keyword) && !answer.contains(link))
+			if(link.toLowerCase().matches(keyword) && !answer.contains(link))
 				answer.add(link);
 		}
 		
@@ -531,7 +532,7 @@ public class Parser {
 	
 	/**
 	 * Finds the deadline from the received parameters.
-	 * Returns "N/A" if no match is found.
+	 * Returns an empty string if no match is found.
 	 * @param separated
 	 * @param toFind
 	 * @param pattern
@@ -620,6 +621,22 @@ public class Parser {
 					
 			}
 		}
+		return false;
+	}
+	
+	/**
+	 * Checks if the string contains a submission, camera, proposal etc. keywords
+	 * @param toCheck
+	 * @return true/false
+	 */
+	protected boolean isSubmission(String toCheck) {
+		String[] keywords = {"submis", "submit", "notification", "camera", "proposal", "registration"};
+		
+		for(String key: keywords) {
+			if(toCheck.toLowerCase().matches(this.changeToRegex(key)))
+				return true;
+		}
+		
 		return false;
 	}
 }
