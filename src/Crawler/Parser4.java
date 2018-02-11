@@ -39,6 +39,9 @@ public class Parser4 extends Parser {
         doc = this.getURLDoc(linkList.get(0));
 		header = doc.select("div#header").text();
 		
+		if(header.isEmpty())
+			header = doc.select("header#header").text();
+		
 		// Search the target div header on the home website for the country of the conference
 		if(!header.equals(""))
 			venue = this.searchCountries(header, country);

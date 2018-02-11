@@ -374,8 +374,7 @@ public class Parser {
 			}
 		}
 		
-		// If only 2 committees are returned then it must be an error
-		return committees.size() < 3 ? new LinkedHashMap<String, List<String>>() : committees;
+		return committees;
 	}
 	
 	// ------------- HELPER METHODS START HERE -------------

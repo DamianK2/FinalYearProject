@@ -105,6 +105,7 @@ class ParserTest {
 	@Test
 	void testgetOrganisers() {
 		Country country = new Country();
+//		parser.getOrganisers(new ArrayList<String>(Arrays.asList("https://www.isf.cs.tu-bs.de/cms/events/sefm2018/committees/")), country);
 		
 		LinkedHashMap<String, List<String>> committees = parser.getOrganisers(links2, country);
 		assertTrue(committees.containsKey("General Chair"));
