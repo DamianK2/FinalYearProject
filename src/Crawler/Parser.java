@@ -31,8 +31,8 @@ public class Parser {
 										"Sixt", "Sevent", "Eight", "Ninet"));
 	protected static final ArrayList<String> SPONSORS = new ArrayList<>(Arrays.asList("ACM", "SPEC", 
 																		"UNESCO", "Springer", "IEEE"));
-	protected static final String[] COMMITTEES = {"[cC][oO][mM][mM][iI][tT][tT][eE][eE]", 
-			"[cC][hH][aA][iI][rR]", "[pP][aA][pP][eE][rR]"};
+	protected static final String[] COMMITTEES = {"committee", 
+			"chair", "paper", "member"};
 	
 	private static final int MAX_CHARS_IN_DATE = 30;
 	
@@ -50,7 +50,7 @@ public class Parser {
 	public String getAcronym(String title) {
 		String acronymWithYear = "";
 		String acronym = "";
-		Pattern pattern = Pattern.compile("[A-Za-z]+.\\d{4}");
+		Pattern pattern = Pattern.compile("[A-Za-z]+.\\d{4}|[A-Za-z]+.\\d{2}");
 		Matcher matcher;
 		// Match the pattern with the title
 		matcher = pattern.matcher(title);
@@ -396,6 +396,7 @@ public class Parser {
 	protected void addCommitteeSearchWords() {
 		searchKeywords.clear();
 		searchKeywords.add(this.changeToRegex("[oO]rganiz"));
+		searchKeywords.add(this.changeToRegex("[oO]rganis"));
 //		searchKeywords.add(this.changeToRegex("[pP]rogram"));
 		searchKeywords.add(this.changeToRegex("[pP]eople"));
 		searchKeywords.add(this.changeToRegex("[cC]ommittee"));
@@ -551,7 +552,7 @@ public class Parser {
 	 * @return date or empty string
 	 */
 	protected String findConfDays(String toCheck) {		
-		Pattern pattern = Pattern.compile("\\d+\\s*?(-|–)\\s*?\\d+.+\\w+.\\d{4}|(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?).+\\d{1,2}(-|\\s–\\s)\\d{1,2}.+?\\d{4}|(Mon(day)?|Tue(sday)?|Wed(nesday)?|Thu(rsday)?|Fri(day)?|Sat(urday)?|Sun(day)?)(\\s+?|,\\s+?).+?\\d{1,2}\\s+?(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\\s+?\\d{4}");
+		Pattern pattern = Pattern.compile("\\d+\\s*?(-|–)\\s*?\\d+.+\\w+.\\d{4}|(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?).+\\d{1,2}(-|\\s–\\s)\\d{1,2}.+?\\d{4}|(Mon(day)?|Tue(sday)?|Wed(nesday)?|Thu(rsday)?|Fri(day)?|Sat(urday)?|Sun(day)?)(\\s+?|,\\s+?).+?\\d{1,2}\\s+?(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\\s+?\\d{4}|(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\\s\\d{1,2}-\\w+\\s\\d{1,2},\\s\\d{4}");
 		Matcher matcher;
 		// Match the pattern with the description
 		matcher = pattern.matcher(toCheck);
@@ -574,7 +575,7 @@ public class Parser {
 		String subteamRegex;
 		for(String subteam: COMMITTEES) {
 			subteamRegex = this.changeToRegex(subteam);
-			if(string.matches(subteamRegex))
+			if(string.toLowerCase().matches(subteamRegex))
 				return true;
 		}
 		return false;

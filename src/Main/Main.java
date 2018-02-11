@@ -35,7 +35,8 @@ public class Main {
 //										"http://www.ispass.org/ispass2018/" TODO find a way to get framesets
 										"https://www.computer.org/web/compsac2018",
 										"https://www.isf.cs.tu-bs.de/cms/events/sefm2018/",
-										"http://www.es.mdh.se/icst2018/"));
+										"http://www.es.mdh.se/icst2018/",
+										"https://icssea.org/"));
 			
 	public static void main(String[] args) {
 		//long tStart = System.currentTimeMillis();
