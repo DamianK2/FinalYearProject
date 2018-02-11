@@ -109,29 +109,28 @@ public class Parser2 extends Parser {
 	@Override
 	public String getAntiquity(String title, String description, ArrayList<String> linkList) {
 		String antiquity = "";
-	
-		// Connect to the home page
-		Document doc = this.getURLDoc(linkList.get(0));
-		Elements ele = null;
-		try {
-			Element el = doc.select("div:contains(Previous)").last();
-			ele = el.select("ul li");
-		} catch(NullPointerException e) {
-			return antiquity;
+		Pattern pattern = Pattern.compile("\\d{1,2}(st|nd|rd|th)|([tT]wenty-|[tT]hirty-|[fF]orty-"
+				+ "|[fF]ifty-|[sS]ixty-|[sS]eventy-|[eE]ighty-|[nN]inety-)*([fF]ir|[sS]eco|[tT]hi|"
+				+ "[fF]our|[fF]if|[sS]ix|[sS]even|[eE]igh|[nN]in|[tT]en|[eE]leven|[tT]welf|[tT]hirteen|"
+				+ "[fF]ourteen|[fF]ifteen|[sS]ixteen|[sS]eventeen|[eE]ighteen|[nN]ineteen)(st|nd|rd|th)|"
+				+ "(twentieth|thirtieth|fourtieth|fiftieth|sixtieth|seventieth|eightieth|ninetieth)", Pattern.CASE_INSENSITIVE);
+		Matcher matcher;
+		// Match the pattern with the description
+		matcher = pattern.matcher(title);
+		if(matcher.find()) {
+			antiquity = matcher.group(0);
+			// If the string is in the format of "1st, 2nd, 3rd" etc.
+			// Change it to its ordinal form
+			if(antiquity.matches("\\d{1,2}(?:st|nd|rd|th)")) {
+				String[] number = antiquity.split("(?:st|nd|rd|th)");
+				antiquity = this.toOrdinal(Integer.parseInt(number[0]));
+			}
 		}
 		
-		if(ele.isEmpty())
-			return antiquity;
-		else {
-			int currentYear = 1;
-			// Count the number of previously held conferences
-			currentYear += ele.size();
-			antiquity = this.toOrdinal(currentYear);
-			
-			return antiquity;
-		}
+		return antiquity;
 	}
 	
+	@Override
 	public String getConferenceDays(String title, String description, ArrayList<String> linkList) {		
 		return this.findConfDays(description);
 	}
@@ -160,7 +159,10 @@ public class Parser2 extends Parser {
 		
 		LinkedHashMap<String, List<String>> committees = new LinkedHashMap<>();
 		
-		if(!this.checkOrganiserFormat(potentialLinks.get(0), country))
+		if(potentialLinks.isEmpty())
+			return committees;
+		// Check if the format of organisers is suitable for this code
+		else if(!this.checkOrganiserFormat(potentialLinks.get(0), country))
 			return committees;
 		else {
 			// Initialize variables

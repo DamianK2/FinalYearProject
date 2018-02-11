@@ -102,24 +102,20 @@ public class Parser4 extends Parser {
 	
 	@Override
 	public String getAntiquity(String title, String description, ArrayList<String> linkList) {
-		String link = this.searchLinks("[hH]istory", linkList);
-		System.out.println(link);
-		Document doc;
-		if(!link.equals(""))
-			doc = this.getURLDoc(link);
-		else
-			return "";
-	
-		int antiquity = 1;
-		for(Element el: doc.getAllElements()) {
-			for(TextNode textNode: el.textNodes()) {
-				if(textNode.text().matches(this.changeToRegex("\\d{1,2}(?:st|nd|rd|th)")))
-					antiquity++;
+		String antiquity = "";
+		Document doc = this.getURLDoc(linkList.get(0));
+		Elements el = doc.select(":contains(Other Editions)").next();
+		
+		for(Element e: el) {
+			if(e.text().matches(".*\\d{4}.*")) {
+				String[] split = e.text().split("\\d{4}");
+				
+				// Add all the found editions and the current one to find the conference antiquity
+				return this.toOrdinal(split.length + 1);
 			}
 		}
 		
-		return this.toOrdinal(antiquity);
-		
+		return antiquity;
 	}
 	
 	public String getConferenceDays(String title, String description, ArrayList<String> linkList) {		

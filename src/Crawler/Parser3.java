@@ -43,7 +43,7 @@ public class Parser3 extends Parser {
 		Document doc = null;
 		LinkedHashMap<String, String> deadlines = new LinkedHashMap<>();
 		LinkedHashMap<String, LinkedHashMap<String, String>> allDeadlines = new LinkedHashMap<>();
-		Pattern pattern = Pattern.compile("(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\\s+\\d{1,2}(\\s+|,)\\s+\\d{4}", Pattern.CASE_INSENSITIVE);
+		Pattern pattern = Pattern.compile("((Mon(day)?|Tue(sday)?|Wed(nesday)?|Thu(rsday)?|Fri(day)?|Sat(urday)?|Sun(day)?)\\s\\d{1,2}.|\\d{1,2}.|\\d{1,2}-\\d{1,2}.)*(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)(\\s+|,)\\d{4}|\\w+.\\d{1,2}.-.\\w+.\\d{1,2}.\\w+.\\d{4}|\\w+.\\d{1,2},\\s\\d{4}", Pattern.CASE_INSENSITIVE);
 		String[] separated;
 		
 		// Connect to the home page
@@ -89,19 +89,27 @@ public class Parser3 extends Parser {
 	@Override
 	public String getAntiquity(String title, String description, ArrayList<String> linkList) {
 		String antiquity = "";
+	
+		// Connect to the home page
 		Document doc = this.getURLDoc(linkList.get(0));
-		Elements el = doc.select(":contains(Other Editions)").next();
-		
-		for(Element e: el) {
-			if(e.text().matches(".*\\d{4}.*")) {
-				String[] split = e.text().split("\\d{4}");
-				
-				// Add all the found editions and the current one to find the conference antiquity
-				return this.toOrdinal(split.length + 1);
-			}
+		Elements ele = null;
+		try {
+			Element el = doc.select("div:contains(Previous)").last();
+			ele = el.select("ul li");
+		} catch(NullPointerException e) {
+			return antiquity;
 		}
 		
-		return antiquity;
+		if(ele.isEmpty())
+			return antiquity;
+		else {
+			int currentYear = 1;
+			// Count the number of previously held conferences
+			currentYear += ele.size();
+			antiquity = this.toOrdinal(currentYear);
+			
+			return antiquity;
+		}
 	}
 	
 	public String getConferenceDays(String title, String description, ArrayList<String> linkList) {		
