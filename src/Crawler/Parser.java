@@ -30,7 +30,8 @@ public class Parser {
 										Arrays.asList("Twent", "Thirt", "Fort", "Fift", 
 										"Sixt", "Sevent", "Eight", "Ninet"));
 	protected static final ArrayList<String> SPONSORS = new ArrayList<>(Arrays.asList("ACM", "SPEC", 
-																		"UNESCO", "Springer", "IEEE"));
+																		"UNESCO", "Springer", "IEEE",
+																		"AFIS", "INCOSE"));
 	protected static final String[] COMMITTEES = {"committee", 
 			"chair", "paper", "member"};
 	
@@ -143,26 +144,29 @@ public class Parser {
 	 * @return venue
 	 */
 	public String getVenue(String title, String description, Country country, ArrayList<String> linkList) {
-		String venue = "", link, temp;
+		String venue = "", temp;
+		String[] links = new String[2];
 		Document doc = null;
 		// Search the venue website
-		link = this.searchLinks("[vV]enue", linkList);
-		if(!link.equals("")) {
-			// Connect to the target link
-			doc = this.getURLDoc(link);
-			
-			for(Element e: doc.getAllElements()) {
-				for(TextNode textNode: e.textNodes()) {
-//					searchCountries(textNode.text(), country);
-					if(!textNode.text().matches("^\\s+$")) {
-						venue = searchCountries(textNode.text(), country);
-						if(!venue.equals(""))
-							return venue;
+		links[0] = this.searchLinks("[vV]enue", linkList);
+		links[1] = this.searchLinks("[rR]egistra", linkList);
+		for(String link: links) {
+			if(!link.equals("")) {
+				// Connect to the target link
+				doc = this.getURLDoc(link);
+				
+				for(Element e: doc.getAllElements()) {
+					for(TextNode textNode: e.textNodes()) {
+//						searchCountries(textNode.text(), country);
+						if(!textNode.text().matches("^\\s+$")) {
+							venue = searchCountries(textNode.text(), country);
+							if(!venue.equals(""))
+								return venue;
+						}
 					}
 				}
 			}
 		}
-		
 		return venue;
 	}
 	
@@ -221,7 +225,6 @@ public class Parser {
 						} else
 							finished = true;
 					}
-					System.out.println();
 					allDeadlines.put(new String(keyHeading), new LinkedHashMap<String, String>(deadlines));
 					
 					// Reset the values for the next iteration of deadlines
@@ -234,13 +237,13 @@ public class Parser {
 				}
 			}
 			
-			for(String key: allDeadlines.keySet()) {
-				System.out.println("Heading: " + key);
-				LinkedHashMap<String, String> deadlines1 = allDeadlines.get(key);
-				for(String d: deadlines1.keySet()) {
-					System.out.println(d + ": " + deadlines1.get(d));
-				}
-			}
+//			for(String key: allDeadlines.keySet()) {
+//				System.out.println("Heading: " + key);
+//				LinkedHashMap<String, String> deadlines1 = allDeadlines.get(key);
+//				for(String d: deadlines1.keySet()) {
+//					System.out.println(d + ": " + deadlines1.get(d));
+//				}
+//			}
 				
 			return allDeadlines;
 		}
@@ -426,7 +429,7 @@ public class Parser {
 		String venue = "", countryRegex;
 		// Go through the list of countries
 		for(String countryName: country.getCountries()) {
-			countryRegex = this.changeToRegex(countryName);
+			countryRegex = this.changeToRegex(" " + countryName);
 			// Check if the string contains the country name
 			if(string.matches(countryRegex))
 				venue = countryName;

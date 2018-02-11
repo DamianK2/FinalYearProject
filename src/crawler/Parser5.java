@@ -13,6 +13,21 @@ import org.jsoup.nodes.TextNode;
 public class Parser5 extends Parser {
 	
 	@Override
+	public String getDescription(String homeLink) {
+		Document doc = this.getURLDoc(homeLink);
+		String description = "";
+
+		try {
+			description = doc.select("p").first().text();
+			System.out.println(description);
+		} catch(NullPointerException e) {
+			System.err.println("No paragraph found to extract the description.");
+		}
+		
+		return description;
+	}
+	
+	@Override
 	public LinkedHashMap<String, LinkedHashMap<String, String>> getDeadlines(ArrayList<String> linkList) {
 		Document doc = null;
 		LinkedHashMap<String, String> deadlines = new LinkedHashMap<>();

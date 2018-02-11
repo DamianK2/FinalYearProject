@@ -25,6 +25,11 @@ class Parser5Test {
 			"https://unescoprivacychair.urv.cat/psd2018/index.php?m=venue", "https://unescoprivacychair.urv.cat/psd2018/index.php"));
 
 //	@Test
+//	void testGetDescription() {
+//		parser.getDescription("https://icssea.org/");
+//	}
+	
+//	@Test
 //	void testGetDeadlines() {
 //		
 //		parser.getDeadlines(new ArrayList<String>(Arrays.asList("https://itrust.sutd.edu.sg/hase2017/important-dates/")));

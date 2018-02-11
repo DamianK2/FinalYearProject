@@ -19,7 +19,6 @@ public class Parser4 extends Parser {
 	public String getDescription(String homeLink) {
 		Document doc = this.getURLDoc(homeLink);
 		String description = "";
-		System.out.println(homeLink);
 
 		try {
 			description = doc.select("div.page-header").parents().first().text();
