@@ -65,9 +65,10 @@ public class Crawler {
 	
 	// Add the newly fetched links into an ArrayList
 	protected void addToLinkList(Elements links) {
-		for(Element link: links) {			
-			if(!this.checkDuplicates(link.attr("abs:href")))
-				linkList.add(link.attr("abs:href"));
+		for(Element link: links) {
+			// Eliminate the unneeded links with images or pdfs
+			if(!this.checkDuplicates(link.attr("abs:href")) && !link.attr("abs:href").toLowerCase().matches("[http].+(pdf|rar|zip|jpg|png)"))
+				linkList.add(link.attr("abs:href"));	
 		}
 	}
 	

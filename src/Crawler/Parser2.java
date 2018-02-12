@@ -133,8 +133,8 @@ public class Parser2 extends Parser {
 			antiquity = matcher.group(0);
 			// If the string is in the format of "1st, 2nd, 3rd" etc.
 			// Change it to its ordinal form
-			if(antiquity.matches("\\d{1,2}(?:st|nd|rd|th)")) {
-				String[] number = antiquity.split("(?:st|nd|rd|th)");
+			if(antiquity.toLowerCase().matches("\\d{1,2}(?:st|nd|rd|th)")) {
+				String[] number = antiquity.toLowerCase().split("(?:st|nd|rd|th)");
 				antiquity = this.toOrdinal(Integer.parseInt(number[0]));
 			}
 		}

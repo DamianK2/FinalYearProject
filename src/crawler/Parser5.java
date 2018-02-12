@@ -96,7 +96,7 @@ public class Parser5 extends Parser {
 		int antiquity = 1;
 		for(Element el: doc.getAllElements()) {
 			for(TextNode textNode: el.textNodes()) {
-				if(textNode.text().matches(this.changeToRegex("\\d{1,2}(?:st|nd|rd|th)")))
+				if(textNode.text().toLowerCase().matches(this.changeToRegex("\\d{1,2}(?:st|nd|rd|th)")))
 					antiquity++;
 			}
 		}

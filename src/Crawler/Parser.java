@@ -51,7 +51,7 @@ public class Parser {
 	public String getAcronym(String title) {
 		String acronymWithYear = "";
 		String acronym = "";
-		Pattern pattern = Pattern.compile("[A-Za-z]+.\\d{4}|[A-Za-z]+.\\d{2}");
+		Pattern pattern = Pattern.compile("[A-Za-z]+.\\d{4}|[A-Za-z]+'\\d{2}");
 		Matcher matcher;
 		// Match the pattern with the title
 		matcher = pattern.matcher(title);
@@ -284,8 +284,8 @@ public class Parser {
 			antiquity = matcher.group(0);
 			// If the string is in the format of "1st, 2nd, 3rd" etc.
 			// Change it to its ordinal form
-			if(antiquity.matches("\\d{1,2}(?:st|nd|rd|th)")) {
-				String[] number = antiquity.split("(?:st|nd|rd|th)");
+			if(antiquity.toLowerCase().matches("\\d{1,2}(?:st|nd|rd|th)")) {
+				String[] number = antiquity.toLowerCase().split("(?:st|nd|rd|th)");
 				antiquity = this.toOrdinal(Integer.parseInt(number[0]));
 			}
 		}
@@ -523,9 +523,11 @@ public class Parser {
 		Document doc = null;
 		try {
 			doc = Jsoup.connect(url).get();
+			
 			System.out.println("(inside Parser)Fetching from " + url + "...");
 		} catch (IOException e) {
 			System.out.println("Something went wrong when getting the first element from the list of links.");
+			System.out.println("THE URL THAT FUCKS UP IS: " + url);
 			e.printStackTrace();
 		}
 		return doc;

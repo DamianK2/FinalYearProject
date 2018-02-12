@@ -177,7 +177,6 @@ class ParserTest {
 	@Disabled("This method uses JSoup library functions only")
 	@Test
 	void testGetURLDoc() {
-		
 	}
 
 	

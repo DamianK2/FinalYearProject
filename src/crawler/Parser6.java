@@ -86,8 +86,8 @@ public class Parser6 extends Parser {
 			if(antiquity.isEmpty())
 				continue;
 			// If it is in the form of 1st, 2nd, 3rd etc. then strip of the ending i.e. st, nd
-			else if(antiquity.matches("\\d{1,2}(?:st|nd|rd|th)")) {
-				String[] number = antiquity.split("(?:st|nd|rd|th)");
+			else if(antiquity.toLowerCase().matches("\\d{1,2}(?:st|nd|rd|th)")) {
+				String[] number = antiquity.toLowerCase().split("(?:st|nd|rd|th)");
 				return this.toOrdinal(Integer.parseInt(number[0]));
 			} else {
 				return antiquity;

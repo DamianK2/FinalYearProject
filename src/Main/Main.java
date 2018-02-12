@@ -39,7 +39,12 @@ public class Main {
 										"http://www.es.mdh.se/icst2018/",
 										"https://icssea.org/",
 //										"https://eseiw2018.wixsite.com/oulu",
-										"http://www.icsoft.org/"));
+										"http://www.icsoft.org/",
+										"http://issre.net/",
+										"https://sites.uoit.ca/ifiptm2018/index.php",
+										"http://cseet2017.com/",
+										"http://redmis2016.com.mx/conisoft2017/",
+										"http://www.ieee-iccse.org/"));
 			
 	public static void main(String[] args) {
 		//long tStart = System.currentTimeMillis();
