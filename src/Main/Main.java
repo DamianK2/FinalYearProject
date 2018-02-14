@@ -62,29 +62,15 @@ public class Main {
         // Create a row and put some cells in it. Rows are 0 based.
         Row row = sheet.createRow(0);
         row.createCell(0).setCellValue(createHelper.createRichTextString("Acronym"));
-        row.createCell(1).setCellValue(createHelper.createRichTextString("Title"));
-        row.createCell(2).setCellValue(createHelper.createRichTextString("Sponsors"));
-        row.createCell(3).setCellValue(createHelper.createRichTextString("Proceedings"));
-        row.createCell(4).setCellValue(createHelper.createRichTextString("Description"));
-        row.createCell(5).setCellValue(createHelper.createRichTextString("Venue"));
-        row.createCell(6).setCellValue(createHelper.createRichTextString("Submission deadline"));
-        row.createCell(7).setCellValue(createHelper.createRichTextString("Notification deadline"));
-        row.createCell(8).setCellValue(createHelper.createRichTextString("Camera ready deadline"));
-        row.createCell(9).setCellValue(createHelper.createRichTextString("Work in progress papers"));
-        row.createCell(10).setCellValue(createHelper.createRichTextString("Submission deadline"));
-        row.createCell(11).setCellValue(createHelper.createRichTextString("Notification deadline"));
-        row.createCell(12).setCellValue(createHelper.createRichTextString("Camera ready deadline"));
-        row.createCell(13).setCellValue(createHelper.createRichTextString("Tool papers"));
-        row.createCell(14).setCellValue(createHelper.createRichTextString("Submission deadline"));
-        row.createCell(15).setCellValue(createHelper.createRichTextString("Notification deadline"));
-        row.createCell(16).setCellValue(createHelper.createRichTextString("Camera ready deadline")); 
-        row.createCell(17).setCellValue(createHelper.createRichTextString("Workshop papers"));
-        row.createCell(18).setCellValue(createHelper.createRichTextString("Submission deadline"));
-        row.createCell(19).setCellValue(createHelper.createRichTextString("Notification deadline"));
-        row.createCell(20).setCellValue(createHelper.createRichTextString("Camera ready deadline"));
-        row.createCell(21).setCellValue(createHelper.createRichTextString("Current Year"));
-        row.createCell(22).setCellValue(createHelper.createRichTextString("Antiquity"));
-        row.createCell(23).setCellValue(createHelper.createRichTextString("Conference Days"));
+        row.createCell(1).setCellValue(createHelper.createRichTextString("Link"));
+        row.createCell(2).setCellValue(createHelper.createRichTextString("Title"));
+        row.createCell(3).setCellValue(createHelper.createRichTextString("Sponsors"));
+        row.createCell(4).setCellValue(createHelper.createRichTextString("Proceedings"));
+        row.createCell(5).setCellValue(createHelper.createRichTextString("Description"));
+        row.createCell(6).setCellValue(createHelper.createRichTextString("Venue"));
+        row.createCell(7).setCellValue(createHelper.createRichTextString("Antiquity"));
+        row.createCell(8).setCellValue(createHelper.createRichTextString("Conference Days"));
+        row.createCell(9).setCellValue(createHelper.createRichTextString("Current Year"));
         
         ArrayList<Parser> parsers = new ArrayList<>();
         int i = 0;
@@ -107,9 +93,9 @@ public class Main {
 	        row = sheet.createRow(i+1);
 	        // TODO Use this in the database to store the link to be used with the acronym as a[href] on the webpage
 	        String mainLink = links.get(0);
-	       
+	        row.createCell(1).setCellValue(createHelper.createRichTextString(mainLink));
 			String title = parsers.get(0).getTitle(mainLink);
-			row.createCell(1).setCellValue(createHelper.createRichTextString(title));
+			row.createCell(2).setCellValue(createHelper.createRichTextString(title));
 			row.createCell(0).setCellValue(createHelper.createRichTextString(parsers.get(0).getAcronym(title)));
 			
 			String proceedings;
@@ -118,7 +104,7 @@ public class Main {
 				proceedings = parsers.get(k).getProceedings(links);
 	        	k++;
 	        } while(proceedings == "" && k < parsers.size());  
-			row.createCell(3).setCellValue(createHelper.createRichTextString(proceedings));
+			row.createCell(4).setCellValue(createHelper.createRichTextString(proceedings));
 			
 			String description;
 			k = 0;
@@ -127,7 +113,7 @@ public class Main {
 	        	k++;
 	        } while(description.equals("") && k < parsers.size());   
 	        
-	        row.createCell(4).setCellValue(createHelper.createRichTextString(description));
+	        row.createCell(5).setCellValue(createHelper.createRichTextString(description));
 	        
 	        String sponsor;
 			k = 0;
@@ -136,7 +122,7 @@ public class Main {
 				k++;
 			} while(sponsor == "" && k < parsers.size());
 			
-			row.createCell(2).setCellValue(createHelper.createRichTextString(sponsor));
+			row.createCell(3).setCellValue(createHelper.createRichTextString(sponsor));
 	        
 	        String venue;
 	        k = 0;
@@ -146,7 +132,33 @@ public class Main {
 	        } while(venue == "" && k < parsers.size());	
 
 			System.out.println("VENUE: " + venue);
-	        row.createCell(5).setCellValue(createHelper.createRichTextString(venue));
+	        row.createCell(6).setCellValue(createHelper.createRichTextString(venue));
+	        
+	        String antiquity; 
+	        k = 0;
+	        do {
+	        	antiquity = parsers.get(k).getAntiquity(title, description, links);
+	        	k++;
+	        } while(antiquity == "" && k < parsers.size());
+	        
+	        row.createCell(7).setCellValue(createHelper.createRichTextString(antiquity));
+			
+			String date;
+			k = 0;
+	        do {
+	        	date = parsers.get(k).getConferenceDays(title, description, links);
+	        	k++;
+	        } while(date == "" && k < parsers.size());
+	        row.createCell(8).setCellValue(createHelper.createRichTextString(date));
+	        
+	        String year = "";
+	        k = 0;
+	        do {
+	        	 year = parsers.get(k).getConferenceYear(date, title);
+	        	 k++;
+	        } while(year == "" && k < parsers.size());
+	       
+	        row.createCell(9).setCellValue(createHelper.createRichTextString(year));
 	        
 	        k = 0;
 	        do {
@@ -154,7 +166,7 @@ public class Main {
 	        	k++;
 	        } while(deadlines.isEmpty() && k < parsers.size());
 	        		
-	        int j = 6;
+	        int j = 9;
 
 	        for(String key: deadlines.keySet()) {
 //				System.out.println("Heading: " + key);
@@ -165,32 +177,6 @@ public class Main {
 					j++;
 				}
 			}
-	        
-	        String antiquity; 
-	        k = 0;
-	        do {
-	        	antiquity = parsers.get(k).getAntiquity(title, description, links);
-	        	k++;
-	        } while(antiquity == "" && k < parsers.size());
-	        
-	        row.createCell(++j).setCellValue(createHelper.createRichTextString(antiquity));
-			
-			String date;
-			k = 0;
-	        do {
-	        	date = parsers.get(k).getConferenceDays(title, description, links);
-	        	k++;
-	        } while(date == "" && k < parsers.size());
-	        row.createCell(++j).setCellValue(createHelper.createRichTextString(date));
-	        
-	        String year = "";
-	        k = 0;
-	        do {
-	        	 year = parsers.get(k).getConferenceYear(date, title);
-	        	 k++;
-	        } while(year == "" && k < parsers.size());
-	       
-	        row.createCell(++j).setCellValue(createHelper.createRichTextString(year));
 	        
 	        LinkedHashMap<String, List<String>> committees;
 	        k = 0;
@@ -209,7 +195,6 @@ public class Main {
 					}
 					System.out.println("(wtf) " + allMembers);
 		        	row.createCell(++j).setCellValue(createHelper.createRichTextString(allMembers));
-		        	j++;
 		        	allMembers = "";
 				}
 	        }	
