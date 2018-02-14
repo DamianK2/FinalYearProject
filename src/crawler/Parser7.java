@@ -43,7 +43,7 @@ public class Parser7 extends Parser {
 					for(String s: furtherSeparated) {
 						// If the deadline was not found yet then search for it
 						if(deadline.isEmpty()) {
-							deadline = this.findDeadline(Jsoup.parse(s).text(), pattern);
+							deadline = this.findPattern(Jsoup.parse(s).text(), pattern);
 							// If it was found in this iteration of the loop then we can skip to the next iteration
 							if(!deadline.isEmpty())
 								continue;

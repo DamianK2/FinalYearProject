@@ -37,7 +37,7 @@ public class Parser8 extends Parser {
 					if(!s.matches("^\\s+$")) {
 						// Remove spaces at the front and the end of a string if they are present
 						s = s.replaceAll("^\\s+|\\s+$", "");
-						String found = this.findDeadline(s, pattern);
+						String found = this.findPattern(s, pattern);
 						if(found.isEmpty() && this.isSubmission(s)) {
 							deadlineTitle = s;
 						} else if(!found.isEmpty()) {

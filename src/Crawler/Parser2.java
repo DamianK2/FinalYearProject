@@ -80,7 +80,7 @@ public class Parser2 extends Parser {
 				separated = elementString.split("<br> ");
 				int i = 0;
 				for(String string: separated) {
-					String found = this.findDeadline(Jsoup.parse(string).text(), pattern);
+					String found = this.findPattern(Jsoup.parse(string).text(), pattern);
 					if(!found.equals("")) {
 						split = Jsoup.parse(string).text().split(":");
 						deadlines.put(split[0], found);

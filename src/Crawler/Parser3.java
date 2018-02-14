@@ -62,7 +62,7 @@ public class Parser3 extends Parser {
 				
 				int i = 0;
 				for(String string: separated) {
-					String found = this.findDeadline(Jsoup.parse(string).text(), pattern);
+					String found = this.findPattern(Jsoup.parse(string).text(), pattern);
 					if(!found.equals("")) {
 						deadlines.put(Jsoup.parse(string.replaceAll(found, "")).text(), found);
 						allDeadlines.put(Integer.toString(i), new LinkedHashMap<String, String>(deadlines));

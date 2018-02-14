@@ -80,7 +80,7 @@ public class Parser6 extends Parser {
 		String antiquity = "";
 		
 		for(String toCheck: separated) {
-			antiquity = this.findDeadline(toCheck, pattern);
+			antiquity = this.findPattern(toCheck, pattern);
 			
 			// No need to check other if statements if the string is empty
 			if(antiquity.isEmpty())

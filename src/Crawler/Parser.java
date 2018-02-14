@@ -31,14 +31,16 @@ public class Parser {
 										"Sixt", "Sevent", "Eight", "Ninet"));
 	protected static final ArrayList<String> SPONSORS = new ArrayList<>(Arrays.asList("ACM", "SPEC", 
 																		"UNESCO", "Springer", "IEEE",
-																		"AFIS", "INCOSE"));
+																		"AFIS", "INCOSE", "IFIP"));
 	protected static final String[] COMMITTEES = {"committee", 
 			"chair", "paper", "member"};
 	
 	private static final int MAX_CHARS_IN_DATE = 30;
+	private static String acronymPattern = "([A-Z]{3,}.[A-Z]{1,}|[A-Z]{3,})";
+	private static String acronymYearPattern = "([A-Z]+.[A-Z]+|[A-Z]+)('|\\s)(\\d{4}|\\d{2})";
 	
 	/**
-	 * Parses the title from the home page of the website.
+	 * Extracts the title from the home page of the website.
 	 * @return title
 	 */
 	public String getTitle(String homeLink) {
@@ -48,23 +50,22 @@ public class Parser {
 		return doc.title();
 	}
 	
+	/**
+	 * Finds the acronym of the conference from the title
+	 * @param title
+	 * @return acronym or empty string
+	 */
 	public String getAcronym(String title) {
-		String acronymWithYear = "";
-		String acronym = "";
-		Pattern pattern = Pattern.compile("[A-Za-z]+.\\d{4}|[A-Za-z]+'\\d{2}");
-		Matcher matcher;
-		// Match the pattern with the title
-		matcher = pattern.matcher(title);
-		if(matcher.find())
-			acronymWithYear = matcher.group(0);
+		Pattern pattern = Pattern.compile(acronymYearPattern);
 		
-		pattern = Pattern.compile("[A-Za-z]+");
-		// Match the pattern with the title
-		matcher = pattern.matcher(acronymWithYear);
-		if(matcher.find())
-			acronym = matcher.group(0);
+		// Match the title with the pattern
+		Matcher matcher = pattern.matcher(title);
+		pattern = Pattern.compile(acronymPattern);
 		
-		return acronym;
+		if(matcher.find())
+			return this.findPattern(matcher.group(0), pattern);
+		else
+			return this.findPattern(title, pattern);
 	}
 	
 	/**
@@ -81,7 +82,7 @@ public class Parser {
 				if(sponsors.isEmpty())
 					sponsors += sponsor;
 				else
-					sponsors += "/" + sponsor;
+					sponsors += "/" + sponsor;	//There can be more than 1 sponsor
 		}
 		
 		return sponsors;
@@ -541,17 +542,15 @@ public class Parser {
 	 * @param pattern
 	 * @return deadline
 	 */
-	protected String findDeadline(String string, Pattern pattern) {
-		String found = "";
-		Matcher matcher;
-		matcher = pattern.matcher(string);
+	protected String findPattern(String string, Pattern pattern) {
+		// Match the string with the pattern
+		 Matcher matcher = pattern.matcher(string);
 		
 		if(matcher.find())
-			found = matcher.group(0);
-
-		return found;
+			return matcher.group(0);
+		else
+			return "";
 	}
-	
 	
 	/**
 	 * Looks through the string to find a date.
@@ -559,11 +558,18 @@ public class Parser {
 	 * @return date or empty string
 	 */
 	protected String findConfDays(String toCheck) {		
-		Pattern pattern = Pattern.compile("\\d+\\s*?(-|–)\\s*?\\d+.+\\w+.\\d{4}|(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?).+\\d{1,2}(-|\\s–\\s)\\d{1,2}.+?\\d{4}|(Mon(day)?|Tue(sday)?|Wed(nesday)?|Thu(rsday)?|Fri(day)?|Sat(urday)?|Sun(day)?)(\\s+?|,\\s+?).+?\\d{1,2}\\s+?(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\\s+?\\d{4}|(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\\s\\d{1,2}-\\w+\\s\\d{1,2},\\s\\d{4}");
+		Pattern pattern = Pattern.compile("\\d+\\s*?(-|–)\\s*?\\d+.+\\w+.\\d{4}|(Jan(uary)?|Feb(ruary)?|Mar(ch)?|"
+				+ "Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)."
+				+ "+\\d{1,2}(-|\\s–\\s)\\d{1,2}.+?\\d{4}|(Mon(day)?|Tue(sday)?|Wed(nesday)?|Thu(rsday)?|Fri(day)?|"
+				+ "Sat(urday)?|Sun(day)?)(\\s+?|,\\s+?).+?\\d{1,2}\\s+?(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|"
+				+ "May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\\s+?\\d{4}|"
+				+ "(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|"
+				+ "Nov(ember)?|Dec(ember)?)\\s\\d{1,2}-\\w+\\s\\d{1,2},\\s\\d{4}");
 		Matcher matcher;
-		// Match the pattern with the description
+		// Match the pattern with the string
 		matcher = pattern.matcher(toCheck);
 		if(matcher.find()) {
+			// Make sure the found string doesn't exceed the maximum length
 			if(matcher.group(0).length() < MAX_CHARS_IN_DATE)
 				return matcher.group(0);
 			else
@@ -633,8 +639,10 @@ public class Parser {
 	 * @return true/false
 	 */
 	protected boolean isSubmission(String toCheck) {
+		// Add keywords to this array if new are found
 		String[] keywords = {"submis", "submit", "notification", "camera", "proposal", "registration"};
 		
+		// Iterate through the keywords to find it in the string
 		for(String key: keywords) {
 			if(toCheck.toLowerCase().matches(this.changeToRegex(key)))
 				return true;

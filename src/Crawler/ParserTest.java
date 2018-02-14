@@ -181,11 +181,11 @@ class ParserTest {
 
 	
 	@Test
-	void testFindDeadline() {
+	void testFindPattern() {
 		Pattern pattern = Pattern.compile("\\d{4}");
-		assertEquals("2018", parser.findDeadline("submission deadline: 2018", pattern));
-		assertEquals("2020", parser.findDeadline("camera ready papers: 2020", pattern));
-		assertEquals("2019", parser.findDeadline("notification deadline: 2019", pattern));
+		assertEquals("2018", parser.findPattern("submission deadline: 2018", pattern));
+		assertEquals("2020", parser.findPattern("camera ready papers: 2020", pattern));
+		assertEquals("2019", parser.findPattern("notification deadline: 2019", pattern));
 	}
 
 	@Test
