@@ -38,12 +38,12 @@ public class Main {
 										"https://www.isf.cs.tu-bs.de/cms/events/sefm2018/",
 										"http://www.es.mdh.se/icst2018/",
 										"https://icssea.org/",
-//										"https://eseiw2018.wixsite.com/oulu",
+//										"https://eseiw2018.wixsite.com/oulu", JAVASCRIPT
 										"http://www.icsoft.org/",
 										"http://issre.net/",
 										"https://sites.uoit.ca/ifiptm2018/index.php",
 										"http://cseet2017.com/",
-										"http://redmis2016.com.mx/conisoft2017/",
+//										"http://redmis2016.com.mx/conisoft2017/", JAVASCRIPT
 										"http://www.ieee-iccse.org/"));
 			
 	public static void main(String[] args) {
@@ -166,7 +166,7 @@ public class Main {
 	        	k++;
 	        } while(deadlines.isEmpty() && k < parsers.size());
 	        		
-	        int j = 9;
+	        int j = 10;
 
 	        for(String key: deadlines.keySet()) {
 //				System.out.println("Heading: " + key);

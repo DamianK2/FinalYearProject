@@ -67,7 +67,7 @@ public class Crawler {
 	protected void addToLinkList(Elements links) {
 		for(Element link: links) {
 			// Eliminate the unneeded links with images or pdfs
-			if(!this.checkDuplicates(link.attr("abs:href")) && !link.attr("abs:href").toLowerCase().matches("[http].+(pdf|rar|zip|jpg|png)"))
+			if(!this.checkDuplicates(link.attr("abs:href")) && !link.attr("abs:href").toLowerCase().matches("[http].+(pdf|rar|zip|jpg|png|doc)"))
 				linkList.add(link.attr("abs:href"));	
 		}
 	}

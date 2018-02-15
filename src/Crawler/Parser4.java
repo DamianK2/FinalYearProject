@@ -1,6 +1,7 @@
 package crawler;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,20 +32,22 @@ public class Parser4 extends Parser {
 
 	@Override
 	public String getVenue(String title, String description, Country country, ArrayList<String> linkList) {
-		String venue = "", header;
-		Document doc = null;
+		String venue = "", found;
+		String[] possibleNames = {"div#header", "div.header","header#header", "header.header", "div#footer", "div.footer", "footer#footer", "footer.footer"};
 		
 		// Connect to the home page
-        doc = this.getURLDoc(linkList.get(0));
-		header = doc.select("div#header").text();
-		
-		if(header.isEmpty())
-			header = doc.select("header#header").text();
-		
-		// Search the target div header on the home website for the country of the conference
-		if(!header.equals(""))
-			venue = this.searchCountries(header, country);
-		
+		Document doc = this.getURLDoc(linkList.get(0));
+        
+        // Iterate through all the possible name id's and classes
+        for(String name: possibleNames) {
+        	found = doc.select(name).text();
+        	if(!found.isEmpty()) {
+        		// Check if the found string contains the country
+        		venue = this.searchCountries(found, country);
+        		if(!venue.isEmpty())
+        			return venue;
+        	}
+        }
 		return venue;
 	}
 	

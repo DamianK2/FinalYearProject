@@ -92,6 +92,7 @@ public class Parser {
 	 * Searches and parses different links to find the proceedings.
 	 * @return proceedings
 	 */
+	//TODO change to use wholetext and texnodes
 	public String getProceedings(ArrayList<String> linkList) {
 		String proceedings = "";
 		this.addLinkKeywords();
@@ -142,17 +143,18 @@ public class Parser {
 	 * @param title
 	 * @param description
 	 * @param country
-	 * @return venue
+	 * @return venue or empty string
 	 */
 	public String getVenue(String title, String description, Country country, ArrayList<String> linkList) {
-		String venue = "", temp;
+		String venue = "";
 		String[] links = new String[2];
 		Document doc = null;
-		// Search the venue website
+		// Search for the different links in the conference
 		links[0] = this.searchLinks("[vV]enue", linkList);
 		links[1] = this.searchLinks("[rR]egistra", linkList);
+		
 		for(String link: links) {
-			if(!link.equals("")) {
+			if(!link.isEmpty()) {
 				// Connect to the target link
 				doc = this.getURLDoc(link);
 				
@@ -161,7 +163,7 @@ public class Parser {
 //						searchCountries(textNode.text(), country);
 						if(!textNode.text().matches("^\\s+$")) {
 							venue = searchCountries(textNode.text(), country);
-							if(!venue.equals(""))
+							if(!venue.isEmpty())
 								return venue;
 						}
 					}
@@ -169,6 +171,13 @@ public class Parser {
 			}
 		}
 		return venue;
+	}
+	
+	public static void main(String[] args) {
+		Parser p = new Parser4();
+		Country country = new Country();
+		String v = p.getVenue("", "", country, new ArrayList<String>(Arrays.asList("http://issre.net/")));
+		System.out.println(v);
 	}
 	
 	/**
@@ -392,6 +401,8 @@ public class Parser {
 		searchKeywords.add("[iI]nstructions");
 		searchKeywords.add("[iI]nformation");
 		searchKeywords.add("[gG]uideline");
+		searchKeywords.add("[pP]ublication");
+		searchKeywords.add("[dD]ocument");
 	}
 	
 	/**
