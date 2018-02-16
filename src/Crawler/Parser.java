@@ -38,6 +38,13 @@ public class Parser {
 	private static final int MAX_CHARS_IN_DATE = 30;
 	private static String acronymPattern = "([A-Z]{3,}.[A-Z]{1,}|[A-Z]{3,})";
 	private static String acronymYearPattern = "([A-Z]+.[A-Z]+|[A-Z]+)('|\\s)(\\d{4}|\\d{2})";
+	private static String confDaysPattern = "\\d+\\s*?(-|–)\\s*?\\d+.+\\w+.\\d{4}|(Jan(uary)?|Feb(ruary)?|Mar(ch)?|"
+			+ "Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)."
+			+ "+\\d{1,2}(-|\\s–\\s)\\d{1,2}.+?\\d{4}|(Mon(day)?|Tue(sday)?|Wed(nesday)?|Thu(rsday)?|Fri(day)?|"
+			+ "Sat(urday)?|Sun(day)?)(\\s+?|,\\s+?).+?\\d{1,2}\\s+?(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|"
+			+ "May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\\s+?\\d{4}|"
+			+ "(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|"
+			+ "Nov(ember)?|Dec(ember)?)\\s\\d{1,2}-\\w+\\s\\d{1,2},\\s\\d{4}";
 	
 	/**
 	 * Extracts the title from the home page of the website.
@@ -94,26 +101,28 @@ public class Parser {
 	 */
 	//TODO change to use wholetext and texnodes
 	public String getProceedings(ArrayList<String> linkList) {
-		String proceedings = "";
+		StringBuilder proceedings = new StringBuilder();
 		this.addLinkKeywords();
 		Document doc;
 		int keyword = 0;
-		while(proceedings == "" && keyword < searchKeywords.size()) {
+		while(proceedings.toString().isEmpty() && keyword < searchKeywords.size()) {
 			String url = this.searchLinks(searchKeywords.get(keyword), linkList);
 			if(!url.isEmpty()) {
 				doc = this.getURLDoc(url);
-				String elementString = doc.select("*p").text();
-				for(String sponsor: SPONSORS) {
-					if(elementString.matches(changeToRegex(" " + sponsor)))
-						if(proceedings.isEmpty())
-							proceedings += sponsor;
-						else
-							proceedings += "/" + sponsor;
+				for(Element e: doc.getAllElements()) {
+					String elementString = e.wholeText();
+					for(String sponsor: SPONSORS) {
+						if(elementString.matches(changeToRegex(" " + sponsor)))
+							if(proceedings.toString().isEmpty())
+								proceedings.append(sponsor);
+							else if(!proceedings.toString().contains(sponsor))
+								proceedings.append("/" + sponsor);
+					}
 				}
 			}
 			keyword++;
 		}
-		return proceedings;
+		return proceedings.toString();
 	}
 	
 	/**
@@ -569,13 +578,7 @@ public class Parser {
 	 * @return date or empty string
 	 */
 	protected String findConfDays(String toCheck) {		
-		Pattern pattern = Pattern.compile("\\d+\\s*?(-|–)\\s*?\\d+.+\\w+.\\d{4}|(Jan(uary)?|Feb(ruary)?|Mar(ch)?|"
-				+ "Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)."
-				+ "+\\d{1,2}(-|\\s–\\s)\\d{1,2}.+?\\d{4}|(Mon(day)?|Tue(sday)?|Wed(nesday)?|Thu(rsday)?|Fri(day)?|"
-				+ "Sat(urday)?|Sun(day)?)(\\s+?|,\\s+?).+?\\d{1,2}\\s+?(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|"
-				+ "May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\\s+?\\d{4}|"
-				+ "(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|"
-				+ "Nov(ember)?|Dec(ember)?)\\s\\d{1,2}-\\w+\\s\\d{1,2},\\s\\d{4}");
+		Pattern pattern = Pattern.compile(confDaysPattern);
 		Matcher matcher;
 		// Match the pattern with the string
 		matcher = pattern.matcher(toCheck);
