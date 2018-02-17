@@ -1,14 +1,14 @@
 package venue;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Locale;
 
 public class Country {
 	// Add country exceptions at the start
-	private static final ArrayList<String> countries = new ArrayList<>(Arrays.asList("USA", "UK", "Catalonia", "European Union", "Goias", "Korea", "Sri Lanka"));
+	private static final ArrayList<String> countries = new ArrayList<>();
 
 	public Country() {
+		this.addExceptions();
 		this.storeCountries();
 	}
 	
@@ -17,9 +17,19 @@ public class Country {
 		String name;
 		for(Locale locale: locales) {
 			name = locale.getDisplayCountry();
-			if(!name.equals(""))
+			if(!name.isEmpty())
 				countries.add(name);
 		}
+	}
+	
+	private void addExceptions() {
+		countries.add("USA");
+		countries.add("UK");
+		countries.add("Catalonia");
+		countries.add("European Union");
+		countries.add("Goias");
+		countries.add("Korea");
+		countries.add("Sri Lanka");
 	}
 	
 	public ArrayList<String> getCountries() {

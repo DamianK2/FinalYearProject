@@ -32,6 +32,8 @@ public class Parser {
 	protected static final ArrayList<String> SPONSORS = new ArrayList<>(Arrays.asList("ACM", "SPEC", 
 																		"UNESCO", "Springer", "IEEE",
 																		"AFIS", "INCOSE", "IFIP"));
+	protected static final ArrayList<String> PROCEEDINGS = new ArrayList<>(Arrays.asList("ACM", "SPEC", 
+																			"Springer", "IEEE", "IFIP"));
 	protected static final String[] COMMITTEES = {"committee", 
 			"chair", "paper", "member"};
 	
@@ -99,7 +101,6 @@ public class Parser {
 	 * Searches and parses different links to find the proceedings.
 	 * @return proceedings
 	 */
-	//TODO change to use wholetext and texnodes
 	public String getProceedings(ArrayList<String> linkList) {
 		StringBuilder proceedings = new StringBuilder();
 		this.addLinkKeywords();
@@ -111,12 +112,12 @@ public class Parser {
 				doc = this.getURLDoc(url);
 				for(Element e: doc.getAllElements()) {
 					String elementString = e.wholeText();
-					for(String sponsor: SPONSORS) {
-						if(elementString.matches(changeToRegex(" " + sponsor)))
+					for(String proc: PROCEEDINGS) {
+						if(elementString.matches(changeToRegex(" " + proc)))
 							if(proceedings.toString().isEmpty())
-								proceedings.append(sponsor);
-							else if(!proceedings.toString().contains(sponsor))
-								proceedings.append("/" + sponsor);
+								proceedings.append(proc);
+							else if(!proceedings.toString().contains(proc))
+								proceedings.append("/" + proc);
 					}
 				}
 			}
