@@ -57,12 +57,6 @@ public class Parser4 extends Parser {
 		return venue;
 	}
 	
-	public static void main(String[] args) {
-		Parser p = new Parser4();
-		Country country = new Country();
-		p.getVenue("", "", country, new ArrayList<String>(Arrays.asList("http://www.ispass.org/ispass2018/")));
-	}
-	
 	@Override
 	public LinkedHashMap<String, LinkedHashMap<String, String>> getDeadlines(ArrayList<String> linkList) {
 		Document doc = null;

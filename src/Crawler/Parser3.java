@@ -111,8 +111,26 @@ public class Parser3 extends Parser {
 		}
 	}
 	
-	public String getConferenceDays(String title, String description, ArrayList<String> linkList) {		
-		Document doc = this.getURLDoc(linkList.get(0));
-		return this.findConfDays(doc.select("#header").text());
+	public String getConferenceDays(String title, String description, ArrayList<String> linkList) {	
+		String[] possibleNames = {"div#header", "div.header","header#header", "header.header", "div#footer", "div.footer", "footer#footer", "footer.footer", "header", "footer"};
+		
+		// Search the links for the title of the webpage (aimed at pages with frames)
+		ArrayList<String> possibleLinks = this.findAllLinks(this.changeToRegex("[tT]itle"), linkList);
+		possibleLinks.add(linkList.get(0));
+		
+		// Iterate through all links to find the information from the header and footer
+		for(String link: possibleLinks) {
+			// Connect to the home page
+			Document doc = this.getURLDoc(link);
+	        
+	        // Iterate through all the possible name id's and classes
+	        for(String name: possibleNames) {
+	        	String confDays = this.findConfDays(doc.select(name).text());
+	        	if(!confDays.isEmpty())
+	        		return confDays;
+	        }
+		}
+
+		return "";
 	}
 }
