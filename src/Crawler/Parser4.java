@@ -1,6 +1,7 @@
 package crawler;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,22 +31,36 @@ public class Parser4 extends Parser {
 	@Override
 	public String getVenue(String title, String description, Country country, ArrayList<String> linkList) {
 		String venue = "", found;
-		String[] possibleNames = {"div#header", "div.header","header#header", "header.header", "div#footer", "div.footer", "footer#footer", "footer.footer"};
+		String[] possibleNames = {"div#header", "div.header","header#header", "header.header", "div#footer", "div.footer", "footer#footer", "footer.footer", "header", "footer"};
 		
-		// Connect to the home page
-		Document doc = this.getURLDoc(linkList.get(0));
-        
-        // Iterate through all the possible name id's and classes
-        for(String name: possibleNames) {
-        	found = doc.select(name).text();
-        	if(!found.isEmpty()) {
-        		// Check if the found string contains the country
-        		venue = this.searchCountries(found, country);
-        		if(!venue.isEmpty())
-        			return venue;
-        	}
-        }
+		// Search the links for the title of the webpage (aimed at pages with frames)
+		ArrayList<String> possibleLinks = this.findAllLinks(this.changeToRegex("[tT]itle"), linkList);
+		possibleLinks.add(linkList.get(0));
+		
+		// Iterate through all links to find the information from the header and footer
+		for(String link: possibleLinks) {
+			// Connect to the home page
+			Document doc = this.getURLDoc(link);
+	        
+	        // Iterate through all the possible name id's and classes
+	        for(String name: possibleNames) {
+	        	found = doc.select(name).text();
+	        	if(!found.isEmpty()) {
+	        		// Check if the found string contains the country
+	        		venue = this.searchCountries(found, country);
+	        		if(!venue.isEmpty())
+	        			return venue;
+	        	}
+	        }
+		}
+		
 		return venue;
+	}
+	
+	public static void main(String[] args) {
+		Parser p = new Parser4();
+		Country country = new Country();
+		p.getVenue("", "", country, new ArrayList<String>(Arrays.asList("http://www.ispass.org/ispass2018/")));
 	}
 	
 	@Override

@@ -33,7 +33,7 @@ public class Main {
 										"https://unescoprivacychair.urv.cat/psd2018/index.php",
 										"https://2018.splashcon.org/home",
 //										"https://itrust.sutd.edu.sg/hase2017/", TODO committees
-//										"http://www.ispass.org/ispass2018/" TODO find a way to get framesets
+										"http://www.ispass.org/ispass2018/",
 										"https://www.computer.org/web/compsac2018",
 										"https://www.isf.cs.tu-bs.de/cms/events/sefm2018/",
 										"http://www.es.mdh.se/icst2018/",

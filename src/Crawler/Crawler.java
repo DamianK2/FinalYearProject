@@ -26,17 +26,39 @@ public class Crawler {
 	
 	// Fetch all links in the website, including sub-links
 	public ArrayList<String> getAllLinks() {
-		Document doc = null;
-        String firstURL = linkList.get(0);
-		try {
-			doc = Jsoup.connect(firstURL).get();
-			System.out.println("Fetching from " + firstURL + "...");
-		} catch (IOException e) {
-			System.out.println("Something went wrong when getting the first element from the list of links.");
-			e.printStackTrace();
-		}
+		Document doc = this.getURLDoc(linkList.get(0));
+        StringBuilder sb = new StringBuilder(); 
         Elements links = doc.select("a[href]");
-        this.addToLinkList(links);
+        
+        if(links.isEmpty()) {
+            Elements eles = doc.getElementsByTag("frame");
+            if(!eles.isEmpty()) {
+            	for(Element e: eles) {
+                	sb.append(linkList.get(0));
+                	String src = e.attr("src");
+                	if(!src.isEmpty()) {
+                		sb.append(src);
+                		linkList.add(sb.toString());
+                	}
+                	
+                	doc = this.getURLDoc(sb.toString());
+                	links = doc.select("a[href]");
+                    
+                    if(!links.isEmpty())
+                    	this.addToLinkList(links);
+                    
+                    // Reset the variable
+                    sb.setLength(0);
+                }
+            }
+            
+        } else {
+        	this.addToLinkList(links);
+        }
+        
+//        for(String link: linkList) {
+//        	System.out.println(link);
+//        }
         
 //        // Create threads for each link just fetched to decrease crawling time
 //        Thread thread;
@@ -67,7 +89,10 @@ public class Crawler {
 	protected void addToLinkList(Elements links) {
 		for(Element link: links) {
 			// Eliminate the unneeded links with images or pdfs
-			if(!this.checkDuplicates(link.attr("abs:href")) && !link.attr("abs:href").toLowerCase().matches("[http].+(pdf|rar|zip|jpg|png|doc)"))
+			if(!this.checkDuplicates(link.attr("abs:href")) 
+					&& !link.attr("abs:href").toLowerCase().matches("[http].+(pdf|rar|zip|jpg|png|doc)") 
+					&& !link.text().matches(".*[oO]ther [eE]dition.*")
+					&& !link.attr("abs:href").toLowerCase().matches("mailto:.+"))
 				linkList.add(link.attr("abs:href"));	
 		}
 	}
@@ -79,5 +104,22 @@ public class Crawler {
 				check = true;
 		}
 		return check;
+	}
+	
+	private Document getURLDoc(String url) {
+		Document doc = null;
+		try {
+			doc = Jsoup.connect(url).get();
+			System.out.println("Fetching from " + url + "...");
+		} catch (IOException e) {
+			System.out.println("Something went wrong when getting the first element from the list of links.");
+			e.printStackTrace();
+		}
+		return doc;
+	}
+	
+	public static void main(String[] args) {
+		Crawler c = new Crawler("http://www.ispass.org/ispass2018/");
+		c.getAllLinks();
 	}
 }
