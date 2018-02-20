@@ -8,7 +8,7 @@ import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
 class Parser6Test {
-	private Parser parser = new Parser6();
+	private Parser parser = new Parser6(new Information());
 	private ArrayList<String> titles = new ArrayList<>(Arrays.asList("International Conference on Performance Engineering (ICPE) 2018: ICPE 2018", 
 			"ISPDC 2018 – The 17th IEEE International Symposium on Parallel and Distributed Computing, 25-27 June 2018, Geneva, Switzerland", 
 			"PSD2018 - Privacy in Statistical Databases - UNESCO Privacy Chair"));

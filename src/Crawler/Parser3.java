@@ -13,6 +13,10 @@ import venue.Country;
 
 public class Parser3 extends Parser {
 
+	public Parser3(Information info) {
+		super(info);
+	}
+
 	@Override
 	public String getDescription(String homeLink) {
 		Document doc = null;

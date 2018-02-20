@@ -1,7 +1,6 @@
 package crawler;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -13,6 +12,10 @@ import org.jsoup.select.Elements;
 import venue.Country;
 
 public class Parser4 extends Parser {
+	
+	public Parser4(Information info) {
+		super(info);
+	}
 	
 	@Override
 	public String getDescription(String homeLink) {

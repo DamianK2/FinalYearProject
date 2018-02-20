@@ -12,6 +12,10 @@ import org.jsoup.select.Elements;
 
 public class Parser6 extends Parser {
 
+	public Parser6(Information info) {
+		super(info);
+	}
+	
 	@Override
 	public LinkedHashMap<String, LinkedHashMap<String, String>> getDeadlines(ArrayList<String> linkList) {
 		Document doc = null;
@@ -100,7 +104,6 @@ public class Parser6 extends Parser {
 	@Override
 	public String getConferenceDays(String title, String description, ArrayList<String> linkList) {		
 		Document doc = null;
-		String regex = "";
 		String link = this.searchLinks("[iI]mportant", linkList);
 		if(link.isEmpty())
 			return "";

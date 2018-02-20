@@ -17,6 +17,7 @@ import org.jsoup.select.Elements;
 import venue.Country;
 
 public class Parser {
+	protected static Information information;
 	protected static ArrayList<String> searchKeywords = new ArrayList<>();
 	private static final ArrayList<String> SPECIAL_CASES = new ArrayList<>(
 															Arrays.asList(
@@ -28,15 +29,7 @@ public class Parser {
 															"Eighteenth", "Nineteenth"));
 	private static final ArrayList<String> TENS = new ArrayList<>(
 										Arrays.asList("Twent", "Thirt", "Fort", "Fift", 
-										"Sixt", "Sevent", "Eight", "Ninet"));
-	protected static final ArrayList<String> SPONSORS = new ArrayList<>(Arrays.asList("ACM", "SPEC", 
-																		"UNESCO", "Springer", "IEEE",
-																		"AFIS", "INCOSE", "IFIP"));
-	protected static final ArrayList<String> PROCEEDINGS = new ArrayList<>(Arrays.asList("ACM", "SPEC", 
-																			"Springer", "IEEE", "IFIP"));
-	protected static final String[] COMMITTEES = {"committee", 
-			"chair", "paper", "member"};
-	
+										"Sixt", "Sevent", "Eight", "Ninet"));	
 	private static final int MAX_CHARS_IN_DATE = 30;
 	private static String acronymPattern = "([A-Z]{3,}.[A-Z]{1,}|[A-Z]{3,})";
 	private static String acronymYearPattern = "([A-Z]+.[A-Z]+|[A-Z]+)('|\\s)(\\d{4}|\\d{2})";
@@ -47,6 +40,10 @@ public class Parser {
 			+ "May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\\s+?\\d{4}|"
 			+ "(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|"
 			+ "Nov(ember)?|Dec(ember)?)\\s\\d{1,2}-\\w+\\s\\d{1,2},\\s\\d{4}";
+	
+	public Parser(Information info) {
+		information = info;
+	}
 	
 	/**
 	 * Extracts the title from the home page of the website.
@@ -86,7 +83,7 @@ public class Parser {
 	public String getSponsors(String title, String description) {
 		String sponsors = "";
 		
-		for(String sponsor: SPONSORS) {
+		for(String sponsor: information.getSponsors()) {
 			if(title.matches(this.changeToRegex(sponsor)))
 				if(sponsors.isEmpty())
 					sponsors += sponsor;
@@ -112,7 +109,7 @@ public class Parser {
 				doc = this.getURLDoc(url);
 				for(Element e: doc.getAllElements()) {
 					String elementString = e.wholeText();
-					for(String proc: PROCEEDINGS) {
+					for(String proc: information.getProceedings()) {
 						if(elementString.matches(changeToRegex(" " + proc)))
 							if(proceedings.toString().isEmpty())
 								proceedings.append(proc);
@@ -181,13 +178,6 @@ public class Parser {
 			}
 		}
 		return venue;
-	}
-	
-	public static void main(String[] args) {
-		Parser p = new Parser4();
-		Country country = new Country();
-		String v = p.getVenue("", "", country, new ArrayList<String>(Arrays.asList("http://issre.net/")));
-		System.out.println(v);
 	}
 	
 	/**
@@ -601,7 +591,7 @@ public class Parser {
 	 */
 	protected boolean searchForCommittees(String string) {
 		String subteamRegex;
-		for(String subteam: COMMITTEES) {
+		for(String subteam: information.getCommitteeNames()) {
 			subteamRegex = this.changeToRegex(subteam);
 			if(string.toLowerCase().matches(subteamRegex))
 				return true;

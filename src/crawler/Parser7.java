@@ -10,13 +10,17 @@ import org.jsoup.nodes.Element;
 
 public class Parser7 extends Parser {
 	
+	public Parser7(Information info) {
+		super(info);
+	}
+	
 	@Override
 	public LinkedHashMap<String, LinkedHashMap<String, String>> getDeadlines(ArrayList<String> linkList) {
 		Document doc = null;
 		LinkedHashMap<String, String> deadlines = new LinkedHashMap<>();
 		LinkedHashMap<String, LinkedHashMap<String, String>> allDeadlines = new LinkedHashMap<>();
 		Pattern pattern = Pattern.compile("(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)(.\\s+|\\s+)\\d{1,2}(\\s+|,|(st|nd|rd|th),?)\\s+\\d{4}", Pattern.CASE_INSENSITIVE);
-		String[] separated, split;
+		String[] separated;
 		
 		// Connect to the home page
 		doc = this.getURLDoc(linkList.get(0));
@@ -34,7 +38,6 @@ public class Parser7 extends Parser {
 			if(!elementString.isEmpty()) {
 				// Split into multiple lines on seeing the <p> tag
 				separated = elementString.split("</p>");
-				int i = 0;
 				for(String string: separated) {
 					// Split into multiple lines on seeing the <br> tag
 					String[] furtherSeparated = string.split("<br> ");

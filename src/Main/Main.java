@@ -15,6 +15,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 
 import crawler.Crawler;
+import crawler.Information;
 import crawler.Parser;
 import crawler.Parser2;
 import crawler.Parser3;
@@ -32,18 +33,17 @@ public class Main {
 										"http://lsds.hesge.ch/ISPDC2018/", 
 										"https://unescoprivacychair.urv.cat/psd2018/index.php",
 										"https://2018.splashcon.org/home",
+										"https://conf.researchr.org/home/icgse-2018",
 //										"https://itrust.sutd.edu.sg/hase2017/", TODO committees
 										"http://www.ispass.org/ispass2018/",
 										"https://www.computer.org/web/compsac2018",
 										"https://www.isf.cs.tu-bs.de/cms/events/sefm2018/",
 										"http://www.es.mdh.se/icst2018/",
 										"https://icssea.org/",
-//										"https://eseiw2018.wixsite.com/oulu", JAVASCRIPT
 										"http://www.icsoft.org/",
 										"http://issre.net/",
 										"https://sites.uoit.ca/ifiptm2018/index.php",
 										"http://cseet2017.com/",
-//										"http://redmis2016.com.mx/conisoft2017/", JAVASCRIPT
 										"http://www.ieee-iccse.org/"));
 			
 	public static void main(String[] args) {
@@ -52,8 +52,7 @@ public class Main {
 		LinkedHashMap<String, LinkedHashMap<String, String>> deadlines = new LinkedHashMap<>();
 		
 		Country country = new Country();
-		
-		// Look through title and description to find antiques if not there then 
+		Information information = new Information();
 		
 		Workbook wb = new HSSFWorkbook();
         //Workbook wb = new XSSFWorkbook();
@@ -82,14 +81,14 @@ public class Main {
 			deadlines.clear();
 			crawl = new Crawler(url);
 			links = crawl.getAllLinks();
-	        parsers.add(new Parser());
-	        parsers.add(new Parser2());
-	        parsers.add(new Parser3());
-	        parsers.add(new Parser4());
-	        parsers.add(new Parser5());
-	        parsers.add(new Parser6());
-	        parsers.add(new Parser7());
-	        parsers.add(new Parser8());
+	        parsers.add(new Parser(information));
+	        parsers.add(new Parser2(information));
+	        parsers.add(new Parser3(information));
+	        parsers.add(new Parser4(information));
+	        parsers.add(new Parser5(information));
+	        parsers.add(new Parser6(information));
+	        parsers.add(new Parser7(information));
+	        parsers.add(new Parser8(information));
 	        row = sheet.createRow(i+1);
 	        // TODO Use this in the database to store the link to be used with the acronym as a[href] on the webpage
 	        String mainLink = links.get(0);

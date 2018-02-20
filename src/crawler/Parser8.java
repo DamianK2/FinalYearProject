@@ -9,13 +9,17 @@ import org.jsoup.nodes.Element;
 
 public class Parser8 extends Parser {
 
+	public Parser8(Information info) {
+		super(info);
+	}
+	
 	@Override
 	public LinkedHashMap<String, LinkedHashMap<String, String>> getDeadlines(ArrayList<String> linkList) {
 		Document doc = null;
 		LinkedHashMap<String, String> deadlines = new LinkedHashMap<>();
 		LinkedHashMap<String, LinkedHashMap<String, String>> allDeadlines = new LinkedHashMap<>();
 		Pattern pattern = Pattern.compile("(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)(.\\s+|\\s+)\\d{1,2}(\\s+|,|(st|nd|rd|th),?)\\s+\\d{4}", Pattern.CASE_INSENSITIVE);
-		String[] separated, split;
+		String[] separated;
 		
 		// Connect to the home page
 		

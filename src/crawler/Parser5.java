@@ -10,6 +10,10 @@ import org.jsoup.nodes.TextNode;
 
 public class Parser5 extends Parser {
 	
+	public Parser5(Information info) {
+		super(info);
+	}
+	
 	@Override
 	public String getDescription(String homeLink) {
 		Document doc = this.getURLDoc(homeLink);

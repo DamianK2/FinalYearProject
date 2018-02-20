@@ -15,11 +15,15 @@ import venue.Country;
 
 public class Parser2 extends Parser {
 	
+	public Parser2(Information info) {
+		super(info);
+	}
+
 	@Override
 	public String getSponsors(String title, String description) {
 		String sponsors = "";
 		
-		for(String sponsor: SPONSORS) {
+		for(String sponsor: information.getSponsors()) {
 			if(description.matches(this.changeToRegex(sponsor)))
 				if(sponsors.isEmpty())
 					sponsors += sponsor;
