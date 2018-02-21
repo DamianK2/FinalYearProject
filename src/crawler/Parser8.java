@@ -24,7 +24,9 @@ public class Parser8 extends Parser {
 		
 		// Connect to the home page
 		
-		ArrayList<String> links = this.findAllLinks("important", linkList);
+		ArrayList<String> links = this.findAllLinks("important-dates", linkList);
+		links.addAll(this.findAllLinks("importantdates", linkList));
+		links.addAll(this.findAllLinks("important_dates", linkList));
 		
 		for(String link: links) {
 			doc = this.getURLDoc(link);

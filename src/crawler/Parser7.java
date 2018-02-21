@@ -80,7 +80,6 @@ public class Parser7 extends Parser {
 			return allDeadlines;
 		}
 		
-		
 //		for(String key: allDeadlines.keySet()) {
 //			System.out.println("Heading: " + key);
 //			LinkedHashMap<String, String> deadlines1 = allDeadlines.get(key);

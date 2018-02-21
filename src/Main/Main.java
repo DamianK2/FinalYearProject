@@ -43,7 +43,7 @@ public class Main {
 										"https://icssea.org/",
 										"http://www.icsoft.org/",
 										"http://issre.net/",
-										"https://sites.uoit.ca/ifiptm2018/index.php", //TODO deadlines
+										"https://sites.uoit.ca/ifiptm2018/index.php",
 										"http://cseet2017.com/",
 										"http://www.ieee-iccse.org/"
 										));
