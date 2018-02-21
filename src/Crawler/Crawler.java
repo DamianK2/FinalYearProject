@@ -1,4 +1,4 @@
-package Crawler;
+package crawler;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,8 +15,8 @@ import org.jsoup.select.Elements;
  *
  */
 public class Crawler {
-	private static ArrayList<String> linkList = new ArrayList<>();
-	private static ArrayList<Thread> threads = new ArrayList<>();
+	protected static ArrayList<String> linkList = new ArrayList<>();
+	protected static ArrayList<Thread> threads = new ArrayList<>();
 
 	// Add the website that we want to crawl
 	public Crawler(String url) {
@@ -26,44 +26,100 @@ public class Crawler {
 	
 	// Fetch all links in the website, including sub-links
 	public ArrayList<String> getAllLinks() {
-		Document doc = null;
-        String firstURL = linkList.get(0);
-		try {
-			doc = Jsoup.connect(firstURL).get();
-			System.out.println("Fetching from " + firstURL + "...");
-		} catch (IOException e) {
-			System.out.println("Something went wrong when getting the first element from the list of links.");
-			e.printStackTrace();
-		}
-        Elements links = doc.select("ul a[href]");
-        this.addToLinkList(links);
+		Document doc = this.getURLDoc(linkList.get(0));
+        StringBuilder sb = new StringBuilder(); 
+        Elements links = doc.select("a[href]");
         
-        // Create threads for each link just fetched to decrease crawling time
-        Thread thread;
-        for(Element link: links) {
-        	thread = new Thread(new Worker(link, linkList));
-        	threads.add(thread);
-        	thread.start();
+        if(links.isEmpty()) {
+            Elements eles = doc.getElementsByTag("frame");
+            if(!eles.isEmpty()) {
+            	for(Element e: eles) {
+                	sb.append(linkList.get(0));
+                	String src = e.attr("src");
+                	if(!src.isEmpty()) {
+                		sb.append(src);
+                		linkList.add(sb.toString());
+                	}
+                	
+                	doc = this.getURLDoc(sb.toString());
+                	links = doc.select("a[href]");
+                    
+                    if(!links.isEmpty())
+                    	this.addToLinkList(links);
+                    
+                    // Reset the variable
+                    sb.setLength(0);
+                }
+            }
+            
+        } else {
+        	this.addToLinkList(links);
         }
         
-        // Join the threads to prevent the program from finishing before the threads do
-        for(int i = 0; i < threads.size(); i++) {
-			try {
-				threads.get(i).join();
-			} catch (InterruptedException e) {
-				System.out.println("Something went wrong then joining the threads.");
-				e.printStackTrace();
-			}
-        }
+//        for(String link: linkList) {
+//        	System.out.println(link);
+//        }
+        
+//        // Create threads for each link just fetched to decrease crawling time
+//        Thread thread;
+//        for(Element link: links) {
+//        	if(!link.text().matches(".*[oO]ther [eE]dition.*")) {
+//	        	thread = new Thread(new Worker(link, linkList));
+//	        	threads.add(thread);
+//	        	thread.start();
+//        	} else
+//        		break;
+//        }
+//        
+//        // Join the threads to prevent the program from finishing before the threads do
+//        for(int i = 0; i < threads.size(); i++) {
+//			try {
+//				threads.get(i).join();
+//			} catch (InterruptedException e) {
+//				System.out.println("Something went wrong then joining the threads.");
+//				e.printStackTrace();
+//			}
+//        }
         
         // Return the ArrayList with all the links from the given website
         return linkList;
 	}
 	
 	// Add the newly fetched links into an ArrayList
-	private void addToLinkList(Elements links) {
+	protected void addToLinkList(Elements links) {
 		for(Element link: links) {
-			linkList.add(link.attr("abs:href"));
+			// Eliminate the unneeded links with images or pdfs
+			if(!this.checkDuplicates(link.attr("abs:href")) 
+					&& !link.attr("abs:href").toLowerCase().matches("[http].+(pdf|rar|zip|jpg|png|doc)") 
+					&& !link.text().matches(".*[oO]ther [eE]dition.*")
+					&& !link.attr("abs:href").toLowerCase().matches("mailto:.+"))
+				linkList.add(link.attr("abs:href"));	
 		}
+	}
+	
+	private boolean checkDuplicates(String link) {
+		boolean check = false;
+		for(String l: linkList) {
+			if(link.equals(l))
+				check = true;
+		}
+		return check;
+	}
+	
+	private Document getURLDoc(String url) {
+		Document doc = null;
+		try {
+			doc = Jsoup.connect(url).get();
+			System.out.println("Fetching from " + url + "...");
+		} catch (IOException e) {
+			System.out.println("Something went wrong when getting the first element from the list of links.");
+			e.printStackTrace();
+		}
+		return doc;
+	}
+	
+	public static void main(String[] args) {
+		Crawler c = new Crawler("http://www.ispass.org/ispass2018/");
+		c.getAllLinks();
 	}
 }
