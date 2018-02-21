@@ -1,6 +1,7 @@
 package crawler;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.regex.Pattern;
 
@@ -30,7 +31,7 @@ public class Parser7 extends Parser {
 		try {
 			// Extract the paragraph
 			String elementString = el.select("p").toString().replaceAll("\r|\n", "");
-			elementString = elementString.replaceAll("<strike>(.*?|.*\\n.*\\n)<\\/strike>|<del>(.*?|.*\\n.*\\\\n)<\\/del>|line-through.+?>.+?<\\/.+?>", "");
+			elementString = elementString.replaceAll("<strike>(.*?|.*\\n.*\\n)<\\/strike>|<del>(.*?|.*\\n.*\\n)<\\/del>|line-through.+?>.+?<\\/.+?>|<s>(.*?|.*\\n.*\\n)<\\/s>", "");
 			
 //			System.out.println(elementString);
 			String deadline = "";
@@ -89,5 +90,10 @@ public class Parser7 extends Parser {
 //		}
 		
 		return allDeadlines;
+	}
+	
+	public static void main(String[] args) {
+		Parser p = new Parser7(new Information());
+		p.getDeadlines(new ArrayList<String>(Arrays.asList("https://sites.uoit.ca/ifiptm2018/important-dates/index.php")));
 	}
 }

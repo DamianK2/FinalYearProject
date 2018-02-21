@@ -1,6 +1,7 @@
 package crawler;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.regex.Pattern;
 
@@ -8,7 +9,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
-import org.jsoup.select.Elements;
 
 public class Parser6 extends Parser {
 
@@ -21,52 +21,91 @@ public class Parser6 extends Parser {
 		Document doc = null;
 		LinkedHashMap<String, String> deadlines = new LinkedHashMap<>();
 		LinkedHashMap<String, LinkedHashMap<String, String>> allDeadlines = new LinkedHashMap<>();
-		String regex = "(\\d{1,2}\\s+)*(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)(\\s+\\d{1,2}(\\s+|,)\\s+\\d{4}|\\s+\\d{4})";
-		String[] separated;
+		String regex = "(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)(.\\s+|\\s+)\\d{1,2}(\\s+|,|(st|nd|rd|th),?)\\s+\\d{4}";
+		Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+		String[] separated, tempSeparation;
 		
-		String link = this.searchLinks("[iI]mportant", linkList);
-		if(link.isEmpty())
-			return allDeadlines;
-		else {
+		// Connect to the home page
+		
+		ArrayList<String> links = this.findAllLinks("important-dates", linkList);
+		links.addAll(this.findAllLinks("importantdates", linkList));
+		
+		for(String link: links) {
 			doc = this.getURLDoc(link);
 			
-			Elements el = doc.select("div:contains(Important Dates)");
-			
 			try {
-				// Extract the paragraph
-				String elementString = el.select("p").toString().replaceAll("\r|\n", "");
-				// Replace the unneeded text
-				elementString = elementString.replaceAll("<strike>(.*?|.*\\n.*\\n)<\\/strike>|<del>(.*?|.*\\n.*\\\\n)<\\/del>|line-through.+?>.+?<\\/.+?>", "");
+				// Select the div with "Important Dates"
+				Element el = doc.select("div:contains(Important Dates)").first();
+				// Remove the outdated information
+				String toParse = el.toString().replaceAll("<strike>(.*?|.*\\n.*\\n)<\\/strike>|<del>(.*?|.*\\n.*\\n)<\\/del>|line-through.+?>.+?<\\/.+?>|<s>(.*?|.*\\n.*\\n)<\\/s>", "");
+				// Convert to document and get the whole text
+				toParse = Jsoup.parse(toParse).wholeText();
+				separated = toParse.split("\n");
 				
-				// Split the paragraphs
-				separated = elementString.split("</p>");
-				
-				int i = 0;
-				for(String string: separated) {
-					String[] furtherSeparated;
-					// Check if the string contains a date
-					if(string.matches(this.changeToRegex(regex))) {
-						// Replace the unneeded symbols and separate the string
-						String noHtml = Jsoup.parse(string).text().replaceAll("-|–", "");
-						furtherSeparated = noHtml.split(".*" + regex);
-						for(String deadlineTitle: furtherSeparated) {
-							if(!deadlineTitle.isEmpty()) {
-								// Populate the maps
-								deadlines.put(deadlineTitle.replaceAll("^\\s+", ""), noHtml.replaceAll(deadlineTitle, ""));
-								allDeadlines.put(Integer.toString(i), new LinkedHashMap<String, String>(deadlines));
-								// Reset the variables
-								deadlines.clear();
-								i++;
-							}
+				if(this.checkDeadlineFormat(separated, pattern)) {
+					String keyHeading = "";
+					for(String s: separated) {
+						// Ignore the empty strings
+						if(!s.matches("^\\s+$")) {
+							// Remove spaces at the front and the end of a string if they are present
+							s = s.replaceAll("^\\s+|\\s+$", "");
+							// Find the deadline in the string
+							String found = this.findPattern(s, pattern);
+							
+							if(!found.isEmpty()) {
+								do {
+									// Split the string based on the found deadline
+									tempSeparation = s.split(found);
+									// The first element in the array is the deadline title
+									deadlines.put(tempSeparation[0], found);
+									// Try to find the next deadline in the string
+									if(tempSeparation.length > 1)
+										s = tempSeparation[1];
+									else
+										s = tempSeparation[0];
+										
+									found = this.findPattern(s, pattern);
+								} while(!found.isEmpty());
+							// Update the list containing all the deadlines
+							} else if(!keyHeading.isEmpty()) {
+								if(!deadlines.isEmpty()) {
+									allDeadlines.put(keyHeading, new LinkedHashMap<String, String>(deadlines));
+									deadlines.clear();
+								}		
+								// Change the main heading
+								keyHeading = s;
+							} else
+								keyHeading = s;
 						}
 					}
 				}
 			} catch(NullPointerException e) {
-				return new LinkedHashMap<String, LinkedHashMap<String, String>>();
+				allDeadlines.clear();
+				deadlines.clear();
 			}
+			
+//			System.out.println("-----------------------");
+//			for(String key: allDeadlines.keySet()) {
+//				System.out.println();
+//				System.out.println("Heading: " + key);
+//				LinkedHashMap<String, String> deadlines1 = allDeadlines.get(key);
+//				for(String d: deadlines1.keySet()) {
+//					System.out.println(d + ": " + deadlines1.get(d));
+//				}
+//			}
+			
+			if(!allDeadlines.isEmpty())
+				return allDeadlines;
 		}
 		
+
+		
 		return allDeadlines;
+	}
+	
+	public static void main(String[] args) {
+		Parser p = new Parser6(new Information());
+		p.getDeadlines(new ArrayList<String>(Arrays.asList("http://www.icsoft.org/ImportantInformation.aspx")));
 	}
 	
 	@Override
@@ -122,5 +161,25 @@ public class Parser6 extends Parser {
 		}
 		
 		return "";
+	}
+	
+	/**
+	 * Checks the format of the webpage to decide if the method should be used
+	 * @param separated
+	 * @return true/false
+	 */
+	private boolean checkDeadlineFormat(String[] separated, Pattern pattern) {
+		
+		for(String s: separated) {
+			// Ignore all the empty strings
+			if(!s.matches("^\\s+$")) {
+				// If the string contains both submission and the deadline in the same line then use this parser
+				if(this.isSubmission(s)) {
+					if(!this.findPattern(s, pattern).equals(""))
+						return true;
+				}
+			}
+		}
+		return false;
 	}
 }

@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
-import java.util.List;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.CreationHelper;
@@ -24,12 +23,14 @@ import crawler.Parser5;
 import crawler.Parser6;
 import crawler.Parser7;
 import crawler.Parser8;
+import crawler.Parser9;
 import venue.Country;
 
 public class Main {
 
 	public static final ArrayList<String> URLS = new ArrayList<>(
-							Arrays.asList("https://icpe2018.spec.org/home.html", 
+							Arrays.asList(
+										"https://icpe2018.spec.org/home.html", 
 										"http://lsds.hesge.ch/ISPDC2018/", 
 										"https://unescoprivacychair.urv.cat/psd2018/index.php",
 										"https://2018.splashcon.org/home",
@@ -42,9 +43,10 @@ public class Main {
 										"https://icssea.org/",
 										"http://www.icsoft.org/",
 										"http://issre.net/",
-										"https://sites.uoit.ca/ifiptm2018/index.php",
+										"https://sites.uoit.ca/ifiptm2018/index.php", //TODO deadlines
 										"http://cseet2017.com/",
-										"http://www.ieee-iccse.org/"));
+										"http://www.ieee-iccse.org/"
+										));
 			
 	public static void main(String[] args) {
 		//long tStart = System.currentTimeMillis();
@@ -74,21 +76,22 @@ public class Main {
         ArrayList<Parser> parsers = new ArrayList<>();
         int i = 0;
         Crawler crawl;
+        parsers.add(new Parser(information));
+        parsers.add(new Parser2(information));
+        parsers.add(new Parser3(information));
+        parsers.add(new Parser4(information));
+        parsers.add(new Parser5(information));
+        parsers.add(new Parser6(information));
+        parsers.add(new Parser7(information));
+        parsers.add(new Parser8(information));
+        parsers.add(new Parser9(information));
         
 		for(String url: URLS) {
-			parsers.clear();
 			links.clear();
 			deadlines.clear();
 			crawl = new Crawler(url);
 			links = crawl.getAllLinks();
-	        parsers.add(new Parser(information));
-	        parsers.add(new Parser2(information));
-	        parsers.add(new Parser3(information));
-	        parsers.add(new Parser4(information));
-	        parsers.add(new Parser5(information));
-	        parsers.add(new Parser6(information));
-	        parsers.add(new Parser7(information));
-	        parsers.add(new Parser8(information));
+	        
 	        row = sheet.createRow(i+1);
 	        // TODO Use this in the database to store the link to be used with the acronym as a[href] on the webpage
 	        String mainLink = links.get(0);
@@ -172,7 +175,8 @@ public class Main {
 	        	deadlines = parsers.get(k).getDeadlines(links);	
 	        	k++;
 	        } while(deadlines.isEmpty() && k < parsers.size());
-	        		
+	        	
+	        k--;
 	        int j = 10;
 
 	        for(String key: deadlines.keySet()) {
@@ -180,31 +184,31 @@ public class Main {
 				LinkedHashMap<String, String> deadlines1 = deadlines.get(key);
 				for(String d: deadlines1.keySet()) {
 //					System.out.println(d + ": " + deadlines1.get(d));
-					row.createCell(j).setCellValue(createHelper.createRichTextString("(Heading) " + key + " ///// " + d + " ///// " + deadlines1.get(d)));
+					row.createCell(j).setCellValue(createHelper.createRichTextString("Parser used: " + k + " (Heading) " + key + " ///// " + d + " ///// " + deadlines1.get(d)));
 					j++;
 				}
 			}
 	        
-	        LinkedHashMap<String, List<String>> committees;
-	        k = 0;
-	        do {
-	        	committees = parsers.get(k).getOrganisers(links, country);
-	        	k++;
-	        } while(committees.isEmpty() && k < parsers.size());
-	        
-	        String allMembers = "";
-	        if(!committees.isEmpty()) {
-	        	for(String subteam: committees.keySet()) {
-	        		allMembers += subteam + ": ";
-					List<String> subteamMembers = committees.get(subteam);
-					for(String subteamMember: subteamMembers) {
-						allMembers += subteamMember + " //// ";
-					}
-					System.out.println("(wtf) " + allMembers);
-		        	row.createCell(++j).setCellValue(createHelper.createRichTextString(allMembers));
-		        	allMembers = "";
-				}
-	        }	
+//	        LinkedHashMap<String, List<String>> committees;
+//	        k = 0;
+//	        do {
+//	        	committees = parsers.get(k).getOrganisers(links, country);
+//	        	k++;
+//	        } while(committees.isEmpty() && k < parsers.size());
+//	        
+//	        String allMembers = "";
+//	        if(!committees.isEmpty()) {
+//	        	for(String subteam: committees.keySet()) {
+//	        		allMembers += subteam + ": ";
+//					List<String> subteamMembers = committees.get(subteam);
+//					for(String subteamMember: subteamMembers) {
+//						allMembers += subteamMember + " //// ";
+//					}
+//					System.out.println("(wtf) " + allMembers);
+//		        	row.createCell(++j).setCellValue(createHelper.createRichTextString(allMembers));
+//		        	allMembers = "";
+//				}
+//	        }	
 			i++;
 		}
         
