@@ -18,6 +18,11 @@ public class Parser2 extends Parser {
 	public Parser2(Information info) {
 		super(info);
 	}
+	
+	@Override
+	public String getAcronym(String title, String description) {
+		return this.findAcronym(description);
+	}
 
 	@Override
 	public String getSponsors(String title, String description) {

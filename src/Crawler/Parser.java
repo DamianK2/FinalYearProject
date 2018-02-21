@@ -31,8 +31,8 @@ public class Parser {
 										Arrays.asList("Twent", "Thirt", "Fort", "Fift", 
 										"Sixt", "Sevent", "Eight", "Ninet"));	
 	private static final int MAX_CHARS_IN_DATE = 30;
-	private static String acronymPattern = "([A-Z]{3,}.[A-Z]{1,}|[A-Z]{3,})";
-	private static String acronymYearPattern = "([A-Z]+.[A-Z]+|[A-Z]+)('|\\s)(\\d{4}|\\d{2})";
+	protected static String acronymPattern = "([A-Z]{3,}.[A-Z]{1,}|[A-Z]{3,})";
+	protected static String acronymYearPattern = "([A-Z]+.[A-Z]+|[A-Z]+)('|\\s)(\\d{4}|\\d{2})";
 	private static String confDaysPattern = "\\d+\\s*?(-|–)\\s*?\\d+.+\\w+.\\d{4}|(Jan(uary)?|Feb(ruary)?|Mar(ch)?|"
 			+ "Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)."
 			+ "+\\d{1,2}(-|\\s–\\s)\\d{1,2}.+?\\d{4}|(Mon(day)?|Tue(sday)?|Wed(nesday)?|Thu(rsday)?|Fri(day)?|"
@@ -61,17 +61,8 @@ public class Parser {
 	 * @param title
 	 * @return acronym or empty string
 	 */
-	public String getAcronym(String title) {
-		Pattern pattern = Pattern.compile(acronymYearPattern);
-		
-		// Match the title with the pattern
-		Matcher matcher = pattern.matcher(title);
-		pattern = Pattern.compile(acronymPattern);
-		
-		if(matcher.find())
-			return this.findPattern(matcher.group(0), pattern);
-		else
-			return this.findPattern(title, pattern);
+	public String getAcronym(String title, String description) {
+		return this.findAcronym(title);
 	}
 	
 	/**
@@ -654,5 +645,34 @@ public class Parser {
 		}
 		
 		return false;
+	}
+	
+	/**
+	 * Searches for the acronym of the conference in the passed in string parameter
+	 * @param toCheck
+	 * @return acronym
+	 */
+	protected String findAcronym(String toCheck) {
+		Pattern pattern = Pattern.compile(acronymYearPattern);
+		
+		// Match the title with the pattern
+		Matcher matcher = pattern.matcher(toCheck);
+		pattern = Pattern.compile(acronymPattern);
+		
+		String found;
+		// Check if the string contains the acronym followed by the year i.e. ICPE 2018
+		if(matcher.find())
+			found = this.findPattern(matcher.group(0), pattern);
+		// Otherwise check for a sequence of capital letters
+		else
+			found = this.findPattern(toCheck, pattern);
+		
+		// Filter out the possibility of the acronym being a sponsor
+		for(String sponsor: information.getSponsors()) {
+			if(found.toLowerCase().contains(sponsor.toLowerCase()))
+				return "";
+		}
+		
+		return found;
 	}
 }

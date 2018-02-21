@@ -95,7 +95,6 @@ public class Main {
 	        row.createCell(1).setCellValue(createHelper.createRichTextString(mainLink));
 			String title = parsers.get(0).getTitle(mainLink);
 			row.createCell(2).setCellValue(createHelper.createRichTextString(title));
-			row.createCell(0).setCellValue(createHelper.createRichTextString(parsers.get(0).getAcronym(title)));
 			
 			String proceedings;
 			int k = 0;
@@ -113,6 +112,15 @@ public class Main {
 	        } while(description.equals("") && k < parsers.size());   
 	        
 	        row.createCell(5).setCellValue(createHelper.createRichTextString(description));
+	        
+	        String acronym;
+	        k = 0;
+			do {
+				acronym = parsers.get(k).getAcronym(title, description);
+	        	k++;
+	        } while(acronym.equals("") && k < parsers.size());   
+			
+	        row.createCell(0).setCellValue(createHelper.createRichTextString(acronym));
 	        
 	        String sponsor;
 			k = 0;
