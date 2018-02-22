@@ -3,9 +3,11 @@ package main;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.CreationHelper;
@@ -24,28 +26,29 @@ import crawler.Parser6;
 import crawler.Parser7;
 import crawler.Parser8;
 import crawler.Parser9;
+import database.sql;
 import venue.Country;
 
 public class Main {
 
 	public static final ArrayList<String> URLS = new ArrayList<>(
 							Arrays.asList(
-										"https://icpe2018.spec.org/home.html", 
-										"http://lsds.hesge.ch/ISPDC2018/", 
-										"https://unescoprivacychair.urv.cat/psd2018/index.php",
-										"https://2018.splashcon.org/home",
-										"https://conf.researchr.org/home/icgse-2018",
-//										"https://itrust.sutd.edu.sg/hase2017/", TODO committees
-										"http://www.ispass.org/ispass2018/",
-										"https://www.computer.org/web/compsac2018",
-										"https://www.isf.cs.tu-bs.de/cms/events/sefm2018/",
-										"http://www.es.mdh.se/icst2018/",
-										"https://icssea.org/",
-										"http://www.icsoft.org/",
-										"http://issre.net/",
-										"https://sites.uoit.ca/ifiptm2018/index.php",
-										"http://cseet2017.com/",
-										"http://www.ieee-iccse.org/"
+										"https://icpe2018.spec.org/home.html"
+//										"http://lsds.hesge.ch/ISPDC2018/", 
+//										"https://unescoprivacychair.urv.cat/psd2018/index.php",
+//										"https://2018.splashcon.org/home",
+//										"https://conf.researchr.org/home/icgse-2018",
+////										"https://itrust.sutd.edu.sg/hase2017/", TODO committees
+//										"http://www.ispass.org/ispass2018/",
+//										"https://www.computer.org/web/compsac2018",
+//										"https://www.isf.cs.tu-bs.de/cms/events/sefm2018/",
+//										"http://www.es.mdh.se/icst2018/",
+//										"https://icssea.org/",
+//										"http://www.icsoft.org/",
+//										"http://issre.net/",
+//										"https://sites.uoit.ca/ifiptm2018/index.php",
+//										"http://cseet2017.com/",
+//										"http://www.ieee-iccse.org/"
 										));
 			
 	public static void main(String[] args) {
@@ -85,6 +88,9 @@ public class Main {
         parsers.add(new Parser7(information));
         parsers.add(new Parser8(information));
         parsers.add(new Parser9(information));
+        
+		sql sql = new sql();
+        sql.createConnection();
         
 		for(String url: URLS) {
 			links.clear();
@@ -153,18 +159,18 @@ public class Main {
 	        
 	        row.createCell(7).setCellValue(createHelper.createRichTextString(antiquity));
 			
-			String date;
+			String conferenceDays;
 			k = 0;
 	        do {
-	        	date = parsers.get(k).getConferenceDays(title, description, links);
+	        	conferenceDays = parsers.get(k).getConferenceDays(title, description, links);
 	        	k++;
-	        } while(date == "" && k < parsers.size());
-	        row.createCell(8).setCellValue(createHelper.createRichTextString(date));
+	        } while(conferenceDays == "" && k < parsers.size());
+	        row.createCell(8).setCellValue(createHelper.createRichTextString(conferenceDays));
 	        
 	        String year = "";
 	        k = 0;
 	        do {
-	        	 year = parsers.get(k).getConferenceYear(date, title);
+	        	 year = parsers.get(k).getConferenceYear(conferenceDays, title);
 	        	 k++;
 	        } while(year == "" && k < parsers.size());
 	       
@@ -189,27 +195,32 @@ public class Main {
 				}
 			}
 	        
-//	        LinkedHashMap<String, List<String>> committees;
-//	        k = 0;
-//	        do {
-//	        	committees = parsers.get(k).getOrganisers(links, country);
-//	        	k++;
-//	        } while(committees.isEmpty() && k < parsers.size());
-//	        
-//	        String allMembers = "";
-//	        if(!committees.isEmpty()) {
-//	        	for(String subteam: committees.keySet()) {
-//	        		allMembers += subteam + ": ";
-//					List<String> subteamMembers = committees.get(subteam);
-//					for(String subteamMember: subteamMembers) {
-//						allMembers += subteamMember + " //// ";
-//					}
-//					System.out.println("(wtf) " + allMembers);
-//		        	row.createCell(++j).setCellValue(createHelper.createRichTextString(allMembers));
-//		        	allMembers = "";
-//				}
-//	        }	
+	        LinkedHashMap<String, List<String>> committees;
+	        k = 0;
+	        do {
+	        	committees = parsers.get(k).getOrganisers(links, country);
+	        	k++;
+	        } while(committees.isEmpty() && k < parsers.size());
+	        
+	        String allMembers = "";
+	        if(!committees.isEmpty()) {
+	        	for(String subteam: committees.keySet()) {
+	        		allMembers += subteam + ": ";
+					List<String> subteamMembers = committees.get(subteam);
+					for(String subteamMember: subteamMembers) {
+						allMembers += subteamMember + " //// ";
+					}
+					System.out.println("(wtf) " + allMembers);
+		        	row.createCell(++j).setCellValue(createHelper.createRichTextString(allMembers));
+		        	allMembers = "";
+				}
+	        }	
 			i++;
+	        try {
+				sql.addNewConference(acronym, title, sponsor, proceedings, description, venue, year, antiquity, conferenceDays, committees, deadlines);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
         
         // Write the output to a file
@@ -226,6 +237,8 @@ public class Main {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+        
+        
 		
 //      links = test.getAllLinks();
 //		 

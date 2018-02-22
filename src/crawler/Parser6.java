@@ -31,8 +31,6 @@ public class Parser6 extends Parser {
 		links.addAll(this.findAllLinks("importantdates", linkList));
 		links.addAll(this.findAllLinks("important_dates", linkList));
 		
-		System.out.println(links.toString());
-		
 		for(String link: links) {
 			doc = this.getURLDoc(link);
 			
@@ -50,7 +48,6 @@ public class Parser6 extends Parser {
 					for(String s: separated) {
 						// Ignore the empty strings
 						if(!s.matches("^\\s+$")) {
-							System.out.println(s);
 							// Remove spaces at the front and the end of a string if they are present
 							s = s.replaceAll("^\\s+|\\s+$", "");
 							// Find the deadline in the string
