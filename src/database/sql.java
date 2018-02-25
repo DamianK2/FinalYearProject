@@ -146,7 +146,7 @@ public class sql {
 	private int addToWebsites(String acronym, String title, String sponsors, String proceedings, String description,
 			int venueID, String currentYear, String antiquity, String conferenceDays) throws SQLException {
 		// Create the query
-		String mainQuery = "insert websites (acronym, title, sponsors, proceedings, description, venue, current_year, antiquity, conference_days) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		String mainQuery = "insert websites (acronym, title, sponsors, proceedings, description, venueID, current_year, antiquity, conference_days) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		preparedStmt = connection.prepareStatement(mainQuery, Statement.RETURN_GENERATED_KEYS);
 
 		// Set the variables
@@ -172,13 +172,13 @@ public class sql {
 
 	private int addToDeadlineTypes(String type) throws SQLException {
 		// Check to lower case to avoid duplicates with capital letters etc.
-		String searchType = "select id from deadline_types where lower(type) = \"" + type.toLowerCase() + "\"";
-		String deadlineType = "insert deadline_types (type) values (?)";
+		String searchType = "select id from deadline_types where lower(d_type) = \"" + type.toLowerCase() + "\"";
+		String deadlineType = "insert deadline_types (d_type) values (?)";
 		return this.checkAndReturn(searchType, deadlineType, type);
 	}
 	
 	private int addToDeadlineTitles(String title, String date) throws SQLException {
-		String deadlineTitle = "insert deadlines_titles (title, date) values (?, ?)";
+		String deadlineTitle = "insert deadlines_titles (d_title, d_date) values (?, ?)";
 		preparedStmt = connection.prepareStatement(deadlineTitle, Statement.RETURN_GENERATED_KEYS);
 		// Set the variables
 		preparedStmt.setString(1, title);
