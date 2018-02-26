@@ -37,8 +37,13 @@ public class Crawler {
                 	sb.append(linkList.get(0));
                 	String src = e.attr("src");
                 	if(!src.isEmpty()) {
-                		sb.append(src);
-                		linkList.add(sb.toString());
+                		// Check if it isn't a http link
+                		if(src.contains("http"))
+                			linkList.add(src);
+                		else {
+                			sb.append(src);
+                    		linkList.add(sb.toString());
+                		}
                 	}
                 	
                 	doc = this.getURLDoc(sb.toString());
@@ -90,7 +95,7 @@ public class Crawler {
 		for(Element link: links) {
 			// Eliminate the unneeded links with images or pdfs
 			if(!this.checkDuplicates(link.attr("abs:href")) 
-					&& !link.attr("abs:href").toLowerCase().matches("[http].+(pdf|rar|zip|jpg|png|doc)") 
+					&& !link.attr("abs:href").toLowerCase().matches("[http].+(pdf|rar|zip|jpg|png|doc|docx)") 
 					&& !link.text().matches(".*[oO]ther [eE]dition.*")
 					&& !link.attr("abs:href").toLowerCase().matches("mailto:.+"))
 				linkList.add(link.attr("abs:href"));	

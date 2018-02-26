@@ -281,7 +281,7 @@ public class sql {
 			// Find out the new id of the item just inserted
 			if (generatedKeys.next()) {
 				id = generatedKeys.getInt(1);
-				System.out.println("created item id: " + id);
+//				System.out.println("created item id: " + id);
 				return id;
 			} else {
 				throw new SQLException("Creating failed, no ID obtained.");

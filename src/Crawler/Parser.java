@@ -530,7 +530,6 @@ public class Parser {
 			System.out.println("(inside Parser)Fetching from " + url + "...");
 		} catch (IOException e) {
 			System.out.println("Something went wrong when getting the first element from the list of links.");
-			System.out.println("THE URL THAT FUCKS UP IS: " + url);
 			e.printStackTrace();
 		}
 		return doc;
