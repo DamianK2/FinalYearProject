@@ -40,7 +40,6 @@ public class Parser9 extends Parser {
 				
 				int i = 0;
 				for(String string: separated) {
-					System.out.println(string);
 					String[] furtherSeparated;
 					// Check if the string contains a date
 					if(string.matches(this.changeToRegex(regex))) {
