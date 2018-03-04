@@ -154,12 +154,7 @@ public class Parser2 extends Parser {
 		return this.findConfDays(description);
 	}
 	
-	/**
-	 * Finds the organizers on the websites.
-	 * @param linkList
-	 * @param country
-	 * @return a map with organizer teams as key and members as value
-	 */
+	@Override
 	public LinkedHashMap<String, List<String>> getOrganisers(ArrayList<String> linkList, Country country) {
 		List<String> potentialLinks = new ArrayList<>();
 		this.addCommitteeSearchWords();
@@ -264,7 +259,7 @@ public class Parser2 extends Parser {
 //        	allMembers = "";
 //		}
 		
-		// If only 1 committee is return then it must be an error
+		// If only 1 committee is returned then it must be an error
 		return committees.size() < 2 ? new LinkedHashMap<String, List<String>>() : committees;
 	}
 	

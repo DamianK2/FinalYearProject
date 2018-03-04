@@ -38,7 +38,7 @@ public class Main {
 										"https://unescoprivacychair.urv.cat/psd2018/index.php",
 										"https://2018.splashcon.org/home",
 										"https://conf.researchr.org/home/icgse-2018",
-//										"https://itrust.sutd.edu.sg/hase2017/", TODO committees
+										"https://itrust.sutd.edu.sg/hase2017/", //TODO committees
 										"http://www.ispass.org/ispass2018/",
 										"https://www.computer.org/web/compsac2018",
 										"https://www.isf.cs.tu-bs.de/cms/events/sefm2018/",
@@ -89,8 +89,8 @@ public class Main {
         parsers.add(new Parser8(information));
         parsers.add(new Parser9(information));
         
-		sql sql = new sql();
-        sql.createConnection();
+//		sql sql = new sql();
+//        sql.createConnection();
         
 		for(String url: URLS) {
 			links.clear();
@@ -176,24 +176,24 @@ public class Main {
 	       
 	        row.createCell(9).setCellValue(createHelper.createRichTextString(year));
 	        
-	        k = 0;
-	        do {
-	        	deadlines = parsers.get(k).getDeadlines(links);	
-	        	k++;
-	        } while(deadlines.isEmpty() && k < parsers.size());
-	        	
-	        k--;
-	        int j = 10;
-
-	        for(String key: deadlines.keySet()) {
-//				System.out.println("Heading: " + key);
-				LinkedHashMap<String, String> deadlines1 = deadlines.get(key);
-				for(String d: deadlines1.keySet()) {
-//					System.out.println(d + ": " + deadlines1.get(d));
-					row.createCell(j).setCellValue(createHelper.createRichTextString("Parser used: " + k + " (Heading) " + key + " ///// " + d + " ///// " + deadlines1.get(d)));
-					j++;
-				}
-			}
+//	        k = 0;
+//	        do {
+//	        	deadlines = parsers.get(k).getDeadlines(links);	
+//	        	k++;
+//	        } while(deadlines.isEmpty() && k < parsers.size());
+//	        	
+//	        k--;
+//	        int j = 10;
+//
+//	        for(String key: deadlines.keySet()) {
+////				System.out.println("Heading: " + key);
+//				LinkedHashMap<String, String> deadlines1 = deadlines.get(key);
+//				for(String d: deadlines1.keySet()) {
+////					System.out.println(d + ": " + deadlines1.get(d));
+//					row.createCell(j).setCellValue(createHelper.createRichTextString("Parser used: " + k + " (Heading) " + key + " ///// " + d + " ///// " + deadlines1.get(d)));
+//					j++;
+//				}
+//			}
 	        
 	        LinkedHashMap<String, List<String>> committees;
 	        k = 0;
@@ -202,6 +202,7 @@ public class Main {
 	        	k++;
 	        } while(committees.isEmpty() && k < parsers.size());
 	        
+	        int j = 10;
 	        String allMembers = "";
 	        if(!committees.isEmpty()) {
 	        	for(String subteam: committees.keySet()) {
@@ -216,11 +217,11 @@ public class Main {
 				}
 	        }	
 			i++;
-	        try {
-				sql.addNewConference(acronym, title, sponsor, proceedings, description, venue, year, antiquity, conferenceDays, committees, deadlines);
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+//	        try {
+//				sql.addNewConference(acronym, title, sponsor, proceedings, description, venue, year, antiquity, conferenceDays, committees, deadlines);
+//			} catch (SQLException e) {
+//				e.printStackTrace();
+//			}
 		}
         
         // Create the output file

@@ -1,12 +1,15 @@
 package crawler;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
 import venue.Country;
@@ -136,5 +139,84 @@ public class Parser3 extends Parser {
 		}
 
 		return "";
+	}
+	
+	@Override
+	public LinkedHashMap<String, List<String>> getOrganisers(ArrayList<String> linkList, Country country) {
+		List<String> potentialLinks = new ArrayList<>();
+		this.addCommitteeSearchWords();
+		
+		// Find the links containing the search keywords (i.e. committee, chair etc.)
+		for(String keyword: searchKeywords) {
+			ArrayList<String> links = this.findAllLinks(keyword, linkList);
+			if(!links.isEmpty())
+				// Iterate through the links to make sure no duplicates are added
+				for(String link: links)
+					if(!potentialLinks.contains(link)) {
+//						System.out.println(link);
+						potentialLinks.add(link);
+					}	
+		}
+		
+		LinkedHashMap<String, List<String>> committees = new LinkedHashMap<>();
+		
+		if(potentialLinks.isEmpty())
+			return committees;
+		// Check if the format of organisers is suitable for this code
+		else {
+			// Initialize variables
+			String tempSubteam = "";
+			List<String> members = new ArrayList<>();
+			
+			for(String link: potentialLinks) {
+				// Get the document
+				Document doc = this.getURLDoc(link);
+//				System.out.println(doc.wholeText());
+				// Remove the spaces
+				String[] split = doc.wholeText().split("\n");
+				for(String toCheck: split) {
+					toCheck = toCheck.trim();
+					if(!toCheck.isEmpty()) {
+						// Check for a committee keyword in the string
+						if(this.searchForCommittees(toCheck)) {
+							// Add the found values to the output map
+							if(!members.isEmpty() && !tempSubteam.equals("")) {
+								committees.put(tempSubteam, new ArrayList<String>(members));
+							}
+							// Overwrite the variables
+							tempSubteam = toCheck;
+							members.clear();
+						} else {
+							// Add the members
+							members.add(toCheck);
+						}
+					}
+				}
+				if(!members.isEmpty() && !tempSubteam.equals("")) {
+					committees.put(tempSubteam, new ArrayList<String>(members));
+				}
+			}
+		}
+		
+		// Test print
+		String allMembers = "";
+		for(String subteam: committees.keySet()) {
+    		allMembers += subteam + ": ";
+			List<String> subteamMembers = committees.get(subteam);
+			for(String subteamMember: subteamMembers) {
+				allMembers += subteamMember + " //// ";
+			}
+			System.out.println(allMembers);
+        	allMembers = "";
+		}
+		
+		// If only 1 committee is returned then it must be an error
+		return committees.size() < 2 ? new LinkedHashMap<String, List<String>>() : committees;
+	}
+	
+	public static void main(String[] args) {
+		Parser p = new Parser3(new Information());
+		Country country = new Country();
+		p.getOrganisers(new ArrayList<String>(Arrays.asList("https://itrust.sutd.edu.sg/hase2017/organizing-committee/")), country);
 	}
 }
