@@ -49,72 +49,146 @@ public class sql {
 		connection.close();
 	}
 
-	public void addNewConference(String acronym, String title, String sponsors, String proceedings, String description,
+	public void addConference(String acronym, String title, String sponsors, String proceedings, String description,
 			String venue, String currentYear, String antiquity, String conferenceDays,
 			LinkedHashMap<String, List<String>> organisers,
 			LinkedHashMap<String, LinkedHashMap<String, String>> deadlines) throws SQLException {
 		String query;
 		int venueID = this.addToVenues(venue);
-		int id = this.addToWebsites(acronym, title, sponsors, proceedings, description, venueID, currentYear, antiquity,
-				conferenceDays);
 		
-		query = "insert deadlines (id, deadline_type, deadline_id) values (?, ?, ?)";
-		
-		// Iterate through the map
-		for(String key: deadlines.keySet()) {
-			LinkedHashMap<String, String> actualDeadlines = deadlines.get(key);
+		int id = this.checkIfExists(acronym, venueID, currentYear);
+		// If the conference exists then overwrite every value in the database for it (to be changed in the future to check which information needs changing)
+		if(id != -1) {
+			this.updateWebsites(id, acronym, title, sponsors, proceedings, description, venueID, currentYear, antiquity, conferenceDays);
+		} else {
+			id = this.addToWebsites(acronym, title, sponsors, proceedings, description, venueID, currentYear, antiquity,
+					conferenceDays);
 			
-			// The key will either be a string or an integer
-			try {
-				// If the key is an integer, it means there was no type of deadline on the website
-				Integer.parseInt(key);
-				key = "";
-			} catch (NumberFormatException e) {
-				// If it isn't an integer then there is a type present and we don't need to change anything
+			query = "insert deadlines (id, deadline_type, deadline_id) values (?, ?, ?)";
+			
+			// Iterate through the map
+			for(String key: deadlines.keySet()) {
+				LinkedHashMap<String, String> actualDeadlines = deadlines.get(key);
+				
+				// The key will either be a string or an integer
+				try {
+					// If the key is an integer, it means there was no type of deadline on the website
+					Integer.parseInt(key);
+					key = "";
+				} catch (NumberFormatException e) {
+					// If it isn't an integer then there is a type present and we don't need to change anything
+				}
+				// This will be the same for one iteration of the map values so only call it once
+				int typeID = this.addToDeadlineTypes(key);
+				
+				// Populate the tables in the database
+				for(String dTitle: actualDeadlines.keySet()) {
+					this.addToTable(query, id, typeID, this.addToDeadlineTitles(dTitle, actualDeadlines.get(dTitle)));
+				}
 			}
-			// This will be the same for one iteration of the map values so only call it once
-			int typeID = this.addToDeadlineTypes(key);
 			
-			// Populate the tables in the database
-			for(String dTitle: actualDeadlines.keySet()) {
-				this.addToTable(query, id, typeID, this.addToDeadlineTitles(dTitle, actualDeadlines.get(dTitle)));
+			query = "insert committees (id, titleID, memberID)" + " values (?, ?, ?)";
+			int comTitleID;
+			
+			// Iterate through the map
+			for(String committeeTitle: organisers.keySet()) {
+				comTitleID = this.addToCommitteeTitles(committeeTitle);
+				// Populate the tables in the database
+				for(String member: organisers.get(committeeTitle)) {
+					this.addToTable(query, id, comTitleID, this.addToMemberNames(member));
+				}
 			}
 		}
+	}
+	
+	/**
+	 * Check if the conference already exists in the database
+	 * @param acronym
+	 * @param venueID
+	 * @param currentYear
+	 * @return id of row if it exists, otherwise -1
+	 * @throws SQLException
+	 */
+	private int checkIfExists(String acronym, int venueID, String currentYear) throws SQLException {
+		String checkQuery = "select id from websites where acronym = \"" + acronym + "\"" + " and venueID = \"" + venueID + "\"" + " and current_year = \"" + currentYear + "\"";
 		
-		query = "insert committees (id, titleID, memberID)" + " values (?, ?, ?)";
-		int comTitleID;
-		
-		// Iterate through the map
-		for(String committeeTitle: organisers.keySet()) {
-			comTitleID = this.addToCommitteeTitles(committeeTitle);
-			// Populate the tables in the database
-			for(String member: organisers.get(committeeTitle)) {
-				this.addToTable(query, id, comTitleID, this.addToMemberNames(member));
-			}
+		preparedStmt = connection.prepareStatement(checkQuery);
+		ResultSet rs = preparedStmt.executeQuery();
+		int id;
+
+		if (rs.next()) {
+			// Find the id from the set
+			id = rs.getInt(1);
+			System.out.println("found conference id: " + id);
+			return id;
+		} else {
+			return -1;
 		}
+	}
+	
+	/**
+	 * Updates the row in the websites table with the passed in id
+	 * @param id
+	 * @param acronym
+	 * @param title
+	 * @param sponsors
+	 * @param proceedings
+	 * @param description
+	 * @param venueID
+	 * @param currentYear
+	 * @param antiquity
+	 * @param conferenceDays
+	 * @throws SQLException
+	 */
+	private void updateWebsites(int id, String acronym, String title, String sponsors, String proceedings, String description,
+			int venueID, String currentYear, String antiquity, String conferenceDays) throws SQLException {
+		String updateQuery = "update websites set acronym = ?, title = ?, sponsors = ?, proceedings = ?, description = ?, venueID = ?, current_year = ?, antiquity = ?, conference_days = ? where id = ?";
+		preparedStmt = connection.prepareStatement(updateQuery, Statement.RETURN_GENERATED_KEYS);
+		// Set the variables
+		preparedStmt.setString(1, acronym);
+		preparedStmt.setString(2, title);
+		preparedStmt.setString(3, sponsors);
+		preparedStmt.setString(4, proceedings);
+		preparedStmt.setString(5, description);
+		preparedStmt.setInt(6, venueID);
+		int yearInteger = 0;
+		// Change the year string to an integer
+		try {
+			yearInteger = Integer.parseInt(currentYear);
+		} catch (NumberFormatException e) {
+		}
+
+		preparedStmt.setInt(7, yearInteger);
+		preparedStmt.setString(8, antiquity);
+		preparedStmt.setString(9, conferenceDays);
+		preparedStmt.setInt(10, id);
 		
+		this.executeStatement(preparedStmt, true);
 	}
 
-//	public static void main(String[] args) {
-//		try {
-//			// PreparedStatement preparedStmt;
-//			// String getQuery = "select acronym, committee_name, member from websites,
-//			// com_names, member_names, committees where websites.id = 1 and websites.id =
-//			// committees.id and committees.titleID = com_names.id and committees.memberID =
-//			// member_names.id";
-//			// preparedStmt = connection.prepareStatement(getQuery);
-//			// ResultSet rs = preparedStmt.executeQuery();
-//			//
-//			// if(rs.next()) {
-//			// System.out.println(rs.getString(1));
-//			// System.out.println(rs.getString(2));
-//			// System.out.println(rs.getString(3));
-//			// }
-//		} catch (Exception e) {
-//			System.err.println("Got an exception!");
-//			System.err.println(e.getMessage());
-//		}
-//	}
+	public static void main(String[] args) {
+		try {
+			sql sql = new sql();
+			sql.createConnection();
+			sql.addConference("ICPE", "", "", "", "", "Germany", "2018", "", "", new LinkedHashMap<String, List<String>>(), new LinkedHashMap<String, LinkedHashMap<String, String>>());
+			// PreparedStatement preparedStmt;
+			// String getQuery = "select acronym, committee_name, member from websites,
+			// com_names, member_names, committees where websites.id = 1 and websites.id =
+			// committees.id and committees.titleID = com_names.id and committees.memberID =
+			// member_names.id";
+			// preparedStmt = connection.prepareStatement(getQuery);
+			// ResultSet rs = preparedStmt.executeQuery();
+			//
+			// if(rs.next()) {
+			// System.out.println(rs.getString(1));
+			// System.out.println(rs.getString(2));
+			// System.out.println(rs.getString(3));
+			// }
+		} catch (Exception e) {
+			System.err.println("Got an exception!");
+			System.err.println(e.getMessage());
+		}
+	}
 
 	/**
 	 * Adds the venue to the venues table if it doesn't exist yet
@@ -167,7 +241,7 @@ public class sql {
 		preparedStmt.setString(8, antiquity);
 		preparedStmt.setString(9, conferenceDays);
 		
-		return this.executeStatement(preparedStmt);
+		return this.executeStatement(preparedStmt, false);
 	}
 
 	private int addToDeadlineTypes(String type) throws SQLException {
@@ -184,7 +258,7 @@ public class sql {
 		preparedStmt.setString(1, title);
 		preparedStmt.setString(2, date);
 		
-		return this.executeStatement(preparedStmt);
+		return this.executeStatement(preparedStmt, false);
 	}
 	
 	/**
@@ -254,12 +328,12 @@ public class sql {
 		if (rs.next()) {
 			// Find the id from the set
 			id = rs.getInt(1);
-			System.out.println("found item id: " + id);
+			System.out.println("(checkAndReturn)found item id: " + id);
 			return id;
 		} else {
 			preparedStmt = connection.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS);
 			preparedStmt.setString(1, toInsert);
-			return this.executeStatement(preparedStmt);
+			return this.executeStatement(preparedStmt, false);
 		}
 	}
 	
@@ -269,23 +343,26 @@ public class sql {
 	 * @return id of created row
 	 * @throws SQLException
 	 */
-	private int executeStatement(PreparedStatement preparedStmt) throws SQLException {
+	private int executeStatement(PreparedStatement preparedStmt, boolean isUpdate) throws SQLException {
 		// Execute the statement and get the number of rows changed
 		int id = preparedStmt.executeUpdate();
-
+		
 		if (id == 0) {
 			throw new SQLException("Creating failed, no rows affected.");
 		}
 
-		try (ResultSet generatedKeys = preparedStmt.getGeneratedKeys()) {
-			// Find out the new id of the item just inserted
-			if (generatedKeys.next()) {
-				id = generatedKeys.getInt(1);
-//				System.out.println("created item id: " + id);
-				return id;
-			} else {
-				throw new SQLException("Creating failed, no ID obtained.");
+		if(!isUpdate) {
+			try (ResultSet generatedKeys = preparedStmt.getGeneratedKeys()) {
+				// Find out the new id of the item just inserted
+				if (generatedKeys.next()) {
+					id = generatedKeys.getInt(1);
+//					System.out.println("created item id: " + id);
+					return id;
+				} else {
+					throw new SQLException("Creating failed, no ID obtained.");
+				}
 			}
 		}
+		return id;
 	}
 }
