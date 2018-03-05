@@ -46,6 +46,14 @@ public class Parser {
 	}
 	
 	/**
+	 * Extracts the title from the home page of the website.
+	 * @return title
+	 */
+	public String getTitle(Document doc) {
+		return doc.title();
+	}
+	
+	/**
 	 * Finds the acronym of the conference from the title
 	 * @param title
 	 * @return acronym or empty string
@@ -78,29 +86,39 @@ public class Parser {
 	 * Searches and parses different links to find the proceedings.
 	 * @return proceedings
 	 */
-	public String getProceedings(ArrayList<String> linkList) {
+	public String getProceedings(Document doc) {
+		// Use SB to concatenate many proceedings
 		StringBuilder proceedings = new StringBuilder();
-		this.addLinkKeywords();
-		Document doc;
-		int keyword = 0;
-		while(proceedings.toString().isEmpty() && keyword < searchKeywords.size()) {
-			String url = this.searchLinks(searchKeywords.get(keyword), linkList);
-			if(!url.isEmpty()) {
-				doc = this.getURLDoc(url);
-				for(Element e: doc.getAllElements()) {
-					String elementString = e.wholeText();
-					for(String proc: information.getProceedings()) {
-						if(elementString.matches(changeToRegex(" " + proc)))
-							if(proceedings.toString().isEmpty())
-								proceedings.append(proc);
-							else if(!proceedings.toString().contains(proc))
-								proceedings.append("/" + proc);
-					}
-				}
+		// Get all the elements
+		for(Element e: doc.getAllElements()) {
+			String elementString = e.wholeText();
+			// Find the proceedings in the text
+			for(String proc: information.getProceedings()) {
+				// Make sure it has a space in front of it
+				if(elementString.matches(changeToRegex(" " + proc)))
+					if(proceedings.toString().isEmpty())
+						proceedings.append(proc);
+					else if(!proceedings.toString().contains(proc))
+						proceedings.append("/" + proc);
 			}
-			keyword++;
 		}
 		return proceedings.toString();
+	}
+	
+	/**
+	 * Find links in the passed in list that can contain proceedings
+	 * @param linkList
+	 * @return list of potential proceeding links
+	 */
+	public ArrayList<String> findProceedingLinks(ArrayList<String> linkList) {
+		ArrayList<String> proceedingLinks = new ArrayList<>();
+		this.addLinkKeywords();
+		for(String keyword: searchKeywords) {
+			String url = this.searchLinks(keyword, linkList);
+			if(!url.isEmpty())
+				proceedingLinks.add(url);
+		}
+		return proceedingLinks;
 	}
 	
 	/**
@@ -394,7 +412,6 @@ public class Parser {
 		searchKeywords.clear();
 		searchKeywords.add(this.changeToRegex("[oO]rganiz"));
 		searchKeywords.add(this.changeToRegex("[oO]rganis"));
-//		searchKeywords.add(this.changeToRegex("[pP]rogram"));
 		searchKeywords.add(this.changeToRegex("[pP]eople"));
 		searchKeywords.add(this.changeToRegex("[cC]ommittee"));
 	}

@@ -12,6 +12,9 @@ public class Information {
 		sponsors = new ArrayList<String>();
 		proceedings = new ArrayList<String>();
 		committees = new ArrayList<String>();
+		addKnownSponsors();
+		addKnownProceedings();
+		addPotentialCommitteeNames();
 	}
 	
 	public static void main(String[] args) {

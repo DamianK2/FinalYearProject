@@ -43,10 +43,10 @@ class CrawlerTest {
 	@Test
 	void testFramesetPages() {
 		Crawler crawler = new Crawler();
-		File psd = new File("TestPages/ISPASS2018.html");
+		File ispass = new File("TestPages/ISPASS2018.html");
 		Document doc = null;
 		try {
-			doc = Jsoup.parse(psd, "UTF-8");
+			doc = Jsoup.parse(ispass, "UTF-8");
 		} catch (IOException e) {
 		}
 		ArrayList<String> links = crawler.getAllLinks(doc, new ArrayList<String>(Arrays.asList("http://www.ispass.org/ispass2018/")));

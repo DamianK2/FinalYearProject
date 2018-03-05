@@ -90,8 +90,8 @@ public class Main {
         parsers.add(new Parser8(information));
         parsers.add(new Parser9(information));
         
-		sql sql = new sql();
-        sql.createConnection();
+//		sql sql = new sql();
+//        sql.createConnection();
         
 		for(String url: URLS) {
 			links.clear();
@@ -105,15 +105,18 @@ public class Main {
 	        String mainLink = links.get(0);
 	        row.createCell(1).setCellValue(createHelper.createRichTextString(mainLink));
 	        Document mainLinkDoc = crawler.getURLDoc(mainLink);
-			String title = mainLinkDoc.title();
+			String title = parsers.get(0).getTitle(mainLinkDoc);
 			row.createCell(2).setCellValue(createHelper.createRichTextString(title));
 			
-			String proceedings;
+			String proceedings = "";
 			int k = 0;
 			do {
-				proceedings = parsers.get(k).getProceedings(links);
+				ArrayList<String> proceedingLinks = parsers.get(k).findProceedingLinks(links);
+				for(String link: proceedingLinks) {
+					proceedings = parsers.get(k).getProceedings(crawler.getURLDoc(link));
+				}
 	        	k++;
-	        } while(proceedings == "" && k < parsers.size());  
+	        } while(proceedings.equals("") && k < parsers.size());  
 			row.createCell(4).setCellValue(createHelper.createRichTextString(proceedings));
 			
 			String description;
@@ -220,11 +223,11 @@ public class Main {
 				}
 	        }	
 			i++;
-	        try {
-				sql.addConference(acronym, title, sponsor, proceedings, description, venue, year, antiquity, conferenceDays, committees, deadlines);
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+//	        try {
+//				sql.addConference(acronym, title, sponsor, proceedings, description, venue, year, antiquity, conferenceDays, committees, deadlines);
+//			} catch (SQLException e) {
+//				e.printStackTrace();
+//			}
 		}
         
         // Create the output file
