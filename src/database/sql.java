@@ -60,6 +60,8 @@ public class sql {
 		// If the conference exists then overwrite every value in the database for it (to be changed in the future to check which information needs changing)
 		if(id != -1) {
 			this.updateWebsites(id, acronym, title, sponsors, proceedings, description, venueID, currentYear, antiquity, conferenceDays);
+			this.deleteCommitees(id);
+			this.addToCommittees(id, organisers);
 		} else {
 			id = this.addToWebsites(acronym, title, sponsors, proceedings, description, venueID, currentYear, antiquity,
 					conferenceDays);
@@ -86,18 +88,7 @@ public class sql {
 					this.addToTable(query, id, typeID, this.addToDeadlineTitles(dTitle, actualDeadlines.get(dTitle)));
 				}
 			}
-			
-			query = "insert committees (id, titleID, memberID)" + " values (?, ?, ?)";
-			int comTitleID;
-			
-			// Iterate through the map
-			for(String committeeTitle: organisers.keySet()) {
-				comTitleID = this.addToCommitteeTitles(committeeTitle);
-				// Populate the tables in the database
-				for(String member: organisers.get(committeeTitle)) {
-					this.addToTable(query, id, comTitleID, this.addToMemberNames(member));
-				}
-			}
+			this.addToCommittees(id, organisers);
 		}
 	}
 	
@@ -164,6 +155,39 @@ public class sql {
 		preparedStmt.setInt(10, id);
 		
 		this.executeStatement(preparedStmt, true);
+	}
+	
+	/**
+	 * Delete every entry associated with the passed in id in the committees table
+	 * @param id
+	 * @throws SQLException
+	 */
+	private void deleteCommitees(int id) throws SQLException {
+		String deleteQuery = "delete from committees where id = ?";
+		preparedStmt = connection.prepareStatement(deleteQuery, Statement.RETURN_GENERATED_KEYS);
+		preparedStmt.setInt(1, id);
+		// Delete everything with the given id from the committees table
+		this.executeStatement(preparedStmt, true);
+	}
+	
+	/**
+	 * Add the given organisers into the committees table
+	 * @param id
+	 * @param organisers
+	 * @throws SQLException
+	 */
+	private void addToCommittees(int id, LinkedHashMap<String, List<String>> organisers) throws SQLException {
+		String query = "insert committees (id, titleID, memberID)" + " values (?, ?, ?)";
+		int comTitleID;
+		
+		// Iterate through the map
+		for(String committeeTitle: organisers.keySet()) {
+			comTitleID = this.addToCommitteeTitles(committeeTitle);
+			// Populate the tables in the database
+			for(String member: organisers.get(committeeTitle)) {
+				this.addToTable(query, id, comTitleID, this.addToMemberNames(member));
+			}
+		}
 	}
 
 	public static void main(String[] args) {
@@ -281,7 +305,7 @@ public class sql {
 		int rows = preparedStmt.executeUpdate();
 
 		if (rows == 0) {
-			throw new SQLException("Creating committees row entry failed. No rows affected.");
+			throw new SQLException("Creating row entry failed. No rows affected.");
 		}
 	}
 	
@@ -347,8 +371,9 @@ public class sql {
 		// Execute the statement and get the number of rows changed
 		int id = preparedStmt.executeUpdate();
 		
+		// Not a serious error, just no rows affected
 		if (id == 0) {
-			throw new SQLException("Creating failed, no rows affected.");
+			System.err.println("Creating failed, no rows affected.");
 		}
 
 		if(!isUpdate) {
@@ -359,6 +384,7 @@ public class sql {
 //					System.out.println("created item id: " + id);
 					return id;
 				} else {
+					// The insert performed didn't insert anything
 					throw new SQLException("Creating failed, no ID obtained.");
 				}
 			}
