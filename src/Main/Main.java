@@ -34,21 +34,21 @@ public class Main {
 	public static final ArrayList<String> URLS = new ArrayList<>(
 							Arrays.asList(
 										"https://icpe2018.spec.org/home.html",
-										"http://lsds.hesge.ch/ISPDC2018/", 
-										"https://unescoprivacychair.urv.cat/psd2018/index.php",
-										"https://2018.splashcon.org/home",
-										"https://conf.researchr.org/home/icgse-2018",
-										"https://itrust.sutd.edu.sg/hase2017/", //TODO committees
-										"http://www.ispass.org/ispass2018/",
-										"https://www.computer.org/web/compsac2018",
-										"https://www.isf.cs.tu-bs.de/cms/events/sefm2018/",
-										"http://www.es.mdh.se/icst2018/",
-										"https://icssea.org/",
-										"http://www.icsoft.org/",
-										"http://issre.net/",
-										"https://sites.uoit.ca/ifiptm2018/index.php",
-										"http://cseet2017.com/",
-										"http://www.ieee-iccse.org/"
+										"http://lsds.hesge.ch/ISPDC2018/"
+//										"https://unescoprivacychair.urv.cat/psd2018/index.php",
+//										"https://2018.splashcon.org/home",
+//										"https://conf.researchr.org/home/icgse-2018",
+//										"https://itrust.sutd.edu.sg/hase2017/",
+//										"http://www.ispass.org/ispass2018/",
+//										"https://www.computer.org/web/compsac2018",
+//										"https://www.isf.cs.tu-bs.de/cms/events/sefm2018/",
+//										"http://www.es.mdh.se/icst2018/",
+//										"https://icssea.org/",
+//										"http://www.icsoft.org/",
+//										"http://issre.net/",
+//										"https://sites.uoit.ca/ifiptm2018/index.php",
+//										"http://cseet2017.com/",
+//										"http://www.ieee-iccse.org/"
 										));
 			
 	public static void main(String[] args) {
@@ -89,8 +89,8 @@ public class Main {
         parsers.add(new Parser8(information));
         parsers.add(new Parser9(information));
         
-//		sql sql = new sql();
-//        sql.createConnection();
+		sql sql = new sql();
+        sql.createConnection();
         
 		for(String url: URLS) {
 			links.clear();
@@ -217,11 +217,11 @@ public class Main {
 				}
 	        }	
 			i++;
-//	        try {
-//				sql.addNewConference(acronym, title, sponsor, proceedings, description, venue, year, antiquity, conferenceDays, committees, deadlines);
-//			} catch (SQLException e) {
-//				e.printStackTrace();
-//			}
+	        try {
+				sql.addConference(acronym, title, sponsor, proceedings, description, venue, year, antiquity, conferenceDays, committees, deadlines);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
         
         // Create the output file
