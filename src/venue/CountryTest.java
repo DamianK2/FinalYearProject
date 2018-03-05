@@ -18,10 +18,4 @@ class CountryTest {
 		assertTrue(countries.contains("Goias"));
 		assertTrue(countries.contains("Sri Lanka"));
 	}
-
-	@Disabled("The method is used to retrieve the information that was passed on from the Locale library")
-	@Test
-	void testGetCountries() {
-	}
-
 }

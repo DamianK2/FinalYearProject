@@ -14,6 +14,7 @@ import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.jsoup.nodes.Document;
 
 import crawler.Crawler;
 import crawler.Information;
@@ -78,7 +79,7 @@ public class Main {
         
         ArrayList<Parser> parsers = new ArrayList<>();
         int i = 0;
-        Crawler crawl;
+        Crawler crawler;
         parsers.add(new Parser(information));
         parsers.add(new Parser2(information));
         parsers.add(new Parser3(information));
@@ -95,14 +96,16 @@ public class Main {
 		for(String url: URLS) {
 			links.clear();
 			deadlines.clear();
-			crawl = new Crawler(url);
-			links = crawl.getAllLinks();
+			crawler = new Crawler();
+			links.add(url);
+			links = crawler.getAllLinks(crawler.getURLDoc(url), links);
 	        
 	        row = sheet.createRow(i+1);
 	        // TODO Use this in the database to store the link to be used with the acronym as a[href] on the webpage
 	        String mainLink = links.get(0);
 	        row.createCell(1).setCellValue(createHelper.createRichTextString(mainLink));
-			String title = parsers.get(0).getTitle(mainLink);
+	        Document mainLinkDoc = crawler.getURLDoc(mainLink);
+			String title = mainLinkDoc.title();
 			row.createCell(2).setCellValue(createHelper.createRichTextString(title));
 			
 			String proceedings;

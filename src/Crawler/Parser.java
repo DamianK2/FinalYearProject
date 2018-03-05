@@ -46,17 +46,6 @@ public class Parser {
 	}
 	
 	/**
-	 * Extracts the title from the home page of the website.
-	 * @return title
-	 */
-	public String getTitle(String homeLink) {
-		Document doc = null;
-		// Connect to the home page
-        doc = this.getURLDoc(homeLink);
-		return doc.title();
-	}
-	
-	/**
 	 * Finds the acronym of the conference from the title
 	 * @param title
 	 * @return acronym or empty string

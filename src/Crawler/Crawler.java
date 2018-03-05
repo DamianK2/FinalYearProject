@@ -17,16 +17,10 @@ import org.jsoup.select.Elements;
 public class Crawler {
 	private ArrayList<String> linkList = new ArrayList<>();
 //	protected static ArrayList<Thread> threads = new ArrayList<>();
-
-	// Add the website that we want to crawl
-	public Crawler(String url) {
-		linkList.add(url);
-		System.out.println("(inside Crawler)The url is: " + url);
-	}
 	
 	// Fetch all links in the website, including sub-links
-	public ArrayList<String> getAllLinks() {
-		Document doc = this.getURLDoc(linkList.get(0));
+	public ArrayList<String> getAllLinks(Document doc, ArrayList<String> link) {
+		this.linkList = link;
         StringBuilder sb = new StringBuilder(); 
         Elements links = doc.select("a[href]");
         
@@ -41,13 +35,22 @@ public class Crawler {
                 		if(src.contains("http"))
                 			linkList.add(src);
                 		else {
-                			sb.append(src);
+                			// The link can look like this ./example.pdf
+                			if(src.charAt(0) == '.') {
+                				StringBuilder tempSb = new StringBuilder(src); 
+                				// Delete the dot and slash "./"
+                				tempSb.delete(0, 2);
+                				sb.append(tempSb.toString());
+                			} else {
+                				sb.append(src);
+                			}
                     		linkList.add(sb.toString());
                 		}
                 	}
                 	
                 	doc = this.getURLDoc(sb.toString());
-                	links = doc.select("a[href]");
+                	if(doc != null)
+                		links = doc.select("a[href]");
                     
                     if(!links.isEmpty())
                     	this.addToLinkList(links);
@@ -98,7 +101,7 @@ public class Crawler {
 					&& !link.attr("abs:href").toLowerCase().matches("[http].+(pdf|rar|zip|jpg|png|doc|docx)") 
 					&& !link.text().matches(".*[oO]ther [eE]dition.*")
 					&& !link.attr("abs:href").toLowerCase().matches("mailto:.+"))
-				linkList.add(link.attr("abs:href"));	
+				linkList.add(link.attr("abs:href"));
 		}
 	}
 	
@@ -111,13 +114,13 @@ public class Crawler {
 		return check;
 	}
 	
-	private Document getURLDoc(String url) {
+	public Document getURLDoc(String url) {
 		Document doc = null;
 		try {
 			doc = Jsoup.connect(url).get();
 			System.out.println("Fetching from " + url + "...");
 		} catch (IOException e) {
-			System.out.println("Something went wrong when getting the first element from the list of links.");
+			System.out.println("Something went wrong when connecting to: " + url);
 //			e.printStackTrace();
 		}
 		return doc;
