@@ -122,7 +122,7 @@ public class Main {
 			String description;
 			k = 0;
 			do {
-	        	description = parsers.get(k).getDescription(mainLink);
+	        	description = parsers.get(k).getDescription(mainLinkDoc);
 	        	k++;
 	        } while(description.equals("") && k < parsers.size());   
 	        
@@ -146,12 +146,15 @@ public class Main {
 			
 			row.createCell(3).setCellValue(createHelper.createRichTextString(sponsor));
 	        
-	        String venue;
+	        String venue = "";
 	        k = 0;
 			do {
-				venue = parsers.get(k).getVenue(title, description, country, links);
+				ArrayList<String> venueLinks = parsers.get(k).findVenueLinks(links);
+				for(String link: venueLinks) {
+					venue = parsers.get(k).getVenue(title, description, country, crawler.getURLDoc(link));
+				}
 	        	k++;
-	        } while(venue == "" && k < parsers.size());	
+	        } while(venue.equals("") && k < parsers.size());
 
 			System.out.println("VENUE: " + venue);
 	        row.createCell(6).setCellValue(createHelper.createRichTextString(venue));

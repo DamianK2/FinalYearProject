@@ -126,10 +126,7 @@ public class Parser {
 	 * or the head of the website.
 	 * @return description
 	 */
-	public String getDescription(String homeLink) {
-		Document doc = null;
-		// Connect to the home page
-        doc = this.getURLDoc(homeLink);
+	public String getDescription(Document doc) {
 		String meta = "";
 		try {
 			meta = doc.select("meta[name=description]").first().attr("content");
@@ -150,32 +147,35 @@ public class Parser {
 	 * @param country
 	 * @return venue or empty string
 	 */
-	public String getVenue(String title, String description, Country country, ArrayList<String> linkList) {
+	public String getVenue(String title, String description, Country country, Document doc) {
 		String venue = "";
-		String[] links = new String[2];
-		Document doc = null;
-		// Search for the different links in the conference
-		links[0] = this.searchLinks("[vV]enue", linkList);
-		links[1] = this.searchLinks("[rR]egistra", linkList);
 		
-		for(String link: links) {
-			if(!link.isEmpty()) {
-				// Connect to the target link
-				doc = this.getURLDoc(link);
-				
-				for(Element e: doc.getAllElements()) {
-					for(TextNode textNode: e.textNodes()) {
-//						searchCountries(textNode.text(), country);
-						if(!textNode.text().matches("^\\s+$")) {
-							venue = searchCountries(textNode.text(), country);
-							if(!venue.isEmpty())
-								return venue;
-						}
+		if(doc != null) {
+			// Go through all the elements in the document
+			for(Element e: doc.getAllElements()) {
+				// Extract text nodes
+				for(TextNode textNode: e.textNodes()) {
+					// Omit empty strings
+					if(!textNode.text().matches("^\\s+$")) {
+						// Search for countries in the text node
+						venue = searchCountries(textNode.text(), country);
+						if(!venue.isEmpty())
+							return venue;
 					}
 				}
 			}
 		}
+		
 		return venue;
+	}
+	
+	public ArrayList<String> findVenueLinks(ArrayList<String> linkList) {
+		ArrayList<String> venueLinks = new ArrayList<>();
+		// Search for the different links in the conference
+		venueLinks.add(this.searchLinks("[vV]enue", linkList));
+		venueLinks.add(this.searchLinks("[rR]egistra", linkList));
+
+		return venueLinks;
 	}
 	
 	/**

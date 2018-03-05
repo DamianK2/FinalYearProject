@@ -84,21 +84,56 @@ class ParserTest {
 						"http://www.icsoft.org/CallForPapers.aspx"))));
 	}
 
-//	@Test
-//	void testGetDescription() {
-//		assertEquals(descriptions.get(0), parser.getDescription("https://icpe2018.spec.org/home.html"));
-//		assertEquals("", parser.getDescription("http://lsds.hesge.ch/ISPDC2018/"));
-//		assertEquals("", parser.getDescription("https://unescoprivacychair.urv.cat/psd2018/index.php"));
-//	}
-//
-//	@Test
-//	void testGetVenue() {
-//		Country country = new Country();
-//		assertEquals("Germany", parser.getVenue(titles.get(0), descriptions.get(0), country, links1));
-//		assertEquals("Switzerland", parser.getVenue(titles.get(1), descriptions.get(1), country, links2));
-//		assertEquals("Spain", parser.getVenue(titles.get(2), "", country, links3));
-//	}
-//
+	@Test
+	void testGetDescription() {
+		File icpe = new File("TestPages/ICPE2018.html");
+		File psd = new File("TestPages/PSD2018.html");
+		Document doc = null;
+		Document doc2 = null;
+		try {
+			doc = Jsoup.parse(icpe, "UTF-8");
+			doc2 = Jsoup.parse(psd, "UTF-8");
+			throw new IOException();
+		} catch (IOException e) {
+		} 
+		assertEquals("Ninth ACM/SPEC International Conference on Performance Engineering, ICPE 2018"
+				+ " - A Joint Meeting of WOSP/SIPEW sponsored by ACM SIGMETRICS and ACM SIGSOFT in"
+				+ " Cooperation with SPEC.", parser.getDescription(doc));
+		assertEquals("", parser.getDescription(doc2));
+	}
+
+	@Test
+	void testGetVenue() {
+		Country country = new Country();
+		File icpe = new File("TestPages/ICPE2018_venue.html");
+		File ispdc = new File("TestPages/ISPDC2018_venue.html");
+		File psd = new File("TestPages/PSD2018_venue.html");
+		Document doc = null;
+		Document doc2 = null;
+		Document doc3 = null;
+		try {
+			doc = Jsoup.parse(icpe, "UTF-8");
+			doc2 = Jsoup.parse(ispdc, "UTF-8");
+			doc3 = Jsoup.parse(psd, "UTF-8");
+			throw new IOException();
+		} catch (IOException e) {
+		} 
+		assertEquals("Germany", parser.getVenue("", "", country, doc));
+		assertEquals("Switzerland", parser.getVenue("", "", country, doc2));
+		assertEquals("Spain", parser.getVenue("", "", country, doc3));
+		assertEquals("", parser.getVenue("", "", country, null));
+	}
+	
+	@Test
+	void testFindVenueLinks() {
+		assertEquals(new ArrayList<String>(Arrays.asList("http://lsds.hesge.ch/ISPDC2018/venue/", 
+				"https://conference.imp.fu-berlin.de/icpe18/registration-Info")), 
+				parser.findVenueLinks(new ArrayList<String>(Arrays.asList("http://lsds.hesge.ch/ISPDC2018/venue/",
+						"http://lsds.hesge.ch/ISPDC2018/people/",
+						"https://conference.imp.fu-berlin.de/icpe18/registration-Info",
+						"https://icpe2018.spec.org/workshops.html"))));
+	}
+
 //	//TODO test the map
 ////	@Test
 ////	void testGetDeadlines() {
