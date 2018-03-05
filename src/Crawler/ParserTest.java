@@ -143,28 +143,31 @@ class ParserTest {
 ////		assertEquals(empty, parser.getDeadlines(links2));
 ////		assertEquals(empty, parser.getDeadlines(links3));
 ////	}
-//
-//	@Test
-//	void testGetConferenceYear() {
-//		assertEquals("2018", parser.getConferenceYear("", titles.get(0)));
-//		assertEquals("2018", parser.getConferenceYear("", titles.get(1)));
-//		assertEquals("2018", parser.getConferenceYear("", titles.get(2)));
-//	}
-//
-//	@Test
-//	void testGetAntiquity() {
-//		assertEquals("Ninth", parser.getAntiquity("", descriptions.get(0), new ArrayList<String>(Arrays.asList("https://icpe2018.spec.org/home.html"))));
-//		assertEquals("Seventeenth", parser.getAntiquity("", descriptions.get(1), new ArrayList<String>(Arrays.asList("https://unescoprivacychair.urv.cat/psd2018/index.php"))));
-//		assertEquals("", parser.getAntiquity("", "", new ArrayList<String>(Arrays.asList("http://lsds.hesge.ch/ISPDC2018/"))));
-//	}
-//
-//	@Test
-//	void testGetConferenceDays() {
-//		assertEquals("", parser.getConferenceDays(titles.get(0), descriptions.get(0), new ArrayList<String>(Arrays.asList("https://icpe2018.spec.org/home.html"))));
-//		assertEquals("25-27 June 2018", parser.getConferenceDays(titles.get(1), descriptions.get(1), new ArrayList<String>(Arrays.asList("https://unescoprivacychair.urv.cat/psd2018/index.php"))));
-//		assertEquals("", parser.getConferenceDays(titles.get(2), "", new ArrayList<String>(Arrays.asList("http://lsds.hesge.ch/ISPDC2018/"))));
-//	}
-//	
+
+	@Test
+	void testGetConferenceYear() {
+		assertEquals("2018", parser.getConferenceYear("19 April 2018", ""));
+		assertEquals("2019", parser.getConferenceYear("27-29 June 2019", ""));
+		assertEquals("2018", parser.getConferenceYear("11-13 February 2018", ""));
+		assertEquals("", parser.getConferenceYear("11 February", ""));
+	}
+
+	@Test
+	void testGetAntiquity() {
+		assertEquals("Ninth", parser.getAntiquity("", "Ninth", new ArrayList<String>(Arrays.asList("https://icpe2018.spec.org/home.html"))));
+		assertEquals("Seventeenth", parser.getAntiquity("", "17th", new ArrayList<String>(Arrays.asList("https://unescoprivacychair.urv.cat/psd2018/index.php"))));
+		assertEquals("", parser.getAntiquity("", "", new ArrayList<String>(Arrays.asList("http://lsds.hesge.ch/ISPDC2018/"))));
+		assertEquals("Twentieth", parser.getAntiquity("", "20th", new ArrayList<String>(Arrays.asList("http://lsds.hesge.ch/ISPDC2018/"))));
+		assertEquals("Forty-Fourth", parser.getAntiquity("", "44th", new ArrayList<String>(Arrays.asList("http://lsds.hesge.ch/ISPDC2018/"))));
+	}
+
+	@Test
+	void testGetConferenceDays() {
+		assertEquals("", parser.getConferenceDays("", "", new ArrayList<String>(Arrays.asList("https://icpe2018.spec.org/home.html"))));
+		assertEquals("25-27 June 2018", parser.getConferenceDays("La La La catch this date: 25-27 June 2018, if you can", "", new ArrayList<String>(Arrays.asList("https://unescoprivacychair.urv.cat/psd2018/index.php"))));
+		assertEquals("", parser.getConferenceDays("25                                  - 27 June 2018", "", new ArrayList<String>(Arrays.asList("http://lsds.hesge.ch/ISPDC2018/"))));
+	}
+	
 //	@Test
 //	void testgetOrganisers() {
 //		Country country = new Country();
