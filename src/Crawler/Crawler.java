@@ -15,8 +15,8 @@ import org.jsoup.select.Elements;
  *
  */
 public class Crawler {
-	protected static ArrayList<String> linkList = new ArrayList<>();
-	protected static ArrayList<Thread> threads = new ArrayList<>();
+	private ArrayList<String> linkList = new ArrayList<>();
+//	protected static ArrayList<Thread> threads = new ArrayList<>();
 
 	// Add the website that we want to crawl
 	public Crawler(String url) {
@@ -91,7 +91,7 @@ public class Crawler {
 	}
 	
 	// Add the newly fetched links into an ArrayList
-	protected void addToLinkList(Elements links) {
+	private void addToLinkList(Elements links) {
 		for(Element link: links) {
 			// Eliminate the unneeded links with images or pdfs
 			if(!this.checkDuplicates(link.attr("abs:href")) 
@@ -118,13 +118,8 @@ public class Crawler {
 			System.out.println("Fetching from " + url + "...");
 		} catch (IOException e) {
 			System.out.println("Something went wrong when getting the first element from the list of links.");
-			e.printStackTrace();
+//			e.printStackTrace();
 		}
 		return doc;
-	}
-	
-	public static void main(String[] args) {
-		Crawler c = new Crawler("http://www.ispass.org/ispass2018/");
-		c.getAllLinks();
 	}
 }
