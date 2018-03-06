@@ -87,31 +87,37 @@ public class Parser5 extends Parser {
 	
 	@Override
 	public String getAntiquity(String title, String description, Document doc) {
-		int antiquity = 1;
-		for(Element el: doc.getAllElements()) {
-			for(TextNode textNode: el.textNodes()) {
-				if(textNode.text().toLowerCase().matches(this.changeToRegex("\\d{1,2}(?:st|nd|rd|th)")))
-					antiquity++;
-			}
-		}
-		
-		return this.toOrdinal(antiquity);
-		
-	}
-	
-
-
-	@Override
-	public String getConferenceDays(String title, String description, Document doc) {
-		for(Element el: doc.getAllElements()) {
-			for(TextNode textNode: el.textNodes()) {
-				String found = this.findConfDays(textNode.text());
-				if(!found.equals("")) {
-					return found;
+		if(doc != null) {
+			int antiquity = 1;
+			for(Element el: doc.getAllElements()) {
+				for(TextNode textNode: el.textNodes()) {
+					if(textNode.text().toLowerCase().matches(this.changeToRegex("\\d{1,2}(?:st|nd|rd|th)")))
+						antiquity++;
 				}
 			}
+			
+			return this.toOrdinal(antiquity);
+		} else
+			return "";
+	}
+	
+	@Override
+	public String getConferenceDays(String title, String description, Document doc) {
+		if(doc != null) {
+			for(Element el: doc.getAllElements()) {
+				for(TextNode textNode: el.textNodes()) {
+					String found = this.findConfDays(textNode.text());
+					if(!found.equals("")) {
+						return found;
+					}
+				}
+			}
+			return "";
+		} else {
+			return "";
 		}
 		
-		return "";
+		
+		
 	}
 }

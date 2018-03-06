@@ -2,32 +2,49 @@ package crawler;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.Test;
 
 class Parser5Test {
 	
 	private Parser parser = new Parser5(new Information());
-	private ArrayList<String> titles = new ArrayList<>(Arrays.asList("International Conference on Performance Engineering (ICPE) 2018: ICPE 2018", 
-			"ISPDC 2018 – The 17th IEEE International Symposium on Parallel and Distributed Computing, 25-27 June 2018, Geneva, Switzerland", 
-			"PSD2018 - Privacy in Statistical Databases - UNESCO Privacy Chair"));
-	private ArrayList<String> descriptions = new ArrayList<>(Arrays.asList("Ninth ACM/SPEC International Conference on Performance Engineering, "
-			+ "ICPE 2018 - A Joint Meeting of WOSP/SIPEW sponsored by ACM SIGMETRICS and ACM SIGSOFT in Cooperation with SPEC.", 
-			"The 17th IEEE International Symposium on Parallel and Distributed Computing, 25-27 June 2018, Geneva, Switzerland"));
-	private ArrayList<String> links1 = new ArrayList<>(Arrays.asList("https://icpe2018.spec.org/home.html", "https://icpe2018.spec.org/conference-program.html", 
-			"https://icpe2018.spec.org/venue.html", "https://icpe2018.spec.org/submissions.html", "https://icpe2018.spec.org/important-dates.html"));
-	private ArrayList<String> links2 = new ArrayList<>(Arrays.asList("http://lsds.hesge.ch/ISPDC2018/", "http://lsds.hesge.ch/ISPDC2018/call-for-paper/",
-			"http://lsds.hesge.ch/ISPDC2018/people/", "http://lsds.hesge.ch/ISPDC2018/venue/"));
-	private ArrayList<String> links3 = new ArrayList<>(Arrays.asList("https://unescoprivacychair.urv.cat/psd2018/index.php?m=organization",
-			"https://unescoprivacychair.urv.cat/psd2018/index.php?m=topics", "https://unescoprivacychair.urv.cat/psd2018/index.php?m=proceedings",
-			"https://unescoprivacychair.urv.cat/psd2018/index.php?m=venue", "https://unescoprivacychair.urv.cat/psd2018/index.php"));
 
-//	@Test
-//	void testGetDescription() {
-//		parser.getDescription("https://icssea.org/");
-//	}
+	@Test
+	void testGetDescription() {
+		File splash = new File("TestPages/SPLASH2018.html");
+		File psd = new File("TestPages/PSD2018.html");
+		Document doc = null;
+		Document doc2 = null;
+		try {
+			doc = Jsoup.parse(splash, "UTF-8");
+			doc2 = Jsoup.parse(psd, "UTF-8");
+			throw new IOException();
+		} catch (IOException e) {
+		} 
+		assertEquals("The ACM SIGPLAN conference on Systems, Programming, Languages"
+				+ " and Applications: Software for Humanity (SPLASH) embraces all "
+				+ "aspects of software construction and delivery to make it the premier"
+				+ " conference at the intersection of programming, languages, and software "
+				+ "engineering. SPLASH 2018 will take place in Boston, Massachusetts, USA "
+				+ "from Sun 4 - Fri 9 November 2018.", parser.getDescription(doc));
+		
+		assertEquals("Privacy in statistical databases is about finding tradeoffs"
+				+ " to the tension between the increasing societal and economical "
+				+ "demand for accurate information and the legal and ethical "
+				+ "obligation to protect the privacy of individuals and enterprises"
+				+ " which are the respondents providing the statistical data. "
+				+ "In the case of statistical databases, the motivation for respondent"
+				+ " privacy is one of survival: statistical agencies or survey institutes"
+				+ " cannot expect to collect accurate information from individual or corporate"
+				+ " respondents unless these feel the privacy of their responses is guaranteed.", parser.getDescription(doc2));
+		assertEquals("", parser.getDescription(null));
+	}
 	
 //	@Test
 //	void testGetDeadlines() {
@@ -36,8 +53,37 @@ class Parser5Test {
 //	}
 	
 	@Test
+	void testGetAntiquity() {
+		File hase = new File("TestPages/HASE2017_history.html");
+		Document doc = null;
+		try {
+			doc = Jsoup.parse(hase, "UTF-8");
+			throw new IOException();
+		} catch (IOException e) {
+		} 
+		assertEquals("Eighteenth", parser.getAntiquity("", "", doc));
+		assertEquals("", parser.getAntiquity("", "", null));
+	}
+
+	@Test
 	void testGetConferenceDays() {
-		assertEquals("Mon 18 - Fri 22 June 2018", parser.getConferenceDays("", "", new ArrayList<String>(Arrays.asList("https://pldi18.sigplan.org/home"))));	
+		File splash = new File("TestPages/SPLASH2018.html");
+		File psd = new File("TestPages/PSD2018.html");
+		File compsac = new File("TestPages/COMPSAC2018.html");
+		Document doc = null;
+		Document doc2 = null;
+		Document doc3 = null;
+		try {
+			doc = Jsoup.parse(splash, "UTF-8");
+			doc2 = Jsoup.parse(psd, "UTF-8");
+			doc3 = Jsoup.parse(compsac, "UTF-8");
+			throw new IOException();
+		} catch (IOException e) {
+		} 
+		assertEquals("Sun 4 - Fri 9 November 2018", parser.getConferenceDays("", "", doc));
+		assertEquals("September 26-28, 2018", parser.getConferenceDays("", "", doc2));
+		assertEquals("", parser.getConferenceDays("", "", doc3));
+		assertEquals("", parser.getConferenceDays("", "", null));
 	}
 
 }
