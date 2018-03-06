@@ -154,110 +154,85 @@ class ParserTest {
 
 	@Test
 	void testGetAntiquity() {
-		assertEquals("Ninth", parser.getAntiquity("", "Ninth", new ArrayList<String>(Arrays.asList("https://icpe2018.spec.org/home.html"))));
-		assertEquals("Seventeenth", parser.getAntiquity("", "17th", new ArrayList<String>(Arrays.asList("https://unescoprivacychair.urv.cat/psd2018/index.php"))));
-		assertEquals("", parser.getAntiquity("", "", new ArrayList<String>(Arrays.asList("http://lsds.hesge.ch/ISPDC2018/"))));
-		assertEquals("Twentieth", parser.getAntiquity("", "20th", new ArrayList<String>(Arrays.asList("http://lsds.hesge.ch/ISPDC2018/"))));
-		assertEquals("Forty-Fourth", parser.getAntiquity("", "44th", new ArrayList<String>(Arrays.asList("http://lsds.hesge.ch/ISPDC2018/"))));
+		assertEquals("Ninth", parser.getAntiquity("", "Ninth", null));
+		assertEquals("Seventeenth", parser.getAntiquity("", "17th", null));
+		assertEquals("", parser.getAntiquity("", "", null));
+		assertEquals("Twentieth", parser.getAntiquity("", "20th", null));
+		assertEquals("Forty-Fourth", parser.getAntiquity("", "44th", null));
 	}
 
 	@Test
 	void testGetConferenceDays() {
-		assertEquals("", parser.getConferenceDays("", "", new ArrayList<String>(Arrays.asList("https://icpe2018.spec.org/home.html"))));
-		assertEquals("25-27 June 2018", parser.getConferenceDays("La La La catch this date: 25-27 June 2018, if you can", "", new ArrayList<String>(Arrays.asList("https://unescoprivacychair.urv.cat/psd2018/index.php"))));
-		assertEquals("", parser.getConferenceDays("25                                  - 27 June 2018", "", new ArrayList<String>(Arrays.asList("http://lsds.hesge.ch/ISPDC2018/"))));
+		assertEquals("", parser.getConferenceDays("", "", null));
+		assertEquals("25-27 June 2018", parser.getConferenceDays("La La La catch this date: 25-27 June 2018, if you can", "", null));
+		assertEquals("", parser.getConferenceDays("25                                  - 27 June 2018", "", null));
 	}
 	
-//	@Test
-//	void testgetOrganisers() {
-//		Country country = new Country();
-////		parser.getOrganisers(new ArrayList<String>(Arrays.asList("https://www.isf.cs.tu-bs.de/cms/events/sefm2018/committees/")), country);
-//		
-//		LinkedHashMap<String, List<String>> committees = parser.getOrganisers(links2, country);
-//		assertTrue(committees.containsKey("General Chair"));
-//		assertTrue(committees.containsKey("Local Chair"));
-//		assertTrue(committees.containsKey("Steering Committee"));
-//		assertTrue(committees.containsKey("Program Committee"));
-//		
-//		List<String> members = committees.get("General Chair");
-//		assertEquals("Nabil Abdennadher, University of Applied Sciences and Arts, Western Switzerland", members.get(0));
-//		members = committees.get("Steering Committee");
-//		assertEquals("John Morrison, University College Cork, Ireland", members.get(5));
-//		assertEquals("Dana Petcu, Western Univ. of Timisoara and e-Austria, Timisoara, Romania", members.get(7));
-//		assertEquals("Marek Tudruj, Polish Acad. of Sciences and PJIIT, Warsaw, Poland", members.get(9));
-//		members = committees.get("Program Committee");
-//		assertEquals(" Aniello Castiglione, Department of Computer Science, University of Salerno, Italy", members.get(5));
-//		assertEquals(" Valentin Cristea, University Politehnica of Bucharest, Romania", members.get(11));
-//	}
-//
-//	@Disabled("This method is temporary only")
-//	@Test
-//	void testTempMethod() {
-//
-//	}
-//
-//	@Disabled("This method simply overwrites the array in the class")
-//	@Test
-//	void testAddSearchWords() {
-//
-//	}
-//
-//	@Disabled("This method simply overwrites the array in the class")
-//	@Test
-//	void testAddNewSearchWords() {
-//
-//	}
-//	
-//	@Disabled("This method simply overwrites the array in the class")
-//	@Test
-//	void testAddCommitteeSearchWords() {
-//		
-//	}
-//
-//	@Test
-//	void testToOrdinal() {
-//		assertEquals("First", parser.toOrdinal(1));
-//		assertEquals("Second", parser.toOrdinal(2));
-//		assertEquals("Third", parser.toOrdinal(3));
-//		assertEquals("Twenty-First", parser.toOrdinal(21));
-//		assertEquals("Twelfth", parser.toOrdinal(12));
-//	}
-//
-//	@Test
-//	void testSearchCountries() {
-//		Country country = new Country();
-//		assertEquals("Italy", parser.searchCountries("Mary was born in Italy.", country));
-//		assertEquals("Germany", parser.searchCountries("The annual conference takes place in Germany this year.", country));
-//		assertEquals("Spain", parser.searchCountries("As per usual, John decided to go to Spain for his holidays.", country));
-//	}
-//
-//	@Test
-//	void testChangeToRegex() {
-//		assertEquals(".*keyword.*", parser.changeToRegex("keyword"));
-//		assertEquals(".*apple.*", parser.changeToRegex("apple"));
-//		assertEquals(".*pear.*", parser.changeToRegex("pear"));
-//		assertEquals(".*testing.*", parser.changeToRegex("testing"));
-//		assertEquals(".*thisisareallylongwordwithoutspaces.*", parser.changeToRegex("thisisareallylongwordwithoutspaces"));
-//	}
-//
-//	@Disabled("This method uses JSoup library functions only")
-//	@Test
-//	void testGetURLDoc() {
-//	}
-//
-//	
-//	@Test
-//	void testFindPattern() {
-//		Pattern pattern = Pattern.compile("\\d{4}");
-//		assertEquals("2018", parser.findPattern("submission deadline: 2018", pattern));
-//		assertEquals("2020", parser.findPattern("camera ready papers: 2020", pattern));
-//		assertEquals("2019", parser.findPattern("notification deadline: 2019", pattern));
-//	}
-//
-//	@Test
-//	void testFindConfDays() {
-//		assertEquals("12-14 February, 2018", parser.findConfDays("The conference will take place between 12-14 February, 2018."));
-//		assertEquals("February, 12-14, 2018", parser.findConfDays("The conference will take place between February, 12-14, 2018."));
-//		assertEquals("February 12-14, 2018", parser.findConfDays("The conference will take place between February 12-14, 2018."));
-//	}
+	@Test
+	void testgetOrganisers() {
+		Country country = new Country();
+		File icpe = new File("TestPages/ICPE2018_committee.html");
+		File ispdc = new File("TestPages/ISPDC2018_committee.html");
+		File splash = new File("TestPages/SPLASH2018_committee.html");
+		Document doc = null;
+		Document doc2 = null;
+		Document doc3 = null;
+		try {
+			doc = Jsoup.parse(icpe, "UTF-8");
+			doc2 = Jsoup.parse(ispdc, "UTF-8");
+			doc3 = Jsoup.parse(splash, "UTF-8");
+			throw new IOException();
+		} catch (IOException e) {
+		} 
+		LinkedHashMap<String, List<String>> committees = parser.getOrganisers(doc, country);
+		assertTrue(committees.containsKey("General Chairs"));
+		assertTrue(committees.containsKey("Artifact Evaluation Chairs"));
+		assertTrue(committees.containsKey("Proceedings Chair"));
+		assertTrue(committees.containsKey("Registration Chair"));
+		assertTrue(committees.containsKey("Research Program Chairs"));
+		
+		List<String> members = committees.get("Research Program Chairs");
+		assertEquals("Manoj Nambiar, Tata Consultancy Services, India", members.get(1));
+		members = committees.get("Web Site Chair");
+		assertEquals("Thomas F. Düllmann, University of Stuttgart, Germany", members.get(0));
+		members = committees.get("Awards Chairs");
+		assertEquals("John Murphy, UC Dublin, Ireland", members.get(1));
+		
+		committees = parser.getOrganisers(doc2, country);
+		assertTrue(committees.containsKey("General Chair"));
+		assertTrue(committees.containsKey("Local Chair"));
+		assertTrue(committees.containsKey("Steering Committee"));
+		assertTrue(committees.containsKey("Program Committee"));
+		
+		members = committees.get("General Chair");
+		assertEquals("Nabil Abdennadher, University of Applied Sciences and Arts, Western Switzerland", members.get(0));
+		members = committees.get("Steering Committee");
+		assertEquals("John Morrison, University College Cork, Ireland", members.get(5));
+		assertEquals("Dana Petcu, Western Univ. of Timisoara and e-Austria, Timisoara, Romania", members.get(7));
+		assertEquals("Marek Tudruj, Polish Acad. of Sciences and PJIIT, Warsaw, Poland", members.get(9));
+		members = committees.get("Program Committee");
+		assertEquals(" Aniello Castiglione, Department of Computer Science, University of Salerno, Italy", members.get(5));
+		assertEquals(" Valentin Cristea, University Politehnica of Bucharest, Romania", members.get(11));
+		
+		assertTrue(parser.getOrganisers(doc3, country).isEmpty());
+	}
+	
+	@Test
+	void testFindCommitteeLinks() {
+		assertEquals(new ArrayList<String>(Arrays.asList("https://icpe2018.spec.org/organizing-committee.html",
+				"http://lsds.hesge.ch/ISPDC2018/people/",
+				"https://icpe2018.spec.org/program-committee.html")), 
+				parser.findCommitteeLinks(new ArrayList<String>(Arrays.asList("https://icpe2018.spec.org/organizing-committee.html",
+						"https://conference.imp.fu-berlin.de/icpe18/registration-Info",
+						"https://icpe2018.spec.org/program-committee.html",
+						"http://lsds.hesge.ch/ISPDC2018/call-for-paper/",
+						"http://lsds.hesge.ch/ISPDC2018/people/", 
+						"http://lsds.hesge.ch/ISPDC2018/people/")))); // Intentional 2 same links for testing
+	}
+	
+	@Test
+	void testFindPattern() {
+		Pattern pattern = Pattern.compile("([A-Z]{3,}.[A-Z]{1,}|[A-Z]{3,})");
+		assertEquals("", parser.findPattern("icpe", pattern));
+	}
 }

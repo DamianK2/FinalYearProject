@@ -104,20 +104,20 @@ public class Parser6 extends Parser {
 		return allDeadlines;
 	}
 	
-	public static void main(String[] args) {
-		Parser p = new Parser6(new Information());
-		p.getDeadlines(new ArrayList<String>(Arrays.asList("http://www.ieee-iccse.org/important_dates.html")));
-	}
+//	public static void main(String[] args) {
+//		Parser p = new Parser6(new Information());
+//		p.getDeadlines(new ArrayList<String>(Arrays.asList("http://www.ieee-iccse.org/important_dates.html")));
+//	}
 	
 	@Override
-	public String getAntiquity(String title, String description, ArrayList<String> linkList) {
+	public String getAntiquity(String title, String description, Document doc) {
 		Pattern pattern = Pattern.compile("\\d{1,2}(st|nd|rd|th)|([tT]wenty-|[tT]hirty-|[fF]orty-"
 				+ "|[fF]ifty-|[sS]ixty-|[sS]eventy-|[eE]ighty-|[nN]inety-)*([fF]ir|[sS]eco|[tT]hi|"
 				+ "[fF]our|[fF]if|[sS]ix|[sS]even|[eE]igh|[nN]in|[tT]en|[eE]leven|[tT]welf|[tT]hirteen|"
 				+ "[fF]ourteen|[fF]ifteen|[sS]ixteen|[sS]eventeen|[eE]ighteen|[nN]ineteen)(st|nd|rd|th)|"
 				+ "(twentieth|thirtieth|fourtieth|fiftieth|sixtieth|seventieth|eightieth|ninetieth)", Pattern.CASE_INSENSITIVE);
-		// Connect to the home page
-		Document doc = this.getURLDoc(linkList.get(0));
+
+		
 		// Split on the new line character
 		String[] separated = doc.wholeText().split("\n");
 		String antiquity = "";
@@ -142,25 +142,15 @@ public class Parser6 extends Parser {
 	}
 	
 	@Override
-	public String getConferenceDays(String title, String description, ArrayList<String> linkList) {		
-		Document doc = null;
-		String link = this.searchLinks("[iI]mportant", linkList);
-		if(link.isEmpty())
-			return "";
-		else {
-			doc = this.getURLDoc(link);
+	public String getConferenceDays(String title, String description, Document doc) {		
 			
-			for(Element el: doc.getAllElements()) {
-				for(TextNode textNode: el.textNodes()) {
-					String found = this.findConfDays(textNode.text());
-					if(!found.isEmpty())
-						return found;
-				}
+		for(Element el: doc.getAllElements()) {
+			for(TextNode textNode: el.textNodes()) {
+				String found = this.findConfDays(textNode.text());
+				if(!found.isEmpty())
+					return found;
 			}
-			
-			
 		}
-		
 		return "";
 	}
 	

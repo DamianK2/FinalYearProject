@@ -2,9 +2,13 @@ package crawler;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.Test;
 
 import venue.Country;
@@ -12,26 +16,49 @@ import venue.Country;
 class Parser4Test {
 	
 	private Parser parser = new Parser4(new Information());
-	private ArrayList<String> titles = new ArrayList<>(Arrays.asList("International Conference on Performance Engineering (ICPE) 2018: ICPE 2018", 
-			"ISPDC 2018 – The 17th IEEE International Symposium on Parallel and Distributed Computing, 25-27 June 2018, Geneva, Switzerland", 
-			"PSD2018 - Privacy in Statistical Databases - UNESCO Privacy Chair"));
-	private ArrayList<String> descriptions = new ArrayList<>(Arrays.asList("Ninth ACM/SPEC International Conference on Performance Engineering, "
-			+ "ICPE 2018 - A Joint Meeting of WOSP/SIPEW sponsored by ACM SIGMETRICS and ACM SIGSOFT in Cooperation with SPEC.", 
-			"The 17th IEEE International Symposium on Parallel and Distributed Computing, 25-27 June 2018, Geneva, Switzerland"));
-	private ArrayList<String> links1 = new ArrayList<>(Arrays.asList("https://icpe2018.spec.org/home.html", "https://icpe2018.spec.org/conference-program.html", 
-			"https://icpe2018.spec.org/venue.html", "https://icpe2018.spec.org/submissions.html", "https://icpe2018.spec.org/important-dates.html"));
-	private ArrayList<String> links2 = new ArrayList<>(Arrays.asList("http://lsds.hesge.ch/ISPDC2018/", "http://lsds.hesge.ch/ISPDC2018/call-for-paper/",
-			"http://lsds.hesge.ch/ISPDC2018/people/", "http://lsds.hesge.ch/ISPDC2018/venue/"));
-	private ArrayList<String> links3 = new ArrayList<>(Arrays.asList("https://unescoprivacychair.urv.cat/psd2018/index.php?m=organization",
-			"https://unescoprivacychair.urv.cat/psd2018/index.php?m=topics", "https://unescoprivacychair.urv.cat/psd2018/index.php?m=proceedings",
-			"https://unescoprivacychair.urv.cat/psd2018/index.php?m=venue", "https://unescoprivacychair.urv.cat/psd2018/index.php"));
 
+	@Test
+	void testGetDescription() {
+		File icpe = new File("TestPages/ICPE2018.html");
+		File splash = new File("TestPages/SPLASH2018.html");
+		Document doc = null;
+		Document doc2 = null;
+		try {
+			doc = Jsoup.parse(icpe, "UTF-8");
+			doc2 = Jsoup.parse(splash, "UTF-8");
+			throw new IOException();
+		} catch (IOException e) {
+		} 
+		assertEquals("", parser.getDescription(doc));
+		assertEquals("Welcome to SPLASH 2018! The ACM SIGPLAN conference on Systems,"
+				+ " Programming, Languages and Applications: Software for Humanity "
+				+ "(SPLASH) embraces all aspects of software construction and delivery "
+				+ "to make it the premier conference at the intersection of programming, "
+				+ "languages, and software engineering. SPLASH 2018 will take place in "
+				+ "Boston, Massachusetts, USA from Sun 4 - Fri 9 November 2018.", parser.getDescription(doc2));
+		assertEquals("", parser.getDescription(null));
+	}
+	
 	@Test
 	void testGetVenue() {
 		Country country = new Country();
-		assertEquals("", parser.getVenue(titles.get(0), descriptions.get(0), country, links1));
-		assertEquals("", parser.getVenue(titles.get(1), descriptions.get(1), country, links2));
-		assertEquals("Spain", parser.getVenue(titles.get(2), "", country, links3));
+		File icpe = new File("TestPages/ICPE2018_venue.html");
+		File ispdc = new File("TestPages/ISPDC2018_venue.html");
+		File psd = new File("TestPages/PSD2018_venue.html");
+		Document doc = null;
+		Document doc2 = null;
+		Document doc3 = null;
+		try {
+			doc = Jsoup.parse(icpe, "UTF-8");
+			doc2 = Jsoup.parse(ispdc, "UTF-8");
+			doc3 = Jsoup.parse(psd, "UTF-8");
+			throw new IOException();
+		} catch (IOException e) {
+		} 
+		assertEquals("", parser.getVenue("", "", country, doc));
+		assertEquals("Switzerland", parser.getVenue("", "", country, doc2));
+		assertEquals("Spain", parser.getVenue("", "", country, doc3));
+		assertEquals("", parser.getVenue("", "", country, null));
 	}
 	
 	//TODO test the map
@@ -47,14 +74,44 @@ class Parser4Test {
 	
 	@Test
 	void testGetAntiquity() {
-		assertEquals("Eighteenth", parser.getAntiquity("", "", new ArrayList<String>(Arrays.asList("https://itrust.sutd.edu.sg/hase2017/hase-history/"))));
+		File pldi = new File("TestPages/PLDI2018.html");
+		File icpe = new File("TestPages/ICPE2018.html");
+		File psd = new File("TestPages/PSD2018.html");
+		Document doc = null;
+		Document doc2 = null;
+		Document doc3 = null;
+		try {
+			doc = Jsoup.parse(pldi, "UTF-8");
+			doc2 = Jsoup.parse(icpe, "UTF-8");
+			doc3 = Jsoup.parse(psd, "UTF-8");
+			throw new IOException();
+		} catch (IOException e) {
+		} 
+		assertEquals("Fifth", parser.getAntiquity("", "", doc));
+		assertEquals("", parser.getAntiquity("", "", doc2));
+		assertEquals("", parser.getAntiquity("", "", doc3));
+		assertEquals("", parser.getAntiquity("", "", null));
 	}
 
 	@Test
 	void testGetConferenceDays() {
-		assertEquals("April 9-13, 2018", parser.getConferenceDays(titles.get(0), descriptions.get(0), new ArrayList<String>(Arrays.asList("https://icpe2018.spec.org/home.html"))));
-		assertEquals("", parser.getConferenceDays(titles.get(2), "", new ArrayList<String>(Arrays.asList("http://lsds.hesge.ch/ISPDC2018/"))));
-		assertEquals("", parser.getConferenceDays(titles.get(1), descriptions.get(1), new ArrayList<String>(Arrays.asList("https://unescoprivacychair.urv.cat/psd2018/index.php"))));
+		File pldi = new File("TestPages/PLDI2018.html");
+		File splash = new File("TestPages/SPLASH2018.html");
+		File psd = new File("TestPages/PSD2018.html");
+		Document doc = null;
+		Document doc2 = null;
+		Document doc3 = null;
+		try {
+			doc = Jsoup.parse(pldi, "UTF-8");
+			doc2 = Jsoup.parse(splash, "UTF-8");
+			doc3 = Jsoup.parse(psd, "UTF-8");
+			throw new IOException();
+		} catch (IOException e) {
+		} 
+		assertEquals("", parser.getConferenceDays("", "", doc));
+		assertEquals("Sun 4 - Fri 9 November 2018", parser.getConferenceDays("", "", doc2));
+		assertEquals("", parser.getConferenceDays("", "", doc3));
+		assertEquals("", parser.getConferenceDays("", "", null));
 	}
 
 }

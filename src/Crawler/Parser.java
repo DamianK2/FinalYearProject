@@ -89,19 +89,24 @@ public class Parser {
 	public String getProceedings(Document doc) {
 		// Use SB to concatenate many proceedings
 		StringBuilder proceedings = new StringBuilder();
-		// Get all the elements
-		for(Element e: doc.getAllElements()) {
-			String elementString = e.wholeText();
-			// Find the proceedings in the text
-			for(String proc: information.getProceedings()) {
-				// Make sure it has a space in front of it
-				if(elementString.matches(changeToRegex(" " + proc)))
-					if(proceedings.toString().isEmpty())
-						proceedings.append(proc);
-					else if(!proceedings.toString().contains(proc))
-						proceedings.append("/" + proc);
+		if(doc != null) {
+			// Get all the elements
+			for(Element e: doc.getAllElements()) {
+				String elementString = e.wholeText();
+				// Find the proceedings in the text
+				for(String proc: information.getProceedings()) {
+					// Make sure it has a space in front of it
+					if(elementString.matches(changeToRegex(" " + proc)))
+						if(proceedings.toString().isEmpty())
+							proceedings.append(proc);
+						else if(!proceedings.toString().contains(proc))
+							proceedings.append("/" + proc);
+				}
 			}
+		} else {
+			return "";
 		}
+		
 		return proceedings.toString();
 	}
 	
@@ -171,9 +176,19 @@ public class Parser {
 	
 	public ArrayList<String> findVenueLinks(ArrayList<String> linkList) {
 		ArrayList<String> venueLinks = new ArrayList<>();
+		venueLinks.add(linkList.get(0));
+		// Search the links for the title of the webpage (aimed at pages with frames)
+		ArrayList<String> possibleLinks = this.findAllLinks(this.changeToRegex("[tT]itle"), linkList);
+		if(!possibleLinks.isEmpty())
+			venueLinks.addAll(possibleLinks);
+		
 		// Search for the different links in the conference
-		venueLinks.add(this.searchLinks("[vV]enue", linkList));
-		venueLinks.add(this.searchLinks("[rR]egistra", linkList));
+		String link = this.searchLinks("[vV]enue", linkList);
+		if(!link.isEmpty())
+			venueLinks.add(link);
+		link = this.searchLinks("[rR]egistra", linkList);
+		if(!link.isEmpty())
+			venueLinks.add(link);
 
 		return venueLinks;
 	}
@@ -278,7 +293,7 @@ public class Parser {
 	 * @param description
 	 * @return antiquity
 	 */
-	public String getAntiquity(String title, String description, ArrayList<String> linkList) {
+	public String getAntiquity(String title, String description, Document doc) {
 		String antiquity = "";
 		Pattern pattern = Pattern.compile("\\d{1,2}(st|nd|rd|th)|([tT]wenty-|[tT]hirty-|[fF]orty-"
 				+ "|[fF]ifty-|[sS]ixty-|[sS]eventy-|[eE]ighty-|[nN]inety-)*([fF]ir|[sS]eco|[tT]hi|"
@@ -306,7 +321,7 @@ public class Parser {
 	 * @param title, description
 	 * @return date
 	 */
-	public String getConferenceDays(String title, String description, ArrayList<String> linkList) {		
+	public String getConferenceDays(String title, String description, Document doc) {		
 		return this.findConfDays(title);
 	}
 	
@@ -316,8 +331,69 @@ public class Parser {
 	 * @param country
 	 * @return a map with organizer teams as key and a list of members as value
 	 */
-	public LinkedHashMap<String, List<String>> getOrganisers(ArrayList<String> linkList, Country country) {
-		List<String> potentialLinks = new ArrayList<>();
+	public LinkedHashMap<String, List<String>> getOrganisers(Document doc, Country country) {
+		LinkedHashMap<String, List<String>> committees = new LinkedHashMap<>();
+		
+		// Check if the format of organisers is suitable for this code
+		if(!this.checkOrganiserFormat(doc, country))
+			return committees;
+		else {
+			String tempSubteam = "";
+			
+			List<String> members = new ArrayList<>();
+			
+			// Replace the strong tags as they can cause wrong committees to be returned from certain websites
+			doc = Jsoup.parse(doc.toString().replaceAll("<strong>|</strong>", ""));
+			// Find all elements and text nodes
+			for(Element node: doc.getAllElements()) {	
+				for(TextNode textNode: node.textNodes()) {
+					// Search for committee names in the text node
+					if(this.searchForCommittees(textNode.text())) {
+						// If the subteam isn't empty and there are members in the list add them to the map to be returned later
+						if(!tempSubteam.equals("") && !members.isEmpty()) {
+							committees.put(tempSubteam, new ArrayList<String>(members));
+							members.clear();
+						}
+						// Add the subteam found for later use as a key
+						tempSubteam = textNode.text();
+//						System.out.println("FOUND: " + textNode.text());
+//						System.out.println(tempSubteam);
+					}
+					// Check the string for a country to find if it is a member or not
+					else if(this.checkStringForCountry(textNode.text(), country)) {
+						// Add the member to the list if a valid subteam is present
+						if(textNode.text().matches(".*?(,|\\().*?,.*$")) {
+							if(!tempSubteam.equals(""))
+								members.add(textNode.text());
+						}
+//						System.out.println(textNode.text());
+//						System.out.println(members);
+					}
+					// Do nothing with empty strings
+					else if(textNode.text().matches("^\\s+$")); 
+					else {
+						// If it's neither a member or a subteam then everything gathered so far to the map and clear the variables
+						if(!tempSubteam.equals("") && !members.isEmpty()) {
+							committees.put(tempSubteam, new ArrayList<String>(members));
+						}
+						members.clear();
+						tempSubteam = "";
+					}
+				}
+			}
+		}
+		
+		// If only 1 committee is returned then it must be an error
+		return committees.size() < 2 ? new LinkedHashMap<String, List<String>>() : committees;
+	}
+	
+	/**
+	 * Looks through the links to find ones that may contain committees
+	 * @param linkList
+	 * @return list of links that could contain committee members
+	 */
+	public ArrayList<String> findCommitteeLinks(ArrayList<String> linkList) {
+		ArrayList<String> potentialLinks = new ArrayList<>();
 		// Find the links on the websites that contain the organizers
 		this.addCommitteeSearchWords();
 		for(String keyword: searchKeywords) {
@@ -328,65 +404,7 @@ public class Parser {
 						potentialLinks.add(link);
 		}
 		
-		LinkedHashMap<String, List<String>> committees = new LinkedHashMap<>();
-
-		if(potentialLinks.isEmpty())
-			return committees;
-		// Check if the format of organisers is suitable for this code
-		else if(!this.checkOrganiserFormat(potentialLinks.get(0), country))
-			return committees;
-		else {
-			String tempSubteam = "";
-			
-			List<String> members = new ArrayList<>();
-			
-			for(String link: potentialLinks) {
-				// Get the document
-				Document doc = this.getURLDoc(link);
-				// Replace the strong tags as they can cause wrong committees to be returned from certain websites
-				doc = Jsoup.parse(doc.toString().replaceAll("<strong>|</strong>", ""));
-				// Find all elements and text nodes
-				for(Element node: doc.getAllElements()) {	
-					for(TextNode textNode: node.textNodes()) {
-						// Search for committee names in the text node
-						if(this.searchForCommittees(textNode.text())) {
-							// If the subteam isn't empty and there are members in the list add them to the map to be returned later
-							if(!tempSubteam.equals("") && !members.isEmpty()) {
-								committees.put(tempSubteam, new ArrayList<String>(members));
-								members.clear();
-							}
-							// Add the subteam found for later use as a key
-							tempSubteam = textNode.text();
-	//						System.out.println("FOUND: " + textNode.text());
-	//						System.out.println(tempSubteam);
-						}
-						// Check the string for a country to find if it is a member or not
-						else if(this.checkStringForCountry(textNode.text(), country)) {
-							// Add the member to the list if a valid subteam is present
-							if(textNode.text().matches(".*?(,|\\().*?,.*$")) {
-								if(!tempSubteam.equals(""))
-									members.add(textNode.text());
-							}
-	//						System.out.println(textNode.text());
-	//						System.out.println(members);
-						}
-						// Do nothing with empty strings
-						else if(textNode.text().matches("^\\s+$")); 
-						else {
-							// If it's neither a member or a subteam then everything gathered so far to the map and clear the variables
-							if(!tempSubteam.equals("") && !members.isEmpty()) {
-								committees.put(tempSubteam, new ArrayList<String>(members));
-							}
-							members.clear();
-							tempSubteam = "";
-						}
-					}
-				}
-			}
-		}
-		
-		// If only 1 committee is returned then it must be an error
-		return committees.size() < 2 ? new LinkedHashMap<String, List<String>>() : committees;
+		return potentialLinks;
 	}
 	
 	// ------------- HELPER METHODS START HERE -------------
@@ -528,6 +546,7 @@ public class Parser {
 	 * @param url
 	 * @return document
 	 */
+	//TODO remove this because it's in crawler
 	protected Document getURLDoc(String url) {
 		Document doc = null;
 		try {
@@ -601,8 +620,7 @@ public class Parser {
 	 * @param country
 	 * @return true/false
 	 */
-	protected boolean checkOrganiserFormat(String link, Country country) {
-		Document doc = this.getURLDoc(link);
+	protected boolean checkOrganiserFormat(Document doc, Country country) {
 		int counter = 0;
 		// Find all elements and text nodes
 		for(Element node: doc.getAllElements()) {
@@ -679,5 +697,33 @@ public class Parser {
 		}
 		
 		return found;
+	}
+	
+	/**
+	 * Finds a link with the history keyword
+	 * @param linkList
+	 * @return link containing the history keyword
+	 */
+	public String findLinkContainingHistory(ArrayList<String> linkList) {
+		return this.searchLinks("[hH]istory", linkList);
+	}
+	
+	/**
+	 * Finds a link with the history keyword
+	 * @param linkList
+	 * @return link containing the history keyword
+	 */
+	public ArrayList<String> findConferenceDaysLinks(ArrayList<String> linkList) {
+		ArrayList<String> possibleLinks = new ArrayList<>();
+		possibleLinks.add(linkList.get(0));
+		// Search the links for the title of the webpage (aimed at pages with frames)
+		ArrayList<String> links = this.findAllLinks(this.changeToRegex("[tT]itle"), linkList);
+		if(!links.isEmpty())
+			possibleLinks.addAll(links);
+		String link = this.searchLinks("[iI]mportant", linkList);
+		if(!link.isEmpty())
+			possibleLinks.add(link);
+		
+		return possibleLinks;
 	}
 }

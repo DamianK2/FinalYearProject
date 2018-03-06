@@ -18,8 +18,7 @@ public class Parser4 extends Parser {
 	}
 	
 	@Override
-	public String getDescription(String homeLink) {
-		Document doc = this.getURLDoc(homeLink);
+	public String getDescription(Document doc) {
 		String description = "";
 
 		try {
@@ -31,21 +30,14 @@ public class Parser4 extends Parser {
 		return description;
 	}
 
+	//TODO change to suit tests
 	@Override
-	public String getVenue(String title, String description, Country country, ArrayList<String> linkList) {
+	public String getVenue(String title, String description, Country country, Document doc) {
 		String venue = "", found;
 		String[] possibleNames = {"div#header", "div.header","header#header", "header.header", "div#footer", "div.footer", "footer#footer", "footer.footer", "header", "footer"};
-		
-		// Search the links for the title of the webpage (aimed at pages with frames)
-		ArrayList<String> possibleLinks = this.findAllLinks(this.changeToRegex("[tT]itle"), linkList);
-		possibleLinks.add(linkList.get(0));
-		
-		// Iterate through all links to find the information from the header and footer
-		for(String link: possibleLinks) {
-			// Connect to the home page
-			Document doc = this.getURLDoc(link);
 	        
-	        // Iterate through all the possible name id's and classes
+		try {
+			// Iterate through all the possible name id's and classes
 	        for(String name: possibleNames) {
 	        	found = doc.select(name).text();
 	        	if(!found.isEmpty()) {
@@ -55,6 +47,7 @@ public class Parser4 extends Parser {
 	        			return venue;
 	        	}
 	        }
+		} catch(NullPointerException e) {
 		}
 		
 		return venue;
@@ -112,26 +105,30 @@ public class Parser4 extends Parser {
 	}
 	
 	@Override
-	public String getAntiquity(String title, String description, ArrayList<String> linkList) {
+	public String getAntiquity(String title, String description, Document doc) {
 		String antiquity = "";
-		Document doc = this.getURLDoc(linkList.get(0));
-		Elements el = doc.select(":contains(Other Editions)").next();
-		
-		for(Element e: el) {
-			if(e.text().matches(".*\\d{4}.*")) {
-				String[] split = e.text().split("\\d{4}");
-				
-				// Add all the found editions and the current one to find the conference antiquity
-				return this.toOrdinal(split.length + 1);
+		try {
+			Elements el = doc.select(":contains(Other Editions)").next();
+			
+			for(Element e: el) {
+				if(e.text().matches(".*\\d{4}.*")) {
+					String[] split = e.text().split("\\d{4}");
+					
+					// Add all the found editions and the current one to find the conference antiquity
+					return this.toOrdinal(split.length + 1);
+				}
 			}
+		} catch(NullPointerException e) {
 		}
 		
 		return antiquity;
 	}
 	
-	public String getConferenceDays(String title, String description, ArrayList<String> linkList) {		
-		Document doc = this.getURLDoc(linkList.get(0));
-		return this.findConfDays(doc.select("p").text());
+	public String getConferenceDays(String title, String description, Document doc) {
+		if(doc != null)
+			return this.findConfDays(doc.select("p").text());
+		else
+			return "";
 	}
 
 }

@@ -15,8 +15,7 @@ public class Parser5 extends Parser {
 	}
 	
 	@Override
-	public String getDescription(String homeLink) {
-		Document doc = this.getURLDoc(homeLink);
+	public String getDescription(Document doc) {
 		String description = "";
 
 		try {
@@ -87,14 +86,7 @@ public class Parser5 extends Parser {
 	}
 	
 	@Override
-	public String getAntiquity(String title, String description, ArrayList<String> linkList) {
-		String link = this.searchLinks("[hH]istory", linkList);
-		Document doc;
-		if(!link.equals(""))
-			doc = this.getURLDoc(link);
-		else
-			return "";
-	
+	public String getAntiquity(String title, String description, Document doc) {
 		int antiquity = 1;
 		for(Element el: doc.getAllElements()) {
 			for(TextNode textNode: el.textNodes()) {
@@ -106,12 +98,11 @@ public class Parser5 extends Parser {
 		return this.toOrdinal(antiquity);
 		
 	}
+	
+
 
 	@Override
-	public String getConferenceDays(String title, String description, ArrayList<String> linkList) {
-		
-		Document doc = this.getURLDoc(linkList.get(0));
-		
+	public String getConferenceDays(String title, String description, Document doc) {
 		for(Element el: doc.getAllElements()) {
 			for(TextNode textNode: el.textNodes()) {
 				String found = this.findConfDays(textNode.text());
