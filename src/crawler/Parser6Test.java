@@ -2,35 +2,62 @@ package crawler;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.Test;
 
 class Parser6Test {
 	private Parser parser = new Parser6(new Information());
-	private ArrayList<String> titles = new ArrayList<>(Arrays.asList("International Conference on Performance Engineering (ICPE) 2018: ICPE 2018", 
-			"ISPDC 2018 – The 17th IEEE International Symposium on Parallel and Distributed Computing, 25-27 June 2018, Geneva, Switzerland", 
-			"PSD2018 - Privacy in Statistical Databases - UNESCO Privacy Chair"));
-	private ArrayList<String> descriptions = new ArrayList<>(Arrays.asList("Ninth ACM/SPEC International Conference on Performance Engineering, "
-			+ "ICPE 2018 - A Joint Meeting of WOSP/SIPEW sponsored by ACM SIGMETRICS and ACM SIGSOFT in Cooperation with SPEC.", 
-			"The 17th IEEE International Symposium on Parallel and Distributed Computing, 25-27 June 2018, Geneva, Switzerland"));
-	private ArrayList<String> links1 = new ArrayList<>(Arrays.asList("https://icpe2018.spec.org/home.html", "https://icpe2018.spec.org/conference-program.html", 
-			"https://icpe2018.spec.org/venue.html", "https://icpe2018.spec.org/submissions.html", "https://icpe2018.spec.org/important-dates.html"));
-	private ArrayList<String> links2 = new ArrayList<>(Arrays.asList("http://lsds.hesge.ch/ISPDC2018/", "http://lsds.hesge.ch/ISPDC2018/call-for-paper/",
-			"http://lsds.hesge.ch/ISPDC2018/people/", "http://lsds.hesge.ch/ISPDC2018/venue/"));
-	private ArrayList<String> links3 = new ArrayList<>(Arrays.asList("https://unescoprivacychair.urv.cat/psd2018/index.php?m=organization",
-			"https://unescoprivacychair.urv.cat/psd2018/index.php?m=topics", "https://unescoprivacychair.urv.cat/psd2018/index.php?m=proceedings",
-			"https://unescoprivacychair.urv.cat/psd2018/index.php?m=venue", "https://unescoprivacychair.urv.cat/psd2018/index.php"));
 	
 	@Test
-	void testGetDeadlines() {
-		parser.getDeadlines(new ArrayList<String>(Arrays.asList("http://www.es.mdh.se/icst2018/")));
+	void testGetAntiquity() {
+		File icst = new File("TestPages/ICST2018.html");
+		File icpe = new File("TestPages/ICPE2018.html");
+		File ispass = new File("TestPages/ISPASS2018.html");
+		File compsac = new File("TestPages/COMPSAC2018.html");
+		Document doc = null;
+		Document doc2 = null;
+		Document doc3 = null;
+		Document doc4 = null;
+		try {
+			doc = Jsoup.parse(icst, "UTF-8");
+			doc2 = Jsoup.parse(icpe, "UTF-8");
+			doc3 = Jsoup.parse(ispass, "UTF-8");
+			doc4 = Jsoup.parse(compsac, "UTF-8");
+			throw new IOException();
+		} catch (IOException e) {
+		} 
+		assertEquals("Eleventh", parser.getAntiquity("", "Ninth", doc));
+		assertEquals("Ninth", parser.getAntiquity("", "", doc2));
+		assertEquals("", parser.getAntiquity("", "", doc3));
+		assertEquals("Forty-Second", parser.getAntiquity("", "", doc4));
+		assertEquals("", parser.getAntiquity("", "", null));
 	}
-	
+
 	@Test
 	void testGetConferenceDays() {
-		parser.getConferenceDays("", "", new ArrayList<String>(Arrays.asList("https://itrust.sutd.edu.sg/hase2017/important-dates/")));
+		File icst = new File("TestPages/ICST2018.html");
+		File hase = new File("TestPages/HASE2017_dates.html");
+		File ispass = new File("TestPages/ISPASS2018.html");
+		Document doc = null;
+		Document doc2 = null;
+		Document doc3 = null;
+		try {
+			doc = Jsoup.parse(icst, "UTF-8");
+			doc2 = Jsoup.parse(hase, "UTF-8");
+			doc3 = Jsoup.parse(ispass, "UTF-8");
+			throw new IOException();
+		} catch (IOException e) {
+		} 
+		assertEquals("April 9 – 13, 2018", parser.getConferenceDays("", "", doc));
+		assertEquals("12 – 14 January 2017", parser.getConferenceDays("", "", doc2));
+		assertEquals("", parser.getConferenceDays("", "", doc3));
+		assertEquals("", parser.getConferenceDays("", "", null));
 	}
 
 }
