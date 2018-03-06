@@ -18,7 +18,13 @@ public class Crawler {
 	private ArrayList<String> linkList = new ArrayList<>();
 //	protected static ArrayList<Thread> threads = new ArrayList<>();
 	
-	// Fetch all links in the website, including sub-links
+	
+	/**
+	 * Using the passed in document extracts the links and adds them to the list of links.
+	 * @param home page Document
+	 * @param list with the home page link
+	 * @return list of links from the website
+	 */
 	public ArrayList<String> getAllLinks(Document doc, ArrayList<String> link) {
 		this.linkList = link;
         StringBuilder sb = new StringBuilder(); 
@@ -93,18 +99,27 @@ public class Crawler {
         return linkList;
 	}
 	
-	// Add the newly fetched links into an ArrayList
+	
+	/**
+	 * Add the newly fetched links into an ArrayList
+	 * @param Elements links
+	 */
 	private void addToLinkList(Elements links) {
 		for(Element link: links) {
 			// Eliminate the unneeded links with images or pdfs
 			if(!this.checkDuplicates(link.attr("abs:href")) 
 					&& !link.attr("abs:href").toLowerCase().matches("[http].+(pdf|rar|zip|jpg|png|doc|docx)") 
-					&& !link.text().matches(".*[oO]ther [eE]dition.*")
+					&& !link.attr("abs:href").toLowerCase().matches(".*other edition.*")
 					&& !link.attr("abs:href").toLowerCase().matches("mailto:.+"))
 				linkList.add(link.attr("abs:href"));
 		}
 	}
 	
+	/**
+	 * Checks if a links already exists in the list
+	 * @param link
+	 * @return true/false
+	 */
 	private boolean checkDuplicates(String link) {
 		boolean check = false;
 		for(String l: linkList) {
@@ -114,6 +129,11 @@ public class Crawler {
 		return check;
 	}
 	
+	/**
+	 * Gets the Document from the passed in link
+	 * @param url
+	 * @return document of the html
+	 */
 	public Document getURLDoc(String url) {
 		Document doc = null;
 		try {

@@ -22,9 +22,13 @@ class CrawlerTest {
 	void testGetAllLinks() {
 		Crawler crawler = new Crawler();
 		File psd = new File("TestPages/PSD2018.html");
+		File splash = new File("TestPages/SPLASH2018.html");
 		Document doc = null;
+		Document doc2 = null;
 		try {
 			doc = Jsoup.parse(psd, "UTF-8");
+			doc2 = Jsoup.parse(splash, "UTF-8");
+			throw new IOException();
 		} catch (IOException e) {
 		}
 		
@@ -38,6 +42,7 @@ class CrawlerTest {
 		assertEquals("https://unescoprivacychair.urv.cat/psd2018/index.php?m=venue", links.get(6));
 		assertEquals("https://unescoprivacychair.urv.cat/psd2018/index.php?m=soon", links.get(7));
 		assertEquals("https://unescoprivacychair.urv.cat/psd2018/index.php?m=grants", links.get(8));
+		links = crawler.getAllLinks(doc2, new ArrayList<String>(Arrays.asList("https://2018.splashcon.org/home")));
 	}
 	
 	@Test
@@ -47,6 +52,7 @@ class CrawlerTest {
 		Document doc = null;
 		try {
 			doc = Jsoup.parse(ispass, "UTF-8");
+			throw new IOException();
 		} catch (IOException e) {
 		}
 		ArrayList<String> links = crawler.getAllLinks(doc, new ArrayList<String>(Arrays.asList("http://www.ispass.org/ispass2018/")));

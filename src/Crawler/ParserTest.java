@@ -60,16 +60,21 @@ class ParserTest {
 	void testGetProceedings() {
 		File icpe = new File("TestPages/ICPE2018_proceedings.html");
 		File psd = new File("TestPages/PSD2018_proceedings.html");
+		File icgse = new File("TestPages/ICGSE2018_proceedings.html");
 		Document doc = null;
 		Document doc2 = null;
+		Document doc3 = null;
 		try {
 			doc = Jsoup.parse(icpe, "UTF-8");
 			doc2 = Jsoup.parse(psd, "UTF-8");
+			doc3 = Jsoup.parse(icgse, "UTF-8");
 			throw new IOException();
 		} catch (IOException e) {
 		} 
 		assertEquals("ACM", parser.getProceedings(doc));
 		assertEquals("Springer", parser.getProceedings(doc2));
+		assertEquals("ACM/IEEE", parser.getProceedings(doc3));
+		assertEquals("", parser.getProceedings(null));
 	}
 	
 	@Test
@@ -126,12 +131,19 @@ class ParserTest {
 	
 	@Test
 	void testFindVenueLinks() {
-		assertEquals(new ArrayList<String>(Arrays.asList("http://lsds.hesge.ch/ISPDC2018/venue/", 
+		assertEquals(new ArrayList<String>(Arrays.asList("http://lsds.hesge.ch/ISPDC2018/",
+				"http://lsds.hesge.ch/ISPDC2018/venue/", 
 				"https://conference.imp.fu-berlin.de/icpe18/registration-Info")), 
-				parser.findVenueLinks(new ArrayList<String>(Arrays.asList("http://lsds.hesge.ch/ISPDC2018/venue/",
+				parser.findVenueLinks(new ArrayList<String>(Arrays.asList("http://lsds.hesge.ch/ISPDC2018/",
+						"http://lsds.hesge.ch/ISPDC2018/venue/",
 						"http://lsds.hesge.ch/ISPDC2018/people/",
 						"https://conference.imp.fu-berlin.de/icpe18/registration-Info",
 						"https://icpe2018.spec.org/workshops.html"))));
+		assertEquals(new ArrayList<String>(Arrays.asList("http://lsds.hesge.ch/ISPDC2018/",
+				"https://icpe2018.spec.org/titles.html")), 
+				parser.findVenueLinks(new ArrayList<String>(Arrays.asList(
+						"http://lsds.hesge.ch/ISPDC2018/",
+						"https://icpe2018.spec.org/titles.html"))));
 	}
 
 //	//TODO test the map
