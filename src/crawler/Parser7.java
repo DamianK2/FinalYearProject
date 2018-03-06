@@ -91,8 +91,8 @@ public class Parser7 extends Parser {
 		return allDeadlines;
 	}
 	
-	public static void main(String[] args) {
-		Parser p = new Parser7(new Information());
-		p.getDeadlines(new ArrayList<String>(Arrays.asList("https://sites.uoit.ca/ifiptm2018/important-dates/index.php")));
-	}
+//	public static void main(String[] args) {
+//		Parser p = new Parser7(new Information());
+//		p.getDeadlines(new ArrayList<String>(Arrays.asList("https://sites.uoit.ca/ifiptm2018/important-dates/index.php")));
+//	}
 }
