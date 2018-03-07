@@ -12,7 +12,7 @@ import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.Test;
 
 class Parser6Test {
-	private Parser parser = new Parser6(new Information());
+	private Parser parser = new Parser6(new Information(), new Crawler());
 	
 	@Test
 	void testGetAntiquity() {

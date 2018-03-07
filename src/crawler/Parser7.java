@@ -11,8 +11,8 @@ import org.jsoup.nodes.Element;
 
 public class Parser7 extends Parser {
 	
-	public Parser7(Information info) {
-		super(info);
+	public Parser7(Information info, Crawler c) {
+		super(info, c);
 	}
 	
 	@Override
@@ -24,7 +24,7 @@ public class Parser7 extends Parser {
 		String[] separated;
 		
 		// Connect to the home page
-		doc = this.getURLDoc(linkList.get(0));
+		doc = crawler.getURLDoc(linkList.get(0));
 		// Select the div with "Important Dates"
 		Element el = doc.select("div:contains(Important Dates)").last();
 		

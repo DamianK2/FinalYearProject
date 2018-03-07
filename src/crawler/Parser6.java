@@ -12,8 +12,8 @@ import org.jsoup.nodes.TextNode;
 
 public class Parser6 extends Parser {
 
-	public Parser6(Information info) {
-		super(info);
+	public Parser6(Information info, Crawler c) {
+		super(info, c);
 	}
 	
 	@Override
@@ -32,7 +32,7 @@ public class Parser6 extends Parser {
 		links.addAll(this.findAllLinks("important_dates", linkList));
 		
 		for(String link: links) {
-			doc = this.getURLDoc(link);
+			doc = crawler.getURLDoc(link);
 			
 			try {
 				// Select the div with "Important Dates"

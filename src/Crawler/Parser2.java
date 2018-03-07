@@ -15,8 +15,8 @@ import venue.Country;
 
 public class Parser2 extends Parser {
 	
-	public Parser2(Information info) {
-		super(info);
+	public Parser2(Information info, Crawler c) {
+		super(info, c);
 	}
 	
 	@Override
@@ -71,7 +71,7 @@ public class Parser2 extends Parser {
 		String[] separated, split;
 		
 		// Connect to the home page
-		doc = this.getURLDoc(linkList.get(0));
+		doc = crawler.getURLDoc(linkList.get(0));
 		// Select the div with "Important Dates"
 		Element el = doc.select("div:contains(Important Dates)").last();
 		

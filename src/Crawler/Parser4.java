@@ -13,8 +13,8 @@ import venue.Country;
 
 public class Parser4 extends Parser {
 	
-	public Parser4(Information info) {
-		super(info);
+	public Parser4(Information info, Crawler c) {
+		super(info, c);
 	}
 	
 	@Override
@@ -61,7 +61,7 @@ public class Parser4 extends Parser {
 		LinkedHashMap<String, LinkedHashMap<String, String>> allDeadlines = new LinkedHashMap<>();
 		
 		try {
-			doc = getURLDoc(linkList.get(0));
+			doc = crawler.getURLDoc(linkList.get(0));
 			el = doc.select("div:contains(Upcoming Important Dates)").next();
 		} catch(NullPointerException e) {
 			System.err.println("Couldn't find \"Upcoming Important Dates\"");

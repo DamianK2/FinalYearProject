@@ -11,8 +11,8 @@ import org.jsoup.nodes.TextNode;
 
 public class Parser5 extends Parser {
 	
-	public Parser5(Information info) {
-		super(info);
+	public Parser5(Information info, Crawler c) {
+		super(info, c);
 	}
 	
 	@Override
@@ -41,7 +41,7 @@ public class Parser5 extends Parser {
 		if(link.isEmpty())
 			return allDeadlines;
 		else {
-			doc = this.getURLDoc(link);
+			doc = crawler.getURLDoc(link);
 			
 			Element el = doc.select("div:contains(Important Dates)").last();
 			

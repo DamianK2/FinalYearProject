@@ -18,7 +18,7 @@ import venue.Country;
 
 class Parser3Test {
 
-	private Parser parser = new Parser3(new Information());
+	private Parser parser = new Parser3(new Information(), new Crawler());
 	
 	@Test
 	void testGetDescription() {

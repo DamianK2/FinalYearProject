@@ -1,6 +1,5 @@
 package crawler;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -18,6 +17,7 @@ import venue.Country;
 
 public class Parser {
 	protected static Information information;
+	protected static Crawler crawler;
 	protected static ArrayList<String> searchKeywords = new ArrayList<>();
 	private static final ArrayList<String> SPECIAL_CASES = new ArrayList<>(
 															Arrays.asList(
@@ -41,8 +41,9 @@ public class Parser {
 			+ "(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|"
 			+ "Nov(ember)?|Dec(ember)?)\\s\\d{1,2}-\\w+\\s\\d{1,2},\\s\\d{4}";
 	
-	public Parser(Information info) {
+	public Parser(Information info, Crawler c) {
 		information = info;
+		crawler = c;
 	}
 	
 	/**
@@ -207,7 +208,7 @@ public class Parser {
 		if(link.isEmpty())
 			return allDeadlines;
 		else {
-			doc = this.getURLDoc(link);
+			doc = crawler.getURLDoc(link);
 			
 			Elements tds;
 			try {
@@ -538,26 +539,6 @@ public class Parser {
 		}
 		
 		return answer;
-	}
-	
-	/**
-	 * Receives the URL to connect to and after successfully 
-	 * connecting, returns the document object.
-	 * @param url
-	 * @return document
-	 */
-	//TODO remove this because it's in crawler
-	protected Document getURLDoc(String url) {
-		Document doc = null;
-		try {
-			doc = Jsoup.connect(url).get();
-			
-			System.out.println("(inside Parser)Fetching from " + url + "...");
-		} catch (IOException e) {
-			System.out.println("Something went wrong when getting the first element from the list of links.");
-			e.printStackTrace();
-		}
-		return doc;
 	}
 	
 	/**

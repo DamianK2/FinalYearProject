@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 
 class Parser7Test {
 
-	private Parser parser = new Parser7(new Information());
+	private Parser parser = new Parser7(new Information(), new Crawler());
 	
 //	@Test
 //	void testGetDeadlines() {

@@ -79,16 +79,16 @@ public class Main {
         
         ArrayList<Parser> parsers = new ArrayList<>();
         int i = 0;
-        Crawler crawler;
-        parsers.add(new Parser(information));
-        parsers.add(new Parser2(information));
-        parsers.add(new Parser3(information));
-        parsers.add(new Parser4(information));
-        parsers.add(new Parser5(information));
-        parsers.add(new Parser6(information));
-        parsers.add(new Parser7(information));
-        parsers.add(new Parser8(information));
-        parsers.add(new Parser9(information));
+        Crawler crawler = new Crawler();
+        parsers.add(new Parser(information, crawler));
+        parsers.add(new Parser2(information, crawler));
+        parsers.add(new Parser3(information, crawler));
+        parsers.add(new Parser4(information, crawler));
+        parsers.add(new Parser5(information, crawler));
+        parsers.add(new Parser6(information, crawler));
+        parsers.add(new Parser7(information, crawler));
+        parsers.add(new Parser8(information, crawler));
+        parsers.add(new Parser9(information, crawler));
         
 //		sql sql = new sql();
 //        sql.createConnection();
@@ -96,7 +96,6 @@ public class Main {
 		for(String url: URLS) {
 			links.clear();
 			deadlines.clear();
-			crawler = new Crawler();
 			links.add(url);
 			links = crawler.getAllLinks(crawler.getURLDoc(url), links);
 	        

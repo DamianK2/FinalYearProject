@@ -9,8 +9,8 @@ import org.jsoup.select.Elements;
 
 public class Parser9 extends Parser {
 
-	public Parser9(Information info) {
-		super(info);
+	public Parser9(Information info, Crawler c) {
+		super(info, c);
 	}
 
 	@Override
@@ -25,7 +25,7 @@ public class Parser9 extends Parser {
 		if(link.isEmpty())
 			return allDeadlines;
 		else {
-			doc = this.getURLDoc(link);
+			doc = crawler.getURLDoc(link);
 			
 			Elements el = doc.select("div:contains(Important Dates)");
 			

@@ -1,6 +1,7 @@
 package crawler;
 
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -21,7 +22,7 @@ import venue.Country;
 
 class ParserTest {
 
-	private Parser parser = new Parser(new Information());
+	private Parser parser = new Parser(new Information(), new Crawler());
 	
 	@Test
 	void testGetTitle() {
@@ -146,15 +147,31 @@ class ParserTest {
 						"https://icpe2018.spec.org/titles.html"))));
 	}
 
-//	//TODO test the map
-////	@Test
-////	void testGetDeadlines() {
-////		LinkedHashMap<String, LinkedHashMap<String, String>> deadlines = new LinkedHashMap<>();
-////		LinkedHashMap<String, LinkedHashMap<String, String>> empty = new LinkedHashMap<>();
-////		assertEquals(deadlines, parser.getDeadlines(links1));
-////		assertEquals(empty, parser.getDeadlines(links2));
-////		assertEquals(empty, parser.getDeadlines(links3));
-////	}
+	@Test
+	void testGetDeadlines() {
+		ArrayList<String> links = new ArrayList<String>(Arrays.asList("https://icpe2018.spec.org/important-dates.html",
+				"http://www.icsoft.org/ImportantDates.aspx", "https://unescoprivacychair.urv.cat/psd2018/index.php", "https://2018.splashcon.org/home"));
+		LinkedHashMap<String, LinkedHashMap<String, String>> deadlineTypes = parser.getDeadlines(links);
+		assertTrue(deadlineTypes.containsKey("Research Papers and Artifacts"));
+		assertTrue(deadlineTypes.containsKey("Workshop Proposals"));
+		assertTrue(deadlineTypes.containsKey("Poster and Demo Papers"));
+		assertTrue(deadlineTypes.containsKey("Work-in-Progress/Vision Papers"));
+
+		LinkedHashMap<String, String> deadlines = deadlineTypes.get("Research Papers and Artifacts");
+		System.out.println(deadlines);
+		assertTrue(deadlines.containsKey(" Paper submission"));
+		assertEquals("Oct 25, 2017", deadlines.get(" Paper submission"));
+		assertTrue(deadlines.containsKey(" Camera-ready paper submission"));
+		assertEquals("Feb 14, 2018", deadlines.get(" Camera-ready paper submission"));
+		deadlines = deadlineTypes.get("Poster and Demo Papers");
+		assertTrue(deadlines.containsKey(" Notification"));
+		assertEquals("Jan 26, 2018", deadlines.get(" Notification"));
+		assertTrue(deadlines.containsKey(" Camera-ready paper submission"));
+		assertEquals("Feb 14, 2018", deadlines.get(" Camera-ready paper submission"));
+		
+		assertEquals(new LinkedHashMap<String, LinkedHashMap<String, String>>(), parser.getDeadlines(new ArrayList<String>(Arrays.asList("https://ieeecompsac.computer.org/2018/"))));
+		assertEquals(new LinkedHashMap<String, LinkedHashMap<String, String>>(), parser.getDeadlines(new ArrayList<String>(Arrays.asList("https://ieeecompsac.computer.org/2018/important-dates/"))));
+	}
 
 	@Test
 	void testGetConferenceYear() {
@@ -246,5 +263,35 @@ class ParserTest {
 	void testFindPattern() {
 		Pattern pattern = Pattern.compile("([A-Z]{3,}.[A-Z]{1,}|[A-Z]{3,})");
 		assertEquals("", parser.findPattern("icpe", pattern));
+	}
+	
+	@Test
+	void testFindLinkContainingHistory() {
+		assertEquals("https://itrust.sutd.edu.sg/hase2017/hase-history/", 
+				parser.findLinkContainingHistory(new ArrayList<String>(Arrays.asList("https://itrust.sutd.edu.sg/hase2017/hase-history/"))));
+		assertEquals("", 
+				parser.findLinkContainingHistory(new ArrayList<String>(Arrays.asList("http://lsds.hesge.ch/ISPDC2018/people/",
+						"https://icpe2018.spec.org/organizing-committee.html"))));
+	}
+	
+	@Test
+	void testFindConferenceDaysLinks() {
+		assertEquals(new ArrayList<String>(Arrays.asList("https://icpe2018.spec.org",
+						"https://icpe2018.spec.org/title.html", "https://icpe2018.spec.org/important-dates.html")), 
+				parser.findConferenceDaysLinks(new ArrayList<String>(Arrays.asList("https://icpe2018.spec.org",
+						"https://icpe2018.spec.org/important-dates.html", "https://icpe2018.spec.org/title.html"))));
+		assertEquals(new ArrayList<String>(Arrays.asList("https://icpe2018.spec.org")), 
+				parser.findConferenceDaysLinks(new ArrayList<String>(Arrays.asList("https://icpe2018.spec.org"))));
+	}
+	
+	@Test
+	void testIsSubmission() {
+		assertTrue(parser.isSubmission("Abstract submission"));
+		assertTrue(parser.isSubmission("Camera-ready paper submission"));
+		assertTrue(parser.isSubmission("Notification"));
+		assertTrue(parser.isSubmission("Proposal submission"));
+		assertTrue(parser.isSubmission("Registration notification"));
+		assertTrue(parser.isSubmission("Submitting deadline"));
+		assertFalse(parser.isSubmission("Nothing to find"));
 	}
 }

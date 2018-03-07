@@ -18,7 +18,7 @@ import venue.Country;
 
 class Parser2Test {
 	
-	private Parser parser = new Parser2(new Information());
+	private Parser parser = new Parser2(new Information(), new Crawler());
 	
 	@Test
 	void testGetAcronym() {
