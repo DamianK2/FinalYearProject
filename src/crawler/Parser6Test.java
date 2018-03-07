@@ -13,6 +13,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.Test;
 
+import database.Information;
+
 class Parser6Test {
 	private Parser parser = new Parser6(new Information(), new Crawler());
 	

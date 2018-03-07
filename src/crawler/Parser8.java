@@ -8,6 +8,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import database.Information;
+
 public class Parser8 extends Parser {
 
 	public Parser8(Information info, Crawler c) {

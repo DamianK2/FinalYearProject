@@ -7,6 +7,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
+import database.Information;
+
 public class Parser9 extends Parser {
 
 	public Parser9(Information info, Crawler c) {
@@ -27,9 +29,8 @@ public class Parser9 extends Parser {
 		else {
 			doc = crawler.getURLDoc(link);
 			
-			Elements el = doc.select("div:contains(Important Dates)");
-			
 			try {
+				Elements el = doc.select("div:contains(Important Dates)");
 				// Extract the paragraph
 				String elementString = el.select("p").toString().replaceAll("\r|\n", "");
 				// Replace the unneeded text

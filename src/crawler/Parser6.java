@@ -10,6 +10,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 
+import database.Information;
+
 public class Parser6 extends Parser {
 
 	public Parser6(Information info, Crawler c) {

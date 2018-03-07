@@ -9,6 +9,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import database.Information;
+
 public class Parser7 extends Parser {
 	
 	public Parser7(Information info, Crawler c) {

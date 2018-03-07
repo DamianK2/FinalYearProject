@@ -9,6 +9,8 @@ import java.util.LinkedHashMap;
 
 import org.junit.jupiter.api.Test;
 
+import database.Information;
+
 class Parser7Test {
 
 	private Parser parser = new Parser7(new Information(), new Crawler());

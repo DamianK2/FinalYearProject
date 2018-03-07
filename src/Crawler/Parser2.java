@@ -11,6 +11,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 
+import database.Information;
 import venue.Country;
 
 public class Parser2 extends Parser {

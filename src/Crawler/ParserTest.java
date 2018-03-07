@@ -18,6 +18,7 @@ import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import database.Information;
 import venue.Country;
 
 class ParserTest {

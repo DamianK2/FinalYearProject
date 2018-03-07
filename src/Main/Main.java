@@ -17,7 +17,6 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.jsoup.nodes.Document;
 
 import crawler.Crawler;
-import crawler.Information;
 import crawler.Parser;
 import crawler.Parser2;
 import crawler.Parser3;
@@ -27,6 +26,7 @@ import crawler.Parser6;
 import crawler.Parser7;
 import crawler.Parser8;
 import crawler.Parser9;
+import database.Information;
 import database.sql;
 import venue.Country;
 

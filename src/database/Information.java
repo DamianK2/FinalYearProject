@@ -1,4 +1,4 @@
-package crawler;
+package database;
 
 import java.util.ArrayList;
 import java.util.Scanner;
