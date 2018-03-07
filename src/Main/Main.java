@@ -189,8 +189,8 @@ public class Main {
 				} while(antiquity.equals("") && l < potentialLinks.size());
 	        	k++;
 	        } while(antiquity.equals("") && k < parsers.size());
-	        
-	        row.createCell(7).setCellValue(createHelper.createRichTextString(antiquity));
+	        k--;
+	        row.createCell(7).setCellValue(createHelper.createRichTextString("Parser " + k + ": " + antiquity));
 			
 
 	        potentialLinks.clear();

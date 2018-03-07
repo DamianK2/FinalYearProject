@@ -64,16 +64,20 @@ class Parser3Test {
 	void testGetAntiquity() {
 		File icpe = new File("TestPages/ICPE2018.html");
 		File psd = new File("TestPages/PSD2018.html");
+		File icsoft = new File("TestPages/ICSOFT2018.html");
 		Document doc = null;
 		Document doc2 = null;
+		Document doc3 = null;
 		try {
 			doc = Jsoup.parse(icpe, "UTF-8");
 			doc2 = Jsoup.parse(psd, "UTF-8");
+			doc3 = Jsoup.parse(icsoft, "UTF-8");
 			throw new IOException();
 		} catch (IOException e) {
 		} 
 		assertEquals("", parser.getAntiquity("", "", doc));
 		assertEquals("Eighth", parser.getAntiquity("", "", doc2));
+		assertEquals("", parser.getAntiquity("", "", doc3));
 		assertEquals("", parser.getAntiquity("", "", null));
 	}
 

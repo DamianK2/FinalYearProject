@@ -51,17 +51,28 @@ class Parser5Test {
 //		
 //		parser.getDeadlines(new ArrayList<String>(Arrays.asList("https://itrust.sutd.edu.sg/hase2017/important-dates/")));
 //	}
-	
 	@Test
 	void testGetAntiquity() {
-		File hase = new File("TestPages/HASE2017_history.html");
+		File icst = new File("TestPages/ICST2018.html");
+		File icpe = new File("TestPages/ICPE2018.html");
+		File ispass = new File("TestPages/ISPASS2018.html");
+		File compsac = new File("TestPages/COMPSAC2018.html");
 		Document doc = null;
+		Document doc2 = null;
+		Document doc3 = null;
+		Document doc4 = null;
 		try {
-			doc = Jsoup.parse(hase, "UTF-8");
+			doc = Jsoup.parse(icst, "UTF-8");
+			doc2 = Jsoup.parse(icpe, "UTF-8");
+			doc3 = Jsoup.parse(ispass, "UTF-8");
+			doc4 = Jsoup.parse(compsac, "UTF-8");
 			throw new IOException();
 		} catch (IOException e) {
 		} 
-		assertEquals("Eighteenth", parser.getAntiquity("", "", doc));
+		assertEquals("Eleventh", parser.getAntiquity("", "Ninth", doc));
+		assertEquals("Ninth", parser.getAntiquity("", "", doc2));
+		assertEquals("", parser.getAntiquity("", "", doc3));
+		assertEquals("Forty-Second", parser.getAntiquity("", "", doc4));
 		assertEquals("", parser.getAntiquity("", "", null));
 	}
 

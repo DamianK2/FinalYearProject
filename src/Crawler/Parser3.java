@@ -107,7 +107,11 @@ public class Parser3 extends Parser {
 		currentYear += ele.size();
 		antiquity = this.toOrdinal(currentYear);
 		
-		return antiquity;
+		// If it is the first conference then it wouldn't have "Previous" editions
+		if(currentYear == 1)
+			return "";
+		else
+			return antiquity;
 	}
 	
 	public String getConferenceDays(String title, String description, Document doc) {	
