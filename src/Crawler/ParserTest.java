@@ -158,7 +158,6 @@ class ParserTest {
 		assertTrue(deadlineTypes.containsKey("Work-in-Progress/Vision Papers"));
 
 		LinkedHashMap<String, String> deadlines = deadlineTypes.get("Research Papers and Artifacts");
-		System.out.println(deadlines);
 		assertTrue(deadlines.containsKey(" Paper submission"));
 		assertEquals("Oct 25, 2017", deadlines.get(" Paper submission"));
 		assertTrue(deadlines.containsKey(" Camera-ready paper submission"));

@@ -1,11 +1,13 @@
 package crawler;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -61,16 +63,37 @@ class Parser4Test {
 		assertEquals("", parser.getVenue("", "", country, null));
 	}
 	
-	//TODO test the map
-//	@Test
-//	void testGetDeadlines() {
-//		ArrayList<String> deadlines = new ArrayList<>(Arrays.asList("MAY 27, 2018", "June 29, 2018", ""));
-//		ArrayList<String> empty = new ArrayList<>();
-//		
-//		assertEquals(empty, parser.getDeadlines(links1));
-//		assertEquals(empty, parser.getDeadlines(links2));
-//		assertEquals(deadlines, parser.getDeadlines(links3));
-//	}
+	@Test
+	void testGetDeadlines() {
+		System.out.println(parser.getDeadlines(new ArrayList<String>(Arrays.asList("https://2018.splashcon.org/home"))));
+		
+		ArrayList<String> links = new ArrayList<String>(Arrays.asList("https://2018.splashcon.org/home",
+				"http://www.icsoft.org/ImportantDates.aspx"));
+		LinkedHashMap<String, LinkedHashMap<String, String>> deadlineTypes = parser.getDeadlines(links);
+		assertTrue(deadlineTypes.containsKey("0"));
+		assertTrue(deadlineTypes.containsKey("2"));
+		assertTrue(deadlineTypes.containsKey("5"));
+		assertTrue(deadlineTypes.containsKey("6"));
+		assertTrue(deadlineTypes.containsKey("7"));
+		assertFalse(deadlineTypes.containsKey("8"));
+
+		LinkedHashMap<String, String> deadlines = deadlineTypes.get("0");
+		assertTrue(deadlines.containsKey(" OOPSLA Paper submission "));
+		assertEquals("Mon 16 Apr 2018", deadlines.get(" OOPSLA Paper submission "));
+		deadlines = deadlineTypes.get("2");
+		assertTrue(deadlines.containsKey(" Onward! 2018 Papers Submission Deadline "));
+		assertEquals("Mon 23 Apr 2018", deadlines.get(" Onward! 2018 Papers Submission Deadline "));
+		deadlines = deadlineTypes.get("3");
+		assertTrue(deadlines.containsKey(" SPLASH-I Proposals Due "));
+		assertEquals("Fri 18 May 2018", deadlines.get(" SPLASH-I Proposals Due "));
+		deadlines = deadlineTypes.get("5");
+		assertTrue(deadlines.containsKey(" Onward! 2018 Essays First Notification "));
+		assertEquals("Mon 11 Jun 2018", deadlines.get(" Onward! 2018 Essays First Notification "));
+		deadlines = deadlineTypes.get("7");
+		assertTrue(deadlines.containsKey(" GPCE 2018 Abstract Submission All important dates"));
+		assertEquals("Fri 29 Jun 2018", deadlines.get(" GPCE 2018 Abstract Submission All important dates"));
+		assertEquals(new LinkedHashMap<String, LinkedHashMap<String, String>>(), parser.getDeadlines(new ArrayList<String>(Arrays.asList("https://research.spec.org/fileadmin/user_upload/documents/icpe_2018/ICPE-2018_Sponsorship.pdf"))));
+	}
 	
 	@Test
 	void testGetAntiquity() {

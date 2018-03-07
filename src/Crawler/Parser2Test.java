@@ -73,8 +73,6 @@ class Parser2Test {
 	
 	@Test
 	void testGetDeadlines() {
-		System.out.println(parser.getDeadlines(new ArrayList<String>(Arrays.asList("http://lsds.hesge.ch/ISPDC2018/"))));
-		
 		ArrayList<String> links = new ArrayList<String>(Arrays.asList("http://lsds.hesge.ch/ISPDC2018/",
 				"http://www.icsoft.org/ImportantDates.aspx"));
 		LinkedHashMap<String, LinkedHashMap<String, String>> deadlineTypes = parser.getDeadlines(links);
@@ -83,7 +81,6 @@ class Parser2Test {
 		assertTrue(deadlineTypes.containsKey("5"));
 
 		LinkedHashMap<String, String> deadlines = deadlineTypes.get("0");
-		System.out.println(deadlines);
 		assertTrue(deadlines.containsKey("Abstracts submissions deadline"));
 		assertEquals("February 12, 2018", deadlines.get("Abstracts submissions deadline"));
 		deadlines = deadlineTypes.get("2");
