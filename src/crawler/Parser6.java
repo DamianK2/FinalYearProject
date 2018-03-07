@@ -95,8 +95,10 @@ public class Parser6 extends Parser {
 //				}
 //			}
 			
-			if(!allDeadlines.isEmpty())
+			if(!allDeadlines.isEmpty() && allDeadlines.size() > 1)
 				return allDeadlines;
+			else
+				return new LinkedHashMap<String, LinkedHashMap<String, String>>();
 		}
 		
 

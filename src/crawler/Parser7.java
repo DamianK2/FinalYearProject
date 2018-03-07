@@ -25,10 +25,11 @@ public class Parser7 extends Parser {
 		
 		// Connect to the home page
 		doc = crawler.getURLDoc(linkList.get(0));
-		// Select the div with "Important Dates"
-		Element el = doc.select("div:contains(Important Dates)").last();
-		
+
 		try {
+			// Select the div with "Important Dates"
+			Element el = doc.select("div:contains(Important Dates)").last();
+			
 			// Extract the paragraph
 			String elementString = el.select("p").toString().replaceAll("\r|\n", "");
 			elementString = elementString.replaceAll("<strike>(.*?|.*\\n.*\\n)<\\/strike>|<del>(.*?|.*\\n.*\\n)<\\/del>|line-through.+?>.+?<\\/.+?>|<s>(.*?|.*\\n.*\\n)<\\/s>", "");
@@ -90,9 +91,4 @@ public class Parser7 extends Parser {
 		
 		return allDeadlines;
 	}
-	
-//	public static void main(String[] args) {
-//		Parser p = new Parser7(new Information());
-//		p.getDeadlines(new ArrayList<String>(Arrays.asList("https://sites.uoit.ca/ifiptm2018/important-dates/index.php")));
-//	}
 }

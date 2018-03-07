@@ -219,24 +219,24 @@ public class Main {
 	       
 	        row.createCell(9).setCellValue(createHelper.createRichTextString(year));
 	        
-//	        k = 0;
-//	        do {
-//	        	deadlines = parsers.get(k).getDeadlines(links);	
-//	        	k++;
-//	        } while(deadlines.isEmpty() && k < parsers.size());
-//	        	
-//	        k--;
-//	        int j = 10;
-//
-//	        for(String key: deadlines.keySet()) {
-////				System.out.println("Heading: " + key);
-//				LinkedHashMap<String, String> deadlines1 = deadlines.get(key);
-//				for(String d: deadlines1.keySet()) {
-////					System.out.println(d + ": " + deadlines1.get(d));
-//					row.createCell(j).setCellValue(createHelper.createRichTextString("Parser used: " + k + " (Heading) " + key + " ///// " + d + " ///// " + deadlines1.get(d)));
-//					j++;
-//				}
-//			}
+	        k = 0;
+	        do {
+	        	deadlines = parsers.get(k).getDeadlines(links);	
+	        	k++;
+	        } while(deadlines.isEmpty() && k < parsers.size());
+	        	
+	        k--;
+	        int j = 10;
+
+	        for(String key: deadlines.keySet()) {
+//				System.out.println("Heading: " + key);
+				LinkedHashMap<String, String> deadlines1 = deadlines.get(key);
+				for(String d: deadlines1.keySet()) {
+//					System.out.println(d + ": " + deadlines1.get(d));
+					row.createCell(j).setCellValue(createHelper.createRichTextString("Parser used: " + k + " (Heading) " + key + " ///// " + d + " ///// " + deadlines1.get(d)));
+					j++;
+				}
+			}
 	        
 	        LinkedHashMap<String, List<String>> committees = new  LinkedHashMap<>();
 	        k = 0;
@@ -248,7 +248,6 @@ public class Main {
 	        	k++;
 	        } while(committees.isEmpty() && k < parsers.size());
 	        
-	        int j = 10;
 	        String allMembers = "";
 	        if(!committees.isEmpty()) {
 	        	for(String subteam: committees.keySet()) {
