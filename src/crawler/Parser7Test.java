@@ -15,7 +15,6 @@ class Parser7Test {
 	
 	@Test
 	void testGetDeadlines() {
-		System.out.println(parser.getDeadlines(new ArrayList<String>(Arrays.asList("http://www.es.mdh.se/icst2018/"))));
 		ArrayList<String> links = new ArrayList<String>(Arrays.asList("http://www.es.mdh.se/icst2018/"));
 		LinkedHashMap<String, LinkedHashMap<String, String>> deadlineTypes = parser.getDeadlines(links);
 		assertTrue(deadlineTypes.containsKey("Conference (CFP, EasyChair):"));
