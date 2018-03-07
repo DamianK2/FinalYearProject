@@ -71,15 +71,30 @@ class Parser2Test {
 		assertEquals("", parser.getVenue("", "", country, null));
 	}
 	
-	//TODO test the map
-//	@Test
-//	void testGetDeadlines() {
-//		ArrayList<String> deadlines = new ArrayList<>(Arrays.asList("February 12, 2018", "April 10, 2018", "April 30, 2018"));
-//		ArrayList<String> empty = new ArrayList<>();
-//		assertEquals(empty, parser.getDeadlines(links1));
-//		assertEquals(deadlines, parser.getDeadlines(links2));
-//		assertEquals(empty, parser.getDeadlines(links3));
-//	}
+	@Test
+	void testGetDeadlines() {
+		System.out.println(parser.getDeadlines(new ArrayList<String>(Arrays.asList("http://lsds.hesge.ch/ISPDC2018/"))));
+		
+		ArrayList<String> links = new ArrayList<String>(Arrays.asList("http://lsds.hesge.ch/ISPDC2018/",
+				"http://www.icsoft.org/ImportantDates.aspx"));
+		LinkedHashMap<String, LinkedHashMap<String, String>> deadlineTypes = parser.getDeadlines(links);
+		assertTrue(deadlineTypes.containsKey("0"));
+		assertTrue(deadlineTypes.containsKey("3"));
+		assertTrue(deadlineTypes.containsKey("5"));
+
+		LinkedHashMap<String, String> deadlines = deadlineTypes.get("0");
+		System.out.println(deadlines);
+		assertTrue(deadlines.containsKey("Abstracts submissions deadline"));
+		assertEquals("February 12, 2018", deadlines.get("Abstracts submissions deadline"));
+		deadlines = deadlineTypes.get("2");
+		assertTrue(deadlines.containsKey("Notification of authors"));
+		assertEquals("April 10, 2018", deadlines.get("Notification of authors"));
+		deadlines = deadlineTypes.get("4");
+		assertTrue(deadlines.containsKey("Author registration"));
+		assertEquals("April 30, 2018", deadlines.get("Author registration"));
+		assertEquals(new LinkedHashMap<String, LinkedHashMap<String, String>>(), parser.getDeadlines(new ArrayList<String>(Arrays.asList("https://ieeecompsac.computer.org/2018/important-dates/"))));
+		assertEquals(new LinkedHashMap<String, LinkedHashMap<String, String>>(), parser.getDeadlines(new ArrayList<String>(Arrays.asList("https://research.spec.org/fileadmin/user_upload/documents/icpe_2018/ICPE-2018_Sponsorship.pdf"))));
+	}
 	
 	@Test
 	void testGetConferenceYear() {
@@ -119,7 +134,6 @@ class Parser2Test {
 		} catch (IOException e) {
 		} 
 		
-		System.out.println(parser.getOrganisers(doc, country));
 		LinkedHashMap<String, List<String>> committees = parser.getOrganisers(doc, country);
 		assertTrue(committees.containsKey("OOPSLA PC Chair"));
 		assertTrue(committees.containsKey("SPLASH-I Chair"));

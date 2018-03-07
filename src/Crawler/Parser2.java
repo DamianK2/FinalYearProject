@@ -72,10 +72,10 @@ public class Parser2 extends Parser {
 		
 		// Connect to the home page
 		doc = crawler.getURLDoc(linkList.get(0));
-		// Select the div with "Important Dates"
-		Element el = doc.select("div:contains(Important Dates)").last();
-		
 		try {
+			// Select the div with "Important Dates"
+			Element el = doc.select("div:contains(Important Dates)").last();
+		
 			// Extract the paragraph
 			String elementString = el.select("p").toString().replaceAll("\r|\n", "");
 			elementString = elementString.replaceAll("<strike>(.*?|.*\\n.*\\n)<\\/strike>|<del>(.*?|.*\\n.*\\\\n)<\\/del>|line-through.+?>.+?<\\/.+?>", "");
