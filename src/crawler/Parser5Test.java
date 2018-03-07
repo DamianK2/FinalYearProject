@@ -1,11 +1,13 @@
 package crawler;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -46,11 +48,30 @@ class Parser5Test {
 		assertEquals("", parser.getDescription(null));
 	}
 	
-//	@Test
-//	void testGetDeadlines() {
-//		
-//		parser.getDeadlines(new ArrayList<String>(Arrays.asList("https://itrust.sutd.edu.sg/hase2017/important-dates/")));
-//	}
+	@Test
+	void testGetDeadlines() {
+		ArrayList<String> links = new ArrayList<String>(Arrays.asList("https://itrust.sutd.edu.sg/hase2017/important-dates/",
+				"http://www.icsoft.org/ImportantDates.aspx"));
+		LinkedHashMap<String, LinkedHashMap<String, String>> deadlineTypes = parser.getDeadlines(links);
+		assertTrue(deadlineTypes.containsKey("0"));
+		assertTrue(deadlineTypes.containsKey("2"));
+		assertTrue(deadlineTypes.containsKey("5"));
+		assertFalse(deadlineTypes.containsKey("6"));
+		assertFalse(deadlineTypes.containsKey("8"));
+
+		LinkedHashMap<String, String> deadlines = deadlineTypes.get("0");
+		assertTrue(deadlines.containsKey("Submission deadline"));
+		assertEquals("19 September 2016 @ 11:59 PM GMT+8 [Closed]", deadlines.get("Submission deadline"));
+		deadlines = deadlineTypes.get("2");
+		assertTrue(deadlines.containsKey("Camera-ready submission [Closed]"));
+		assertEquals("21 November 2016 @ 11:59 PM GMT+8", deadlines.get("Camera-ready submission [Closed]"));
+		deadlines = deadlineTypes.get("5");
+		assertTrue(deadlines.containsKey("HASE 2017 Symposium"));
+		assertEquals("12 – 14 January 2017", deadlines.get("HASE 2017 Symposium"));
+		assertEquals(new LinkedHashMap<String, LinkedHashMap<String, String>>(), parser.getDeadlines(new ArrayList<String>(Arrays.asList("https://research.spec.org/fileadmin/user_upload/documents/icpe_2018/ICPE-2018_Sponsorship.pdf"))));
+		assertEquals(new LinkedHashMap<String, LinkedHashMap<String, String>>(), parser.getDeadlines(new ArrayList<String>(Arrays.asList("http://www.icsoft.org/Important"))));
+	}
+	
 	@Test
 	void testGetAntiquity() {
 		File icst = new File("TestPages/ICST2018.html");

@@ -21,7 +21,6 @@ public class Parser5 extends Parser {
 
 		try {
 			description = doc.select("p").first().text();
-			System.out.println(description);
 		} catch(NullPointerException e) {
 			System.err.println("No paragraph found to extract the description.");
 		}
@@ -41,11 +40,10 @@ public class Parser5 extends Parser {
 		if(link.isEmpty())
 			return allDeadlines;
 		else {
-			doc = crawler.getURLDoc(link);
-			
-			Element el = doc.select("div:contains(Important Dates)").last();
-			
 			try {
+				doc = crawler.getURLDoc(link);
+				
+				Element el = doc.select("div:contains(Important Dates)").last();
 				// Extract the paragraph
 				String elementString = el.select("p").toString().replaceAll("\r|\n", "");
 				// Replace the unneeded text
@@ -131,8 +129,5 @@ public class Parser5 extends Parser {
 		} else {
 			return "";
 		}
-		
-		
-		
 	}
 }
