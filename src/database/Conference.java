@@ -104,14 +104,14 @@ public class Conference {
 	}
 	
 	/**
-	 * Delete every entry associated with the passed in id in the committees table
+	 * Delete every entry associated with the passed in id in the table
 	 * @param id
 	 * @throws SQLException
 	 */
 	private void deleteFromTable(int id, String deleteQuery) throws SQLException {
 		preparedStmt = connection.prepareStatement(deleteQuery, Statement.RETURN_GENERATED_KEYS);
 		preparedStmt.setInt(1, id);
-		// Delete everything with the given id from the committees table
+		// Delete everything with the given id from the table
 		conn.executeStatement(preparedStmt, true);
 	}
 	
