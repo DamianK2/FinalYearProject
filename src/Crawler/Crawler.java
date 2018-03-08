@@ -16,8 +16,6 @@ import org.jsoup.select.Elements;
  */
 public class Crawler {
 	private ArrayList<String> linkList = new ArrayList<>();
-//	protected static ArrayList<Thread> threads = new ArrayList<>();
-	
 	
 	/**
 	 * Using the passed in document extracts the links and adds them to the list of links.
@@ -79,7 +77,7 @@ public class Crawler {
 	 * Add the newly fetched links into an ArrayList
 	 * @param Elements links
 	 */
-	private void addToLinkList(Elements links) {
+	private synchronized void addToLinkList(Elements links) {
 		for(Element link: links) {
 			// Eliminate the unneeded links with images or pdfs
 			if(!this.checkDuplicates(link.attr("abs:href")) 
@@ -95,7 +93,7 @@ public class Crawler {
 	 * @param link
 	 * @return true/false
 	 */
-	private boolean checkDuplicates(String link) {
+	private synchronized boolean checkDuplicates(String link) {
 		boolean check = false;
 		for(String l: linkList) {
 			if(link.equals(l))

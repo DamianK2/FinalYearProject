@@ -2,6 +2,7 @@ package crawler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -19,7 +20,8 @@ import venue.Country;
 public class Parser {
 	protected static Information information;
 	protected static Crawler crawler;
-	protected static ArrayList<String> searchKeywords = new ArrayList<>();
+	// Synchronize the list to avoid concurrent modification
+	protected static List<String> searchKeywords = Collections.synchronizedList(new ArrayList<>());
 	private static final ArrayList<String> SPECIAL_CASES = new ArrayList<>(
 															Arrays.asList(
 															"Zeroth","First", "Second", "Third", 
@@ -117,7 +119,7 @@ public class Parser {
 	 * @param linkList
 	 * @return list of potential proceeding links
 	 */
-	public ArrayList<String> findProceedingLinks(ArrayList<String> linkList) {
+	public synchronized ArrayList<String> findProceedingLinks(ArrayList<String> linkList) {
 		ArrayList<String> proceedingLinks = new ArrayList<>();
 		this.addLinkKeywords();
 		for(String keyword: searchKeywords) {
@@ -176,7 +178,7 @@ public class Parser {
 		return venue;
 	}
 	
-	public ArrayList<String> findVenueLinks(ArrayList<String> linkList) {
+	public synchronized ArrayList<String> findVenueLinks(ArrayList<String> linkList) {
 		ArrayList<String> venueLinks = new ArrayList<>();
 		venueLinks.add(linkList.get(0));
 		// Search the links for the title of the webpage (aimed at pages with frames)
@@ -394,16 +396,19 @@ public class Parser {
 	 * @param linkList
 	 * @return list of links that could contain committee members
 	 */
-	public ArrayList<String> findCommitteeLinks(ArrayList<String> linkList) {
+	public synchronized ArrayList<String> findCommitteeLinks(ArrayList<String> linkList) {
 		ArrayList<String> potentialLinks = new ArrayList<>();
 		// Find the links on the websites that contain the organizers
 		this.addCommitteeSearchWords();
-		for(String keyword: searchKeywords) {
-			ArrayList<String> links = this.findAllLinks(keyword, linkList);
-			if(!links.isEmpty())
-				for(String link: links)
-					if(!potentialLinks.contains(link))
-						potentialLinks.add(link);
+		
+		synchronized(searchKeywords) {
+			for(String keyword: searchKeywords) {
+				ArrayList<String> links = this.findAllLinks(keyword, linkList);
+				if(!links.isEmpty())
+					for(String link: links)
+						if(!potentialLinks.contains(link))
+							potentialLinks.add(link);
+			}
 		}
 		
 		return potentialLinks;
@@ -456,7 +461,7 @@ public class Parser {
 	 * @param country
 	 * @return venue
 	 */
-	protected String searchCountries(String string, Country country) {
+	protected synchronized String searchCountries(String string, Country country) {
 		String venue = "", countryRegex;
 		// Go through the list of countries
 		for(String countryName: country.getCountries()) {
@@ -507,7 +512,7 @@ public class Parser {
 	 * @param keyword
 	 * @return link
 	 */
-	protected String searchLinks(String keyword, ArrayList<String> linkList) {
+	protected synchronized String searchLinks(String keyword, ArrayList<String> linkList) {
 		String answer = "";
 		keyword = this.changeToRegex(keyword);
 		

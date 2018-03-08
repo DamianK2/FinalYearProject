@@ -13,13 +13,15 @@ public class Conference {
 	private static Connection connection;
 	private static PreparedStatement preparedStmt;
 	private static DBConnection conn;
+	private static final int MAX_CHARS_MEMBER = 300;
+	private static final int MAX_CHARS_COM_TITLE = 200;
 
-	public Conference(DBConnection DBconn, Connection connect) {
-		conn = DBconn;
-		connection = connect;
+	public Conference() {
+		conn = new DBConnection();
+		connection = conn.createConnection();
 	}
 
-	public void addConference(String acronym, String title, String sponsors, String proceedings, String description,
+	public synchronized void addConference(String acronym, String title, String sponsors, String proceedings, String description,
 			String venue, String currentYear, String antiquity, String conferenceDays,
 			LinkedHashMap<String, List<String>> organisers,
 			LinkedHashMap<String, LinkedHashMap<String, String>> deadlines) throws SQLException {
@@ -112,6 +114,7 @@ public class Conference {
 	 * @throws SQLException
 	 */
 	private void addToDeadlines(int id, LinkedHashMap<String, LinkedHashMap<String, String>> deadlines) throws SQLException {
+		String checkQuery = "select id, deadline_type, deadline_id from deadlines where id = ? and deadline_type = ? and deadline_id = ?";
 		String query = "insert deadlines (id, deadline_type, deadline_id) values (?, ?, ?)";
 		
 		// Iterate through the map
@@ -131,7 +134,9 @@ public class Conference {
 			
 			// Populate the tables in the database
 			for(String dTitle: actualDeadlines.keySet()) {
-				this.addToTable(query, id, typeID, this.addToDeadlineTitles(dTitle, actualDeadlines.get(dTitle)));
+				int deadline_id = this.addToDeadlineTitles(dTitle, actualDeadlines.get(dTitle));
+				if(!this.checkIfIDExistInDatabase(checkQuery, id, typeID, deadline_id))
+					this.addToTable(query, id, typeID, deadline_id);
 			}
 		}
 	}
@@ -143,17 +148,51 @@ public class Conference {
 	 * @throws SQLException
 	 */
 	private void addToCommittees(int id, LinkedHashMap<String, List<String>> organisers) throws SQLException {
-		String query = "insert committees (id, titleID, memberID)" + " values (?, ?, ?)";
+		String checkQuery = "select id, titleID, memberID from committees where id = ? and titleID = ? and memberID = ?";
+		String query = "insert committees (id, titleID, memberID) values (?, ?, ?)";
 		int comTitleID;
 		
 		// Iterate through the map
 		for(String committeeTitle: organisers.keySet()) {
 			comTitleID = this.addToCommitteeTitles(committeeTitle);
-			// Populate the tables in the database
-			for(String member: organisers.get(committeeTitle)) {
-				this.addToTable(query, id, comTitleID, this.addToMemberNames(member));
+			// If 0 is returned then it can't be added to the database
+			if(comTitleID != 0) {
+				// Populate the tables in the database
+				for(String member: organisers.get(committeeTitle)) {
+					int memberID = this.addToMemberNames(member);
+					// If 0 is returned then it can't be added to the database
+					if(memberID != 0) {
+						// If it doesn't exist then add it to the database
+						if(!this.checkIfIDExistInDatabase(checkQuery, id, comTitleID, memberID))
+							this.addToTable(query, id, comTitleID, memberID);
+					}
+				}
 			}
 		}
+	}
+	
+	/**
+	 * Checks if the tables deadlines or committees based on passed in query
+	 * already contain the IDs that are about to be added into the database
+	 * @param query
+	 * @param id
+	 * @param secondID
+	 * @param thirdID
+	 * @return true/false
+	 * @throws SQLException 
+	 */
+	private boolean checkIfIDExistInDatabase(String query, int id, int secondID, int thirdID) throws SQLException {
+		preparedStmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+		preparedStmt.setInt(1, id);
+		preparedStmt.setInt(2, secondID);
+		preparedStmt.setInt(3, thirdID);
+		ResultSet rs = preparedStmt.executeQuery();
+		
+		// If something was returned then it exists in the database
+		if(rs.next())
+			return true;
+		else
+			return false;
 	}
 
 //	public static void main(String[] args) {
@@ -315,10 +354,13 @@ public class Conference {
 	 * @throws SQLException
 	 */
 	private int addToCommitteeTitles(String comTitle) throws SQLException {
-		// Check to lower case to avoid duplicates with capital letters etc.
-		String searchComTitle = "select id from committee_titles where lower(committee_title) = \"" + comTitle.toLowerCase() + "\"";
-		String committeeTitle = "insert committee_titles (committee_title)" + " values (?)";
-		return this.checkAndReturn(searchComTitle, committeeTitle, comTitle);
+		if(comTitle.length() < MAX_CHARS_COM_TITLE) {
+			// Check to lower case to avoid duplicates with capital letters etc.
+			String searchComTitle = "select id from committee_titles where lower(committee_title) = \"" + comTitle.toLowerCase() + "\"";
+			String committeeTitle = "insert committee_titles (committee_title)" + " values (?)";
+			return this.checkAndReturn(searchComTitle, committeeTitle, comTitle);
+		} else
+			return 0;
 	}
 	
 	/**
@@ -328,9 +370,12 @@ public class Conference {
 	 * @throws SQLException
 	 */
 	private int addToMemberNames(String member) throws SQLException {
-		String searchMember = "select id from member_names where member = \"" + member + "\"";
-		String committeeMember = "insert member_names (member)" + " values (?)";
-		return this.checkAndReturn(searchMember, committeeMember, member);
+		if(member.length() < MAX_CHARS_MEMBER) {
+			String searchMember = "select id from member_names where member = \"" + member + "\"";
+			String committeeMember = "insert member_names (member)" + " values (?)";
+			return this.checkAndReturn(searchMember, committeeMember, member);
+		} else
+			return 0;
 	}
 
 	/**

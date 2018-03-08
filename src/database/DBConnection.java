@@ -47,6 +47,7 @@ public class DBConnection {
 		// Not a serious error, just no rows affected
 		if (id == 0) {
 			System.err.println("Creating failed, no rows affected.");
+			return id;
 		}
 
 		if(!isUpdate) {
