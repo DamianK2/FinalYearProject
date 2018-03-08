@@ -1,20 +1,20 @@
 package database;
 
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Connection;
 
 public class DBConnection {
-	Connection connection;
-	
+	private Connection connection;
 	/**
 	 * Create a mysql database connection
 	 */
 	public Connection createConnection() {
 		String driver = "org.gjt.mm.mysql.Driver";
 		String url = "jdbc:mysql://localhost:3306/conferences";
+		connection = null;
 		try {
 			Class.forName(driver);
 			connection = DriverManager.getConnection(url, "root", "");
@@ -25,12 +25,12 @@ public class DBConnection {
 		}
 		return connection;
 	}
-
+	
 	/**
 	 * Close the mysql database connection
 	 * @throws SQLException
 	 */
-	public void closeConnection() throws SQLException {
+	void closeConnection() throws SQLException {
 		connection.close();
 	}
 	

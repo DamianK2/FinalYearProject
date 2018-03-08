@@ -4,7 +4,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.concurrent.Semaphore;
 
 import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Row;
@@ -16,13 +15,6 @@ import crawler.Parser;
 import database.Conference;
 import venue.Country;
 
-
-/**
- * Implementation of a thread class fetching sub-links from the already gotten links on the website.
- * 
- * @author Damian Kluziak
- *
- */
 public class Worker implements Runnable {
 	
 	private String url;
@@ -52,7 +44,8 @@ public class Worker implements Runnable {
 	public void run() {
 		
 		try {
-    	    Main.semaphore.acquire(); // This will hang until there is a vacancy
+			// This will hang until there is a vacancy
+    	    Main.semaphore.acquire(); 
     	    this.extractInformation(this.url);
     	} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -224,7 +217,7 @@ public class Worker implements Runnable {
 				for(String subteamMember: subteamMembers) {
 					allMembers += subteamMember + " //// ";
 				}
-				System.out.println("(wtf) " + allMembers);
+//				System.out.println("(wtf) " + allMembers);
 	        	row.createCell(++j).setCellValue(createHelper.createRichTextString(allMembers));
 	        	allMembers = "";
 			}

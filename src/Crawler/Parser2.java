@@ -180,7 +180,7 @@ public class Parser2 extends Parser {
 							members.clear();
 						}
 						// Add the subteam found for later use as a key
-						tempSubteam = textNode.text();
+						tempSubteam = textNode.text().replaceAll("\"|'", "");
 					}
 					// Do nothing with empty text nodes
 					else if(textNode.text().matches("^\\s+$"));
@@ -196,7 +196,7 @@ public class Parser2 extends Parser {
 						else if(memberCounter > 0 && isCountry) {
 							// Add the member to the list
 							sb.append(", " + textNode.text());
-							members.add(new String(sb.toString()));
+							members.add(new String(sb.toString().replaceAll("\"|'", "")));
 							// Reset the string builder and counter
 							sb.setLength(0);
 							memberCounter = 0;

@@ -20,6 +20,14 @@ public class Conference {
 		conn = new DBConnection();
 		connection = conn.createConnection();
 	}
+	
+	public void closeConnection() {
+		try {
+			conn.closeConnection();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
 
 	public synchronized void addConference(String acronym, String title, String sponsors, String proceedings, String description,
 			String venue, String currentYear, String antiquity, String conferenceDays,

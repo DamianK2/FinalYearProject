@@ -5,8 +5,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.concurrent.Semaphore;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -14,7 +12,6 @@ import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.jsoup.nodes.Document;
 
 import crawler.Crawler;
 import crawler.Parser;
@@ -31,10 +28,10 @@ import database.Information;
 import venue.Country;
 
 public class Main {
-	final static int MAX_NOF_THREADS = 5;
+	final static int MAX_NOF_THREADS = 10;
 	final static Semaphore semaphore = new Semaphore(MAX_NOF_THREADS);
 	private static ArrayList<Thread> threads = new ArrayList<>();
-//	private static ArrayList<Double> times = new ArrayList<>();
+	private static ArrayList<Double> times = new ArrayList<>();
 	
 	public static final ArrayList<String> URLS = new ArrayList<>(
 							Arrays.asList(
@@ -42,6 +39,11 @@ public class Main {
 										"http://lsds.hesge.ch/ISPDC2018/",
 										"https://unescoprivacychair.urv.cat/psd2018/index.php",
 										"https://2018.splashcon.org/home",
+										"https://pldi18.sigplan.org/home",
+										"https://2018.ecoop.org/",
+										"https://2018.fseconference.org/home",
+										"https://www.icse2018.org/",
+										"https://conf.researchr.org/home/issta-2018",
 										"https://conf.researchr.org/home/icgse-2018",
 //										"https://itrust.sutd.edu.sg/hase2017/",
 										"http://www.ispass.org/ispass2018/",
@@ -59,7 +61,7 @@ public class Main {
 	public static void main(String[] args) {
 //		long tStartOverall = System.currentTimeMillis();
 //		
-//		for(int k = 0; k < 10; k++) {
+//		for(int k = 0; k < 5; k++) {
 			long tStart = System.currentTimeMillis();
 			
 			Country country = new Country();
@@ -97,7 +99,7 @@ public class Main {
 	        
 	        Conference sqlConnection = new Conference();
 	        
-	      // Create threads for each link just fetched to decrease crawling time
+	      // Create threads for each link to decrease crawling time
 	      Thread thread;
 	      for(String url: URLS) {
 	        	thread = new Thread(new Worker(url, crawler, country, row, sheet, createHelper, parsers, rowNumber, sqlConnection));
@@ -133,6 +135,8 @@ public class Main {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+	        
+	        sqlConnection.closeConnection();
 			
 			long tEnd = System.currentTimeMillis();
 			long tDelta = tEnd - tStart;
@@ -151,10 +155,6 @@ public class Main {
 //		double elapsedSeconds = tDelta / 1000.0;
 //		System.out.println("Time taken to fetch information 10 times: " + elapsedSeconds + " seconds");
 //		elapsedSeconds = elapsedSeconds / 10.0;
-		System.out.println("Time taken to fetch information: " + elapsedSeconds + " seconds");
+		System.out.println("Time taken to fetch information (average): " + elapsedSeconds + " seconds");
 	}
-	
-//	private static void print(String msg, Object... args) {
-//	    System.out.println(String.format(msg, args));
-//	}
 }

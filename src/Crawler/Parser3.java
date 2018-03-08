@@ -148,14 +148,14 @@ public class Parser3 extends Parser {
 				if(this.searchForCommittees(toCheck)) {
 					// Add the found values to the output map
 					if(!members.isEmpty() && !tempSubteam.equals("")) {
-						committees.put(tempSubteam, new ArrayList<String>(members));
+						committees.put(tempSubteam.replaceAll("\"|'", ""), new ArrayList<String>(members));
 					}
 					// Overwrite the variables
 					tempSubteam = toCheck;
 					members.clear();
 				} else {
 					// Add the members
-					members.add(toCheck);
+					members.add(toCheck.replaceAll("\"|'", ""));
 				}
 			}
 		}

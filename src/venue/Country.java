@@ -32,7 +32,7 @@ public class Country {
 		countries.add("Sri Lanka");
 	}
 	
-	public ArrayList<String> getCountries() {
+	public synchronized ArrayList<String> getCountries() {
 		return countries;
 	}
 	

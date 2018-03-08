@@ -23,7 +23,7 @@ public class Crawler {
 	 * @param list with the home page link
 	 * @return list of links from the website
 	 */
-	public ArrayList<String> getAllLinks(Document doc, ArrayList<String> link) {
+	public synchronized ArrayList<String> getAllLinks(Document doc, ArrayList<String> link) {
 		this.linkList = link;
         StringBuilder sb = new StringBuilder(); 
         Elements links = doc.select("a[href]");
@@ -111,7 +111,7 @@ public class Crawler {
 		Document doc = null;
 		try {
 			doc = Jsoup.connect(url).get();
-			System.out.println("Fetching from " + url + "...");
+//			System.out.println("Fetching from " + url + "...");
 		} catch (IOException e) {
 			System.out.println("Something went wrong when connecting to: " + url);
 //			e.printStackTrace();

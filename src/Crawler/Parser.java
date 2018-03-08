@@ -368,7 +368,7 @@ public class Parser {
 						// Add the member to the list if a valid subteam is present
 						if(textNode.text().matches(".*?(,|\\().*?,.*$")) {
 							if(!tempSubteam.equals(""))
-								members.add(textNode.text());
+								members.add(textNode.text().replaceAll("\"|'", ""));
 						}
 //						System.out.println(textNode.text());
 //						System.out.println(members);
@@ -378,7 +378,7 @@ public class Parser {
 					else {
 						// If it's neither a member or a subteam then everything gathered so far to the map and clear the variables
 						if(!tempSubteam.equals("") && !members.isEmpty()) {
-							committees.put(tempSubteam, new ArrayList<String>(members));
+							committees.put(tempSubteam.replaceAll("\"|'", ""), new ArrayList<String>(members));
 						}
 						members.clear();
 						tempSubteam = "";
