@@ -1,208 +1,409 @@
 package database;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Information {
+	private static ArrayList<String> links;
 	private static ArrayList<String> sponsors;
 	private static ArrayList<String> proceedings;
 	private static ArrayList<String> committees;
 	
+	private static Connection connection;
+	private static PreparedStatement preparedStmt;
+	private static DBConnection conn;
+
 	public Information() {
+		conn = new DBConnection();
+		connection = conn.createConnection();
+		links = new ArrayList<String>();
 		sponsors = new ArrayList<String>();
 		proceedings = new ArrayList<String>();
 		committees = new ArrayList<String>();
-		addKnownSponsors();
-		addKnownProceedings();
-		addPotentialCommitteeNames();
-	}
-	
-	public static void main(String[] args) {
-		Scanner scanner = new Scanner(System.in);
-		String userInput;
-		
-		if(args[0].equals("-h")) {
-			System.out.println("To see the list of currently used sponsors, proceedings and committees, type in -ls");
-			System.out.println("To add the lists of currently known sponsors, proceedings and committees, type in -ak");
-			System.out.println("To remove everything from the lists, type in -ra");
-			System.out.println("To remove everything from one of the lists, type in -ra followed by -l, -s, -p or -c");
-			System.out.println("To add/remove one item, type in 3 arguments e.g. -a -s \"ACM\"");
-			System.out.println("First argument:");
-			System.out.println("\tTo add use -a");
-			System.out.println("\tTo remove use -r");
-			System.out.println("Second argument:");
-			System.out.println("\tTo select links use -l");
-			System.out.println("\tTo select sponsors use -s");
-			System.out.println("\tTo select proceedings use -p");
-			System.out.println("\tTo select committee names use -c");
-			System.out.println("Third argument:");
-			System.out.println("\tType in the string to be added/removed");
-		} else if(args[0].equals("-ls")) {
-			if(!sponsors.isEmpty())
-				System.out.println(sponsors.toString());
-			else
-				System.out.println("No sponsors in the list.");
-			
-		} else if(args[0].equals("-ak")) {
-			System.out.println("Are you sure you want to add all the known sponsors, proceedings and committee names to the lists? (y/n)");
-			
-			boolean correctInput = false;
-			while(!correctInput) {
-				userInput = scanner.nextLine();
-				if(userInput.equalsIgnoreCase("y")) {
-					addKnownSponsors();
-					addKnownProceedings();
-					addPotentialCommitteeNames();
-					correctInput = true;
-				} else if(userInput.equalsIgnoreCase("n")) {
-					System.exit(0);
-				} else {
-					System.out.println("Wrong input. Please type in y/n.");
-				}
-			}
-		} else if(args[0].equals("-ra")) {
-			try {
-				String secondArg = args[1];
-				if(secondArg.equals("-l")) {
-					//TODO links
-				} else if(secondArg.equals("-s")) {
-					sponsors.clear();
-				} else if(secondArg.equals("-p")) {
-					proceedings.clear();
-				} else if(secondArg.equals("-c")) {
-					committees.clear();
-				} else {
-					System.out.println("Wrong second argument. Expected -l, -s, -p or -c.");
-				}
-			} catch(ArrayIndexOutOfBoundsException e) {
-			}
-			System.out.println("Are you sure you want to remove everything from the lists? (y/n)");
-			
-			boolean correctInput = false;
-			while(!correctInput) {
-				userInput = scanner.nextLine();
-				if(userInput.equalsIgnoreCase("y")) {
-					// TODO clear links
-					sponsors.clear();
-					proceedings.clear();
-					committees.clear();
-					correctInput = true;
-				} else if(userInput.equalsIgnoreCase("n")) {
-					System.exit(0);
-				} else {
-					System.out.println("Wrong input. Please type in y/n.");
-				}
-			}
+		try {
+			this.getLinksFromDB();
+			this.getSponsorsFromDB();
+			this.getProceedingsFromDB();
+			this.getCommitteeNamesFromDB();
+		} catch (SQLException e) {
 		}
-		scanner.close();
-		
-//		if(args.length < 3) {
-//			System.err.println("Invalid number of arguments. Type in -h for help");
+	}
+	
+//	public static void main(String[] args) {
+//		try {
+//			Information info = new Information();
+//		} catch (SQLException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
 //		}
+//	}
+	
+	/**
+	 * Get the list of links that are used in the system
+	 * @throws SQLException
+	 */
+	private void getLinksFromDB() throws SQLException {
+		String query = "select link from links_to_crawl";
+		preparedStmt = connection.prepareStatement(query);
+		this.checkAndAddToList(preparedStmt.executeQuery(), links);
 	}
 	
-	//TODO check for duplicates
 	/**
-	 * Adds the know sponsors
+	 * Get the list of sponsors that are used in the system
+	 * @throws SQLException
 	 */
-	private static void addKnownSponsors() {
-		sponsors.add("ACM");
-		sponsors.add("SPEC");
-		sponsors.add("UNESCO");
-		sponsors.add("IEEE");
-		sponsors.add("AFIS");
-		sponsors.add("INCOSE");
+	private void getSponsorsFromDB() throws SQLException {
+		String query = "select sponsor from available_sponsors";
+		preparedStmt = connection.prepareStatement(query);
+		this.checkAndAddToList(preparedStmt.executeQuery(), sponsors);
 	}
 	
-	//TODO check for duplicates
 	/**
-	 * Adds the known proceedings
+	 * Get a list of proceedings that are used in the system
+	 * @throws SQLException
 	 */
-	private static void addKnownProceedings() {
-		proceedings.add("ACM");
-		proceedings.add("SPEC");
-		proceedings.add("Springer");
-		proceedings.add("IEEE");
-		proceedings.add("IFIP");
+	private void getProceedingsFromDB() throws SQLException {
+		String query = "select proceeding from available_proceedings";
+		preparedStmt = connection.prepareStatement(query);
+		this.checkAndAddToList(preparedStmt.executeQuery(), proceedings);
 	}
 	
-	//TODO check for duplicates
 	/**
-	 * Adds the known names that appear in the committee headings
+	 * Get a list of potential committee names that are used in the system
+	 * @throws SQLException
 	 */
-	private static void addPotentialCommitteeNames() {
-		committees.add("committee");
-		committees.add("chair");
-		committees.add("paper");
-		committees.add("member");
+	private void getCommitteeNamesFromDB() throws SQLException {
+		String query = "select potential_com_name from potential_committee_names";
+		preparedStmt = connection.prepareStatement(query);
+		this.checkAndAddToList(preparedStmt.executeQuery(), committees);
+	}
+	
+	/**
+	 * Add values from the result set to the list if they are not duplicates
+	 * @param result set from a query
+	 * @param list to be populated
+	 * @throws SQLException
+	 */
+	private void checkAndAddToList(ResultSet rs, ArrayList<String> list) throws SQLException {
+		String value;
+		while (rs.next()) {
+			// Find the id from the set
+			value = rs.getString(1);
+			if(!list.contains(value))
+				list.add(value);
+		}
 	}
 	
 	/** 
-	 * Add a sponsor to the existing list of sponsors
+	 * Retrieve all links from the configuration in the database 
 	 * @param sponsor
+	 * @throws SQLException 
 	 */
-	private void addSponsor(String sponsor) {
-		this.sponsors.add(sponsor);
-	}
-	
-	/**
-	 * Add a proceeding to the existing list of proceedings
-	 * @param proceeding
-	 */
-	private void addProceeding(String proceeding) {
-		this.proceedings.add(proceeding);
-	}
-	
-	/**
-	 * Add a committee name to the exisitng list of committee names
-	 * @param name
-	 */
-	private void addCommitteeName(String name) {
-		this.committees.add(name);
+	ArrayList<String> listLinks() throws SQLException {
+		String checkQuery = "select link from links_to_crawl";
+		preparedStmt = connection.prepareStatement(checkQuery);
+		ResultSet rs = preparedStmt.executeQuery();
+		
+		ArrayList<String> toReturn = new ArrayList<>();
+
+		while (rs.next())
+			toReturn.add(rs.getString(1));
+		
+		return toReturn;
 	}
 	
 	/** 
-	 * Remove a sponsor from the existing list of sponsors
+	 * Retrieve all sponsors from the configuration in the database 
 	 * @param sponsor
+	 * @throws SQLException 
 	 */
-	private void removeSponsor(String sponsor) {
-		this.sponsors.add(sponsor);
+	ArrayList<String> listSponsors() throws SQLException {
+		String checkQuery = "select sponsor from available_sponsors";
+		preparedStmt = connection.prepareStatement(checkQuery);
+		ResultSet rs = preparedStmt.executeQuery();
+		
+		ArrayList<String> toReturn = new ArrayList<>();
+
+		while (rs.next())
+			toReturn.add(rs.getString(1));
+		
+		return toReturn;
+	}
+	
+	/** 
+	 * Retrieve all proceedings from the configuration in the database 
+	 * @param sponsor
+	 * @throws SQLException 
+	 */
+	ArrayList<String> listProceedings() throws SQLException {
+		String checkQuery = "select proceeding from available_proceedings";
+		preparedStmt = connection.prepareStatement(checkQuery);
+		ResultSet rs = preparedStmt.executeQuery();
+		
+		ArrayList<String> toReturn = new ArrayList<>();
+
+		while (rs.next())
+			toReturn.add(rs.getString(1));
+		
+		return toReturn;
+	}
+	
+	/** 
+	 * Retrieve all committee names from the configuration in the database 
+	 * @param sponsor
+	 * @throws SQLException 
+	 */
+	ArrayList<String> listCommitteeNames() throws SQLException {
+		String checkQuery = "select potential_com_name from potential_committee_names";
+		preparedStmt = connection.prepareStatement(checkQuery);
+		ResultSet rs = preparedStmt.executeQuery();
+		
+		ArrayList<String> toReturn = new ArrayList<>();
+
+		while (rs.next())
+			toReturn.add(rs.getString(1));
+		
+		return toReturn;
+	}
+	
+	/** 
+	 * Add a link to the configuration in the database 
+	 * @param sponsor
+	 * @throws SQLException 
+	 */
+	boolean addLink(String link) throws SQLException {
+		String checkQuery = "select link from links_to_crawl where link = ?";
+		String insertQuery = "insert links_to_crawl (link) values (?)";
+		boolean check = this.checkIfExists(checkQuery, insertQuery, link);
+
+		// If the check comes back as true then this link already exists in the database
+		if (check) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+	
+	/** 
+	 * Add a sponsor to the configuration in the database 
+	 * @param sponsor
+	 * @throws SQLException 
+	 */
+	boolean addSponsor(String sponsor) throws SQLException {
+		String checkQuery = "select sponsor from available_sponsors where sponsor = ?";
+		String insertQuery = "insert available_sponsors (sponsor) values (?)";
+		boolean check = this.checkIfExists(checkQuery, insertQuery, sponsor);
+
+		// If the check comes back as true then this sponsor already exists in the database
+		if (check) {
+			return false;
+		} else {
+			return true;
+		}
 	}
 	
 	/**
-	 * Remove a proceeding from the existing list of proceedings
+	 * Add a proceeding to the configuration in the database 
 	 * @param proceeding
+	 * @throws SQLException 
 	 */
-	private void removeProceeding(String proceeding) {
-		this.proceedings.add(proceeding);
+	boolean addProceeding(String proceeding) throws SQLException {
+		String checkQuery = "select proceeding from available_proceedings where proceeding = ?";
+		String insertQuery = "insert available_proceedings (proceeding) values (?)";
+		boolean check = this.checkIfExists(checkQuery, insertQuery, proceeding);
+
+		// If the check comes back as true then this proceeding already exists in the database
+		if (check) {
+			return false;
+		} else {
+			return true;
+		}
 	}
 	
 	/**
-	 * Remove a committee name from the exisitng list of committee names
+	 * Add a committee name to the configuration in the database 
 	 * @param name
+	 * @throws SQLException 
 	 */
-	private void removeCommitteeName(String name) {
-		this.committees.add(name);
+	boolean addCommitteeName(String name) throws SQLException {
+		String checkQuery = "select potential_com_name from potential_committee_names where potential_com_name = ?";
+		String insertQuery = "insert potential_committee_names (potential_com_name) values (?)";
+		boolean check = this.checkIfExists(checkQuery, insertQuery, name);
+
+		// If the check comes back as true then this committee name already exists in the database
+		if (check) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+	
+	/**
+	 * Checks if the passed in value exists in the database using appropriate queries
+	 * @param checkQuery
+	 * @param insertQuery
+	 * @param value
+	 * @return true/false
+	 * @throws SQLException
+	 */
+	private boolean checkIfExists(String checkQuery, String insertQuery, String value) throws SQLException {
+		preparedStmt = connection.prepareStatement(checkQuery);
+		preparedStmt.setString(1, value);
+		ResultSet rs = preparedStmt.executeQuery();
+
+		if (rs.next()) {
+			return true;
+		} else {
+			preparedStmt = connection.prepareStatement(insertQuery);
+			preparedStmt.setString(1, value);
+			preparedStmt.executeUpdate();
+			return false;
+		}
+	}
+	
+	/** 
+	 * Remove a sponsor from the configuration in the database 
+	 * @param sponsor
+	 * @return true/false
+	 * @throws SQLException 
+	 */
+	boolean removeLink(String link) throws SQLException {
+		String deleteQuery = "delete from links_to_crawl where link = ?";
+		return this.removeUsingQuery(deleteQuery, link, false);
+	}
+	
+	/** 
+	 * Remove a sponsor from the configuration in the database 
+	 * @param sponsor
+	 * @return true/false
+	 * @throws SQLException 
+	 */
+	boolean removeSponsor(String sponsor) throws SQLException {
+		String deleteQuery = "delete from available_sponsors where sponsor = ?";
+		return this.removeUsingQuery(deleteQuery, sponsor, false);
+	}
+	
+	/**
+	 * Remove a proceeding from the configuration in the database 
+	 * @param proceeding
+	 * @return true/false
+	 * @throws SQLException 
+	 */
+	boolean removeProceeding(String proceeding) throws SQLException {
+		String deleteQuery = "delete from available_proceedings where proceeding = ?";
+		return this.removeUsingQuery(deleteQuery, proceeding, false);
+	}
+	
+	/**
+	 * Remove a committee name from the configuration in the database 
+	 * @param name
+	 * @return true/false
+	 * @throws SQLException 
+	 */
+	boolean removeCommitteeName(String name) throws SQLException {
+		String deleteQuery = "delete from potential_committee_names where potential_com_name = ?";
+		return this.removeUsingQuery(deleteQuery, name, false);
+	}
+	
+	/**
+	 * Remove every link from the configuration in the database
+	 * @param name
+	 * @return true/false
+	 * @throws SQLException 
+	 */
+	boolean removeAllLinks() throws SQLException {
+		String deleteQuery = "delete from links_to_crawl";
+		return this.removeUsingQuery(deleteQuery, null, true);
+	}
+	
+	/**
+	 * Remove every sponsor from the configuration in the database
+	 * @param name
+	 * @return true/false
+	 * @throws SQLException 
+	 */
+	boolean removeAllSponsors() throws SQLException {
+		String deleteQuery = "delete from available_sponsors";
+		return this.removeUsingQuery(deleteQuery, null, true);
+	}
+	
+	/**
+	 * Remove every proceedings from the configuration in the database
+	 * @param name
+	 * @return true/false
+	 * @throws SQLException 
+	 */
+	boolean removeAllProceedings() throws SQLException {
+		String deleteQuery = "delete from available_proceedings";
+		return this.removeUsingQuery(deleteQuery, null, true);
+	}
+	
+	/**
+	 * Remove every committee name from the configuration in the database
+	 * @param name
+	 * @return true/false
+	 * @throws SQLException 
+	 */
+	boolean removeAllCommitteeNames() throws SQLException {
+		String deleteQuery = "delete from potential_committee_names";
+		return this.removeUsingQuery(deleteQuery, null, true);
+	}
+	
+	/**
+	 * Use the given query, value (if any is passed in) and a boolean to
+	 * switch between removing everything or just one value
+	 * @param query
+	 * @param value
+	 * @param true/false
+	 * @return true/false
+	 * @throws SQLException
+	 */
+	private boolean removeUsingQuery(String query, String value, boolean removeAll) throws SQLException {
+		if(!removeAll) {
+			preparedStmt = connection.prepareStatement(query);
+			preparedStmt.setString(1, value);
+		} else {
+			preparedStmt = connection.prepareStatement(query);
+		}
+		
+		int affectedRows = preparedStmt.executeUpdate();
+		
+		if(affectedRows == 0)
+			return false;
+		else
+			return true;
+	}
+	
+	/**
+	 * @return list of links
+	 */
+	public ArrayList<String> getLinks() {
+		return links;
 	}
 	
 	/**
 	 * @return list of sponsors
 	 */
 	public ArrayList<String> getSponsors() {
-		return this.sponsors;
+		return sponsors;
 	}
 	
 	/**
 	 * @return list of proceedings
 	 */
 	public ArrayList<String> getProceedings() {
-		return this.proceedings;
+		return proceedings;
 	}
 
 	/**
 	 * @return list of committee names
 	 */
 	public ArrayList<String> getCommitteeNames() {
-		return this.committees;
+		return committees;
 	}
 }

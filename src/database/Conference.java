@@ -1,7 +1,6 @@
 package database;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -9,51 +8,21 @@ import java.sql.Statement;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-/**
- * A Java MySQL PreparedStatement INSERT example. Demonstrates the use of a SQL
- * INSERT statement against a MySQL database, called from a Java program, using
- * a Java PreparedStatement.
- * 
- * Created by Alvin Alexander, http://alvinalexander.com
- */
-public class sql {
+public class Conference {
 
 	private static Connection connection;
 	private static PreparedStatement preparedStmt;
+	private static DBConnection conn;
 
-	public sql() {
-		this.createConnection();
-	}
-
-	/**
-	 * Create a mysql database connection
-	 */
-	public void createConnection() {
-		String driver = "org.gjt.mm.mysql.Driver";
-		String url = "jdbc:mysql://localhost:3306/conferences";
-		try {
-			Class.forName(driver);
-			connection = DriverManager.getConnection(url, "root", "");
-		} catch (ClassNotFoundException e) {
-			System.err.println("Couldn't find class with name: " + driver);
-		} catch (SQLException e) {
-			System.err.println("Couldn't establish a connection with database using \"" + url + "\"");
-		}
-	}
-
-	/**
-	 * Close the mysql database connection
-	 * @throws SQLException
-	 */
-	public void closeConnection() throws SQLException {
-		connection.close();
+	public Conference(DBConnection DBconn, Connection connect) {
+		conn = DBconn;
+		connection = connect;
 	}
 
 	public void addConference(String acronym, String title, String sponsors, String proceedings, String description,
 			String venue, String currentYear, String antiquity, String conferenceDays,
 			LinkedHashMap<String, List<String>> organisers,
 			LinkedHashMap<String, LinkedHashMap<String, String>> deadlines) throws SQLException {
-		String query;
 		int venueID = this.addToVenues(venue);
 		
 		// Check if the conference already exists in the database
@@ -121,7 +90,7 @@ public class sql {
 		// Don't forget to tell which id we are updating
 		preparedStmt.setInt(10, id);
 		
-		this.executeStatement(preparedStmt, true);
+		conn.executeStatement(preparedStmt, true);
 	}
 	
 	/**
@@ -133,7 +102,7 @@ public class sql {
 		preparedStmt = connection.prepareStatement(deleteQuery, Statement.RETURN_GENERATED_KEYS);
 		preparedStmt.setInt(1, id);
 		// Delete everything with the given id from the committees table
-		this.executeStatement(preparedStmt, true);
+		conn.executeStatement(preparedStmt, true);
 	}
 	
 	/**
@@ -246,7 +215,7 @@ public class sql {
 
 		this.setValuesInStatement(acronym, title, sponsors, proceedings, description, venueID, currentYear, antiquity, conferenceDays);
 		
-		return this.executeStatement(preparedStmt, false);
+		return conn.executeStatement(preparedStmt, false);
 	}
 	
 	/**
@@ -312,7 +281,7 @@ public class sql {
 		preparedStmt.setString(1, title);
 		preparedStmt.setString(2, date);
 		
-		return this.executeStatement(preparedStmt, false);
+		return conn.executeStatement(preparedStmt, false);
 	}
 	
 	/**
@@ -387,38 +356,7 @@ public class sql {
 		} else {
 			preparedStmt = connection.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS);
 			preparedStmt.setString(1, toInsert);
-			return this.executeStatement(preparedStmt, false);
+			return conn.executeStatement(preparedStmt, false);
 		}
-	}
-	
-	/**
-	 * Executes the predefined passed in statement
-	 * @param preparedStmt
-	 * @return id of created row
-	 * @throws SQLException
-	 */
-	private int executeStatement(PreparedStatement preparedStmt, boolean isUpdate) throws SQLException {
-		// Execute the statement and get the number of rows changed
-		int id = preparedStmt.executeUpdate();
-		
-		// Not a serious error, just no rows affected
-		if (id == 0) {
-			System.err.println("Creating failed, no rows affected.");
-		}
-
-		if(!isUpdate) {
-			try (ResultSet generatedKeys = preparedStmt.getGeneratedKeys()) {
-				// Find out the new id of the item just inserted
-				if (generatedKeys.next()) {
-					id = generatedKeys.getInt(1);
-//					System.out.println("created item id: " + id);
-					return id;
-				} else {
-					// The insert performed didn't insert anything
-					throw new SQLException("Creating failed, no ID obtained.");
-				}
-			}
-		}
-		return id;
 	}
 }

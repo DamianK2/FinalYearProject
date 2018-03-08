@@ -3,7 +3,6 @@ package main;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -27,7 +26,6 @@ import crawler.Parser7;
 import crawler.Parser8;
 import crawler.Parser9;
 import database.Information;
-import database.sql;
 import venue.Country;
 
 public class Main {
@@ -35,21 +33,21 @@ public class Main {
 	public static final ArrayList<String> URLS = new ArrayList<>(
 							Arrays.asList(
 										"https://icpe2018.spec.org/home.html",
-										"http://lsds.hesge.ch/ISPDC2018/",
-										"https://unescoprivacychair.urv.cat/psd2018/index.php",
-										"https://2018.splashcon.org/home",
-										"https://conf.researchr.org/home/icgse-2018",
-										"https://itrust.sutd.edu.sg/hase2017/",
-										"http://www.ispass.org/ispass2018/",
-										"https://www.computer.org/web/compsac2018",
-										"https://www.isf.cs.tu-bs.de/cms/events/sefm2018/",
-										"http://www.es.mdh.se/icst2018/",
-										"https://icssea.org/",
-										"http://www.icsoft.org/",
-										"http://issre.net/",
-										"https://sites.uoit.ca/ifiptm2018/index.php",
-										"http://cseet2017.com/",
-										"http://www.ieee-iccse.org/"
+										"http://lsds.hesge.ch/ISPDC2018/"
+//										"https://unescoprivacychair.urv.cat/psd2018/index.php",
+//										"https://2018.splashcon.org/home",
+//										"https://conf.researchr.org/home/icgse-2018",
+//										"https://itrust.sutd.edu.sg/hase2017/",
+//										"http://www.ispass.org/ispass2018/",
+//										"https://www.computer.org/web/compsac2018",
+//										"https://www.isf.cs.tu-bs.de/cms/events/sefm2018/",
+//										"http://www.es.mdh.se/icst2018/",
+//										"https://icssea.org/",
+//										"http://www.icsoft.org/",
+//										"http://issre.net/",
+//										"https://sites.uoit.ca/ifiptm2018/index.php",
+//										"http://cseet2017.com/",
+//										"http://www.ieee-iccse.org/"
 										));
 			
 	public static void main(String[] args) {
@@ -90,9 +88,31 @@ public class Main {
         parsers.add(new Parser8(information, crawler));
         parsers.add(new Parser9(information, crawler));
         
-//		sql sql = new sql();
+//        Conference sql = new Conference();
 //        sql.createConnection();
         
+//      // Create threads for each link just fetched to decrease crawling time
+//      Thread thread;
+//      for(Element link: links) {
+//      	if(!link.text().matches(".*[oO]ther [eE]dition.*")) {
+//	        	thread = new Thread(new Worker(link, linkList));
+//	        	threads.add(thread);
+//	        	thread.start();
+//      	} else
+//      		break;
+//      }
+//      
+//      // Join the threads to prevent the program from finishing before the threads do
+//      for(int i = 0; i < threads.size(); i++) {
+//			try {
+//				threads.get(i).join();
+//			} catch (InterruptedException e) {
+//				System.out.println("Something went wrong then joining the threads.");
+//				e.printStackTrace();
+//			}
+//      }
+        
+//		for(String url: information.getLinks()) {
 		for(String url: URLS) {
 			links.clear();
 			deadlines.clear();
