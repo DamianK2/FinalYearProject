@@ -5,6 +5,8 @@ import java.util.LinkedHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -13,6 +15,7 @@ import database.Information;
 import venue.Country;
 
 public class Parser4 extends Parser {
+	static Logger logger = LogManager.getLogger(Parser4.class);
 	
 	public Parser4(Information info, Crawler c) {
 		super(info, c);
@@ -25,7 +28,7 @@ public class Parser4 extends Parser {
 		try {
 			description = doc.select("div.page-header").parents().first().text();
 		} catch(NullPointerException e) {
-			System.out.println("No class with name \"site-description\"");
+			logger.info("Null Pointer exception but was expected because not all websites have a div with class \"page-header\".");
 		}
 		
 		return description;
@@ -49,6 +52,7 @@ public class Parser4 extends Parser {
 	        	}
 	        }
 		} catch(NullPointerException e) {
+			logger.info("Null Pointer exception but was expected.");
 		}
 		
 		return venue;
@@ -65,7 +69,7 @@ public class Parser4 extends Parser {
 			doc = crawler.getURLDoc(linkList.get(0));
 			el = doc.select("div:contains(Upcoming Important Dates)").next();
 		} catch(NullPointerException e) {
-			System.err.println("Couldn't find \"Upcoming Important Dates\"");
+			logger.info("Null Pointer exception but was expected.");
 			return new LinkedHashMap<String, LinkedHashMap<String, String>>();
 		}
 		
@@ -120,6 +124,7 @@ public class Parser4 extends Parser {
 				}
 			}
 		} catch(NullPointerException e) {
+			logger.info("Null Pointer exception but was expected.");
 		}
 		
 		return antiquity;

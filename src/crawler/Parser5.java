@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -12,6 +14,7 @@ import org.jsoup.nodes.TextNode;
 import database.Information;
 
 public class Parser5 extends Parser {
+	static Logger logger = LogManager.getLogger(Parser5.class);
 	
 	public Parser5(Information info, Crawler c) {
 		super(info, c);
@@ -24,7 +27,7 @@ public class Parser5 extends Parser {
 		try {
 			description = doc.select("p").first().text();
 		} catch(NullPointerException e) {
-			System.err.println("No paragraph found to extract the description.");
+			logger.info("Null Pointer exception but was expected because not all websites have paragraphs.");
 		}
 		
 		return description;
@@ -79,6 +82,7 @@ public class Parser5 extends Parser {
 					}
 				}
 			} catch(NullPointerException e) {
+				logger.info("Null Pointer exception but was expected.");
 				return new LinkedHashMap<String, LinkedHashMap<String, String>>();
 			}
 		}

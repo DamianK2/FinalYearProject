@@ -8,6 +8,11 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import main.Main;
+
 public class Information {
 	private static ArrayList<String> links;
 	private static ArrayList<String> sponsors;
@@ -17,6 +22,8 @@ public class Information {
 	private static Connection connection;
 	private static PreparedStatement preparedStmt;
 	private static DBConnection conn;
+	
+	static Logger logger = LogManager.getLogger(Information.class);
 
 	public Information() {
 		conn = new DBConnection();
@@ -31,17 +38,13 @@ public class Information {
 			this.getProceedingsFromDB();
 			this.getCommitteeNamesFromDB();
 		} catch (SQLException e) {
+			logger.error("Couldn't get information from the datbase.\n" + e.getMessage());
 		}
 	}
 	
-//	public static void main(String[] args) {
-//		try {
-//			Information info = new Information();
-//		} catch (SQLException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//	}
+	public void closeConnection() {
+		conn.closeConnection();
+	}
 	
 	/**
 	 * Get the list of links that are used in the system

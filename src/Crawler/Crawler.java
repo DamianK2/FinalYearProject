@@ -3,20 +3,16 @@ package crawler;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-/**
- * Implementation of a web crawler. Fetches links from the main page.
- * 
- * @author Damian Kluziak
- *
- */
 public class Crawler {
 	private ArrayList<String> linkList = new ArrayList<>();
-	
+	static Logger logger = LogManager.getLogger(Crawler.class);
 	/**
 	 * Using the passed in document extracts the links and adds them to the list of links.
 	 * @param home page Document
@@ -111,10 +107,8 @@ public class Crawler {
 		Document doc = null;
 		try {
 			doc = Jsoup.connect(url).get();
-//			System.out.println("Fetching from " + url + "...");
 		} catch (IOException e) {
-			System.out.println("Something went wrong when connecting to: " + url);
-//			e.printStackTrace();
+			logger.error("Couldn't connect to: " + url);
 		}
 		return doc;
 	}

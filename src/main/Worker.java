@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -27,6 +29,7 @@ public class Worker implements Runnable {
 	private ArrayList<Parser> parsers;
 	private int rowNumber;
 	private Conference sqlConnection;
+	static Logger logger = LogManager.getLogger(Worker.class);
 	
 	public Worker(String url, Crawler crawler, Country country, Row row, Sheet sheet, CreationHelper createHelper, ArrayList<Parser> parsers, int rowNumber, Conference sqlConnection) {
 		this.url = url;
@@ -48,7 +51,7 @@ public class Worker implements Runnable {
     	    Main.semaphore.acquire(); 
     	    this.extractInformation(this.url);
     	} catch (InterruptedException e) {
-			e.printStackTrace();
+    		logger.error("Cannot extract information from website.\n" + e.getMessage());
 		} finally {
     	    Main.semaphore.release();
     	}
@@ -61,7 +64,6 @@ public class Worker implements Runnable {
 		linkList = crawler.getAllLinks(crawler.getURLDoc(url), linkList);
         
         row = sheet.createRow(rowNumber);
-        // TODO Use this in the database to store the link to be used with the acronym as a[href] on the webpage
         String mainLink = linkList.get(0);
         row.createCell(1).setCellValue(createHelper.createRichTextString(mainLink));
         Document mainLinkDoc = crawler.getURLDoc(mainLink);
@@ -127,7 +129,6 @@ public class Worker implements Runnable {
         	k++;
         } while(venue.equals("") && k < parsers.size());
 
-		System.out.println("VENUE: " + venue);
         row.createCell(6).setCellValue(createHelper.createRichTextString(venue));
         
 		ArrayList<String> potentialLinks = new ArrayList<String>();
@@ -225,7 +226,7 @@ public class Worker implements Runnable {
         try {
 			this.sqlConnection.addConference(acronym, title, sponsor, proceedings, description, venue, year, antiquity, conferenceDays, committees, deadlines, url);
 		} catch (SQLException e) {
-			e.printStackTrace();
+			logger.error("Cannot add extracted conference information to database.\n" + e.getMessage());
 		}
 			
 	}

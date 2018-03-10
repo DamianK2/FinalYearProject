@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -11,6 +13,7 @@ import org.jsoup.nodes.Element;
 import database.Information;
 
 public class Parser8 extends Parser {
+	static Logger logger = LogManager.getLogger(Parser8.class);
 
 	public Parser8(Information info, Crawler c) {
 		super(info, c);
@@ -77,6 +80,7 @@ public class Parser8 extends Parser {
 					}
 				}
 			} catch(NullPointerException e) {
+				logger.info("Null Pointer exception but was expected.");
 				allDeadlines.clear();
 				deadlines.clear();
 			}

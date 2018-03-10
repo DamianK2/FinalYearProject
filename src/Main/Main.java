@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.Semaphore;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Row;
@@ -31,7 +34,8 @@ public class Main {
 	final static int MAX_NOF_THREADS = 10;
 	final static Semaphore semaphore = new Semaphore(MAX_NOF_THREADS);
 	private static ArrayList<Thread> threads = new ArrayList<>();
-	private static ArrayList<Double> times = new ArrayList<>();
+//	private static ArrayList<Double> times = new ArrayList<>();
+	static Logger logger = LogManager.getLogger(Main.class);
 	
 	public static final ArrayList<String> URLS = new ArrayList<>(
 							Arrays.asList(
@@ -101,7 +105,7 @@ public class Main {
 	        
 	      // Create threads for each link to decrease crawling time
 	      Thread thread;
-	      for(String url: URLS) {
+	      for(String url: information.getLinks()) {
 	        	thread = new Thread(new Worker(url, crawler, country, row, sheet, createHelper, parsers, rowNumber, sqlConnection));
 	        	threads.add(thread);
 	        	thread.start();
@@ -113,18 +117,16 @@ public class Main {
 				try {
 					threads.get(i).join();
 				} catch (InterruptedException e) {
-					System.out.println("Something went wrong then joining the threads.");
-					e.printStackTrace();
+					logger.error("Thread was interuptted\n" + e.getMessage());
 				}
 	      }
 	        
-//			for(String url: information.getLinks()) {
 	        // Create the output file
 	        FileOutputStream fileOut = null;
 			try {
 				fileOut = new FileOutputStream("workbook.xls");
 			} catch (FileNotFoundException e) {
-				e.printStackTrace();
+				logger.fatal("Couldn't create xls file\n" + e.getMessage());
 			}
 			
 			// Write the output of the program to the file
@@ -133,9 +135,10 @@ public class Main {
 				fileOut.close();
 				wb.close();
 			} catch (IOException e) {
-				e.printStackTrace();
+				logger.fatal("Couldn't write to xls file or close the workbook/file\n" + e.getMessage());
 			}
 	        
+	        information.closeConnection();
 	        sqlConnection.closeConnection();
 			
 			long tEnd = System.currentTimeMillis();

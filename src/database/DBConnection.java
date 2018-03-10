@@ -6,8 +6,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import main.Main;
+
 public class DBConnection {
 	private Connection connection;
+	static Logger logger = LogManager.getLogger(DBConnection.class);
 	/**
 	 * Create a mysql database connection
 	 */
@@ -19,9 +25,9 @@ public class DBConnection {
 			Class.forName(driver);
 			connection = DriverManager.getConnection(url, "root", "");
 		} catch (ClassNotFoundException e) {
-			System.err.println("Couldn't find class with name: " + driver);
+			logger.fatal("Couldn't find class with name: " + driver + "\n" + e.getMessage());
 		} catch (SQLException e) {
-			System.err.println("Couldn't establish a connection with database using \"" + url + "\"");
+			logger.fatal("Couldn't establish a connection with database using \"" + url + "\"\n" + e.getMessage());
 		}
 		return connection;
 	}
@@ -30,8 +36,12 @@ public class DBConnection {
 	 * Close the mysql database connection
 	 * @throws SQLException
 	 */
-	void closeConnection() throws SQLException {
-		connection.close();
+	void closeConnection() {
+		try {
+			connection.close();
+		} catch (SQLException e) {
+			logger.fatal("Couldn't close connection with database.\n" + e.getMessage());
+		}
 	}
 	
 	/**
@@ -46,7 +56,7 @@ public class DBConnection {
 		
 		// Not a serious error, just no rows affected
 		if (id == 0) {
-			System.err.println("Creating failed, no rows affected.");
+			logger.info("Creating the row failed. No rows affected. It probably already exists. ");
 			return id;
 		}
 
@@ -55,11 +65,10 @@ public class DBConnection {
 				// Find out the new id of the item just inserted
 				if (generatedKeys.next()) {
 					id = generatedKeys.getInt(1);
-//					System.out.println("created item id: " + id);
 					return id;
 				} else {
 					// The insert performed didn't insert anything
-					throw new SQLException("Creating failed, no ID obtained.");
+					logger.error("Creating row failed. No ID obtained." );
 				}
 			}
 		}

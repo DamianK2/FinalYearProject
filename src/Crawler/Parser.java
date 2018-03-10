@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -15,6 +17,7 @@ import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
 import database.Information;
+import main.Main;
 import venue.Country;
 
 public class Parser {
@@ -43,6 +46,7 @@ public class Parser {
 			+ "May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\\s+?\\d{4}|"
 			+ "(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|"
 			+ "Nov(ember)?|Dec(ember)?)\\s\\d{1,2}-\\w+\\s\\d{1,2},\\s\\d{4}";
+	static Logger logger = LogManager.getLogger(Parser.class);
 	
 	public Parser(Information info, Crawler c) {
 		information = info;
@@ -139,9 +143,8 @@ public class Parser {
 		String meta = "";
 		try {
 			meta = doc.select("meta[name=description]").first().attr("content");
-			System.out.println("Decription: " + meta);
 		} catch(NullPointerException e) {
-		   System.out.println("No meta with attribute \"name\"");
+			logger.info("Null Pointer exception but was expected because not all websites have a meta with attribute name.");
 		}
 	
 		return meta;
@@ -222,6 +225,7 @@ public class Parser {
 				// Gets the <td> elements from the rows
 				tds = rows.select("td");
 			} catch(NullPointerException e) {
+				logger.info("Null Pointer exception but expected because not all websites have tables.");
 				return allDeadlines;
 			}
 			
@@ -360,8 +364,6 @@ public class Parser {
 						}
 						// Add the subteam found for later use as a key
 						tempSubteam = textNode.text();
-//						System.out.println("FOUND: " + textNode.text());
-//						System.out.println(tempSubteam);
 					}
 					// Check the string for a country to find if it is a member or not
 					else if(this.checkStringForCountry(textNode.text(), country)) {
@@ -370,8 +372,6 @@ public class Parser {
 							if(!tempSubteam.equals(""))
 								members.add(textNode.text().replaceAll("\"|'", ""));
 						}
-//						System.out.println(textNode.text());
-//						System.out.println(members);
 					}
 					// Do nothing with empty strings
 					else if(textNode.text().matches("^\\s+$")); 
@@ -382,6 +382,7 @@ public class Parser {
 						}
 						members.clear();
 						tempSubteam = "";
+						logger.info("A possible committee member that wasn't found by the system: " + textNode.text());
 					}
 				}
 			}
@@ -401,6 +402,7 @@ public class Parser {
 		// Find the links on the websites that contain the organizers
 		this.addCommitteeSearchWords();
 		
+		// Needs to be synchronized so that two threads don't modify the same list at the same time
 		synchronized(searchKeywords) {
 			for(String keyword: searchKeywords) {
 				ArrayList<String> links = this.findAllLinks(keyword, linkList);

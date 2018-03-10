@@ -1,22 +1,23 @@
 package crawler;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
 import database.Information;
 import venue.Country;
 
 public class Parser3 extends Parser {
-
+	static Logger logger = LogManager.getLogger(Parser3.class);
+	
 	public Parser3(Information info, Crawler c) {
 		super(info, c);
 	}
@@ -27,7 +28,7 @@ public class Parser3 extends Parser {
 		try {
 			meta = doc.select(".site-description").text();
 		} catch(NullPointerException e) {
-			System.out.println("No class with name \"site-description\"");
+			logger.info("Null Pointer exception but was expected because not all websites have a class with name \"site-description\"");
 		}
 		return meta;
 	}
@@ -77,16 +78,9 @@ public class Parser3 extends Parser {
 				}
 			}
 		} catch(NullPointerException e) {
+			logger.info("Null Pointer exception but was expected.");
 			return allDeadlines;
 		}
-			
-//		for(String key: allDeadlines.keySet()) {
-//			System.out.println("Heading: " + key);
-//			LinkedHashMap<String, String> deadlines1 = allDeadlines.get(key);
-//			for(String d: deadlines1.keySet()) {
-//				System.out.println(d + ": " + deadlines1.get(d));
-//			}
-//		}
 		
 		return allDeadlines;
 	}
@@ -100,6 +94,7 @@ public class Parser3 extends Parser {
 			Element el = doc.select("div:contains(Previous)").last();
 			ele = el.select("ul li");
 		} catch(NullPointerException e) {
+			logger.info("Null Pointer exception but was expected.");
 			return antiquity;
 		}
 	
@@ -126,7 +121,7 @@ public class Parser3 extends Parser {
 	        		return confDays;
 	        }
 		} catch(NullPointerException e) {
-			
+			logger.info("Null Pointer exception but was expected.");
 		}
 		return "";
 	}
@@ -162,18 +157,6 @@ public class Parser3 extends Parser {
 		if(!members.isEmpty() && !tempSubteam.equals("")) {
 			committees.put(tempSubteam, new ArrayList<String>(members));
 		}
-		
-		// Test print
-//		String allMembers = "";
-//		for(String subteam: committees.keySet()) {
-//    		allMembers += subteam + ": ";
-//			List<String> subteamMembers = committees.get(subteam);
-//			for(String subteamMember: subteamMembers) {
-//				allMembers += subteamMember + " //// ";
-//			}
-//			System.out.println(allMembers);
-//        	allMembers = "";
-//		}
 		
 		// If only 1 committee is returned then it must be an error
 		return committees.size() < 2 ? new LinkedHashMap<String, List<String>>() : committees;

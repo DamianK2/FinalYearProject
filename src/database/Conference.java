@@ -22,11 +22,7 @@ public class Conference {
 	}
 	
 	public void closeConnection() {
-		try {
-			conn.closeConnection();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+		conn.closeConnection();
 	}
 
 	public synchronized void addConference(String acronym, String title, String sponsors, String proceedings, String description,
