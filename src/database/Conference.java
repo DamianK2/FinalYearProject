@@ -67,7 +67,6 @@ public class Conference {
 		if (rs.next()) {
 			// Find the id from the set
 			id = rs.getInt(1);
-			System.out.println("found conference id: " + id);
 			return id;
 		} else {
 			return -1;
@@ -199,30 +198,6 @@ public class Conference {
 		else
 			return false;
 	}
-
-//	public static void main(String[] args) {
-//		try {
-//			sql sql = new sql();
-//			sql.createConnection();
-//			sql.addConference("ICPE", "", "", "", "", "Germany", "2018", "", "", new LinkedHashMap<String, List<String>>(), new LinkedHashMap<String, LinkedHashMap<String, String>>());
-//			// PreparedStatement preparedStmt;
-//			// String getQuery = "select acronym, committee_name, member from websites,
-//			// com_names, member_names, committees where websites.id = 1 and websites.id =
-//			// committees.id and committees.titleID = com_names.id and committees.memberID =
-//			// member_names.id";
-//			// preparedStmt = connection.prepareStatement(getQuery);
-//			// ResultSet rs = preparedStmt.executeQuery();
-//			//
-//			// if(rs.next()) {
-//			// System.out.println(rs.getString(1));
-//			// System.out.println(rs.getString(2));
-//			// System.out.println(rs.getString(3));
-//			// }
-//		} catch (Exception e) {
-//			System.err.println("Got an exception!");
-//			System.err.println(e.getMessage());
-//		}
-//	}
 
 	/**
 	 * Adds the venue to the venues table if it doesn't exist yet

@@ -27,16 +27,16 @@ class Parser9Test {
 		assertFalse(deadlineTypes.containsKey("5"));
 
 		LinkedHashMap<String, String> deadlines = deadlineTypes.get("1");
-		assertTrue(deadlines.containsKey("Main conference symposia notifications"));
-		assertEquals("March 31, 2018", deadlines.get("Main conference symposia notifications"));
+		assertTrue(deadlines.containsKey("Main conference symposia author notifications"));
+		assertEquals("March 31, 2018", deadlines.get("Main conference symposia author notifications"));
 		
 		deadlines = deadlineTypes.get("3");
-		assertTrue(deadlines.containsKey("Workshop paper notifications"));
-		assertEquals("May 10, 2018", deadlines.get("Workshop paper notifications"));
+		assertTrue(deadlines.containsKey("Workshop paper, Fast Abstract author notifications"));
+		assertEquals("May 10, 2018", deadlines.get("Workshop paper, Fast Abstract author notifications"));
 		
 		deadlines = deadlineTypes.get("4");
 		assertTrue(deadlines.containsKey("Camera ready submissions and advance author registration due"));
-		assertEquals("May 10, 2018", deadlines.get("Camera ready submissions and advance author registration due"));
+		assertEquals("May 17, 2018", deadlines.get("Camera ready submissions and advance author registration due"));
 		
 		assertEquals(new LinkedHashMap<String, LinkedHashMap<String, String>>(), parser.getDeadlines(new ArrayList<String>(Arrays.asList("https://research.spec.org/fileadmin/user_upload/documents/icpe_2018/ICPE-2018_Sponsorship.pdf"))));
 		assertEquals(new LinkedHashMap<String, LinkedHashMap<String, String>>(), parser.getDeadlines(new ArrayList<String>(Arrays.asList("http://www.icsoft.org/Important-dates"))));

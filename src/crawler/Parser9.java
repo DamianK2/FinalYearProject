@@ -30,6 +30,7 @@ public class Parser9 extends Parser {
 		if(link.isEmpty())
 			return allDeadlines;
 		else {
+			logger.debug("Getting deadlines from: " + link);
 			doc = crawler.getURLDoc(link);
 			
 			try {

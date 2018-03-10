@@ -24,6 +24,7 @@ public class Parser3 extends Parser {
 
 	@Override
 	public String getDescription(Document doc) {
+		logger.debug("Getting description");
 		String meta = "";
 		try {
 			meta = doc.select(".site-description").text();
@@ -35,6 +36,7 @@ public class Parser3 extends Parser {
 
 	@Override
 	public String getVenue(String title, String description, Country country, Document doc) {
+		logger.debug("Getting venue links from description");
 		String venue = "";
 		
 		// Search the description for the country of the conference
@@ -52,6 +54,7 @@ public class Parser3 extends Parser {
 		Pattern pattern = Pattern.compile("((Mon(day)?|Tue(sday)?|Wed(nesday)?|Thu(rsday)?|Fri(day)?|Sat(urday)?|Sun(day)?)\\s\\d{1,2}.|\\d{1,2}.|\\d{1,2}-\\d{1,2}.)*(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)(\\s+|,|\\.)\\d{4}|\\w+.\\d{1,2}.-.\\w+.\\d{1,2}.\\w+.\\d{4}|\\w+.\\d{1,2},\\s\\d{4}", Pattern.CASE_INSENSITIVE);
 		String[] separated;
 		
+		logger.debug("Getting deadlines from: " + linkList.get(0));
 		// Connect to the home page
 		doc = crawler.getURLDoc(linkList.get(0));
 		
@@ -87,6 +90,7 @@ public class Parser3 extends Parser {
 	
 	@Override
 	public String getAntiquity(String title, String description, Document doc) {
+		logger.debug("Getting antiquity from passed in document");
 		String antiquity = "";
 	
 		Elements ele = null;
@@ -110,7 +114,8 @@ public class Parser3 extends Parser {
 			return antiquity;
 	}
 	
-	public String getConferenceDays(String title, String description, Document doc) {	
+	public String getConferenceDays(String title, String description, Document doc) {
+		logger.debug("Getting conference days from the passed in document");
 		String[] possibleNames = {"div#header", "div.header","header#header", "header.header", "div#footer", "div.footer", "footer#footer", "footer.footer", "header", "footer"};
 	        
 		try {
@@ -130,6 +135,7 @@ public class Parser3 extends Parser {
 	public LinkedHashMap<String, List<String>> getOrganisers(Document doc, Country country) {
 		LinkedHashMap<String, List<String>> committees = new LinkedHashMap<>();
 		
+		logger.debug("Extracting committees from the passed in document");
 		// Initialize variables
 		String tempSubteam = "";
 		List<String> members = new ArrayList<>();

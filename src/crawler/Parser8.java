@@ -34,6 +34,7 @@ public class Parser8 extends Parser {
 		links.addAll(this.findAllLinks("important_dates", linkList));
 		
 		for(String link: links) {
+			logger.debug("Getting deadlines from: " + link);
 			doc = crawler.getURLDoc(link);
 			
 			try {

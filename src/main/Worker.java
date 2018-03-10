@@ -29,6 +29,15 @@ public class Worker implements Runnable {
 	private ArrayList<Parser> parsers;
 	private int rowNumber;
 	private Conference sqlConnection;
+	private static final int NUM_DESCRIPTION_METHODS = 5;
+	private static final int NUM_ACRONYM_METHODS = 2;
+	private static final int NUM_SPONSOR_METHODS = 2;
+	private static final int NUM_VENUE_METHODS = 4;
+	private static final int NUM_ANTIQUITY_METHODS = 6;
+	private static final int NUM_CONF_DAYS_METHODS = 6;
+	private static final int NUM_CONF_YEAR_METHODS = 2;
+	private static final int NUM_DEADLINE_METHODS = 9;
+	private static final int NUM_COMMITTEE_METHODS = 3;
 	static Logger logger = LogManager.getLogger(Worker.class);
 	
 	public Worker(String url, Crawler crawler, Country country, Row row, Sheet sheet, CreationHelper createHelper, ArrayList<Parser> parsers, int rowNumber, Conference sqlConnection) {
@@ -45,10 +54,10 @@ public class Worker implements Runnable {
 	
 	// Runs the thread when created
 	public void run() {
-		
 		try {
 			// This will hang until there is a vacancy
     	    Main.semaphore.acquire(); 
+    	    logger.debug("Starting thread: " + Thread.currentThread().getName());
     	    this.extractInformation(this.url);
     	} catch (InterruptedException e) {
     		logger.error("Cannot extract information from website.\n" + e.getMessage());
@@ -59,58 +68,63 @@ public class Worker implements Runnable {
 	
 	// Fetches more links from already fetched links from Crawler
 	private void extractInformation(String url) {
+		logger.debug("Starting extraction from: " + url);
 		LinkedHashMap<String, LinkedHashMap<String, String>> deadlines = new LinkedHashMap<>();
 		linkList.add(url);
 		linkList = crawler.getAllLinks(crawler.getURLDoc(url), linkList);
-        
         row = sheet.createRow(rowNumber);
+        
         String mainLink = linkList.get(0);
         row.createCell(1).setCellValue(createHelper.createRichTextString(mainLink));
         Document mainLinkDoc = crawler.getURLDoc(mainLink);
+        logger.debug("Getting title from: " + mainLink);
 		String title = parsers.get(0).getTitle(mainLinkDoc);
 		row.createCell(2).setCellValue(createHelper.createRichTextString(title));
 		
 		ArrayList<String> proceedingLinks = parsers.get(0).findProceedingLinks(linkList);
 		String proceedings = "";
-		int k = 0;
 		int l = 0;
-		do {
-			l = 0;
+		if(!proceedingLinks.isEmpty()) {
 			do {
+				logger.debug("Getting proceedings from: " + proceedingLinks.get(l));
 				if(proceedingLinks.isEmpty())
-					proceedings = parsers.get(k).getProceedings(null);
+					proceedings = parsers.get(0).getProceedings(null);
 				else
-					proceedings = parsers.get(k).getProceedings(crawler.getURLDoc(proceedingLinks.get(l)));
+					proceedings = parsers.get(0).getProceedings(crawler.getURLDoc(proceedingLinks.get(l)));
 				l++;
 			} while(proceedings.equals("") && l < proceedingLinks.size());
-        	k++;
-        } while(proceedings.equals("") && k < parsers.size());  
+		}
+		
+		
 		row.createCell(4).setCellValue(createHelper.createRichTextString(proceedings));
 		
 		String description;
-		k = 0;
+		int k = 0;
 		do {
+			logger.debug("Getting description from: " + mainLink);
         	description = parsers.get(k).getDescription(mainLinkDoc);
         	k++;
-        } while(description.equals("") && k < parsers.size());   
+        } while(description.equals("") && k < NUM_DESCRIPTION_METHODS);
         
         row.createCell(5).setCellValue(createHelper.createRichTextString(description));
         
         String acronym;
         k = 0;
 		do {
+			logger.debug("Getting acronym for: " + mainLink);
 			acronym = parsers.get(k).getAcronym(title, description);
         	k++;
-        } while(acronym.equals("") && k < parsers.size());   
+        } while(acronym.equals("") && k < NUM_ACRONYM_METHODS);   
 		
         row.createCell(0).setCellValue(createHelper.createRichTextString(acronym));
         
         String sponsor;
 		k = 0;
 		do {
+			logger.debug("Getting sponsors for: " + mainLink);
 			sponsor = parsers.get(k).getSponsors(title, description);
 			k++;
-		} while(sponsor.equals("") && k < parsers.size());
+		} while(sponsor.equals("") && k < NUM_SPONSOR_METHODS);
 		
 		row.createCell(3).setCellValue(createHelper.createRichTextString(sponsor));
         
@@ -120,6 +134,7 @@ public class Worker implements Runnable {
 		do {
 			l = 0;
 			do {
+				logger.debug("Getting venue from: " + venueLinks.get(l));
 				if(venueLinks.isEmpty())
 					venue = parsers.get(k).getVenue(title, description, country, null);
 				else
@@ -127,7 +142,7 @@ public class Worker implements Runnable {
 				l++;
 			} while(venue.equals("") && l < venueLinks.size());
         	k++;
-        } while(venue.equals("") && k < parsers.size());
+        } while(venue.equals("") && k < NUM_VENUE_METHODS);
 
         row.createCell(6).setCellValue(createHelper.createRichTextString(venue));
         
@@ -142,6 +157,7 @@ public class Worker implements Runnable {
         do {
         	l = 0;
         	do {
+        		logger.debug("Getting antiquity from: " + potentialLinks.get(l));
         		if(potentialLinks.isEmpty())
         			antiquity = parsers.get(k).getAntiquity(title, description, null);
         		else
@@ -149,7 +165,8 @@ public class Worker implements Runnable {
 				l++;
 			} while(antiquity.equals("") && l < potentialLinks.size());
         	k++;
-        } while(antiquity.equals("") && k < parsers.size());
+        } while(antiquity.equals("") && k < NUM_ANTIQUITY_METHODS);
+        
         k--;
         row.createCell(7).setCellValue(createHelper.createRichTextString("Parser " + k + ": " + antiquity));
 		
@@ -162,6 +179,7 @@ public class Worker implements Runnable {
         do {
         	l = 0;
         	do {
+        		logger.debug("Getting conference days from: " + potentialLinks.get(l));
         		if(potentialLinks.isEmpty())
         			conferenceDays = parsers.get(k).getConferenceDays(title, description, null);
         		else
@@ -169,32 +187,33 @@ public class Worker implements Runnable {
 				l++;
 			} while(conferenceDays.equals("") && l < potentialLinks.size());
         	k++;
-        } while(conferenceDays.equals("") && k < parsers.size());
+        } while(conferenceDays.equals("") && k < NUM_CONF_DAYS_METHODS);
+        
         row.createCell(8).setCellValue(createHelper.createRichTextString(conferenceDays));
         
         String year = "";
         k = 0;
         do {
-        	 year = parsers.get(k).getConferenceYear(conferenceDays, title);
-        	 k++;
-        } while(year.equals("") && k < parsers.size());
+        	logger.debug("Getting conference year");
+        	year = parsers.get(k).getConferenceYear(conferenceDays, title);
+        	k++;
+        } while(year.equals("") && k < NUM_CONF_YEAR_METHODS);
        
         row.createCell(9).setCellValue(createHelper.createRichTextString(year));
         
         k = 0;
         do {
+        	logger.debug("Getting deadlines");
         	deadlines = parsers.get(k).getDeadlines(linkList);	
         	k++;
-        } while(deadlines.isEmpty() && k < parsers.size());
+        } while(deadlines.isEmpty() && k < NUM_DEADLINE_METHODS);
         	
         k--;
         int j = 10;
 
         for(String key: deadlines.keySet()) {
-//			System.out.println("Heading: " + key);
 			LinkedHashMap<String, String> deadlines1 = deadlines.get(key);
 			for(String d: deadlines1.keySet()) {
-//				System.out.println(d + ": " + deadlines1.get(d));
 				row.createCell(j).setCellValue(createHelper.createRichTextString("Parser used: " + k + " (Heading) " + key + " ///// " + d + " ///// " + deadlines1.get(d)));
 				j++;
 			}
@@ -205,10 +224,11 @@ public class Worker implements Runnable {
         do {
         	ArrayList<String> committeeLinks = parsers.get(k).findCommitteeLinks(linkList);
 			for(String link: committeeLinks) {
+				logger.debug("Getting committees from: " + link);
 				committees.putAll(parsers.get(k).getOrganisers(crawler.getURLDoc(link), country));
 			}
         	k++;
-        } while(committees.isEmpty() && k < parsers.size());
+        } while(committees.isEmpty() && k < NUM_COMMITTEE_METHODS);
         
         String allMembers = "";
         if(!committees.isEmpty()) {
@@ -218,11 +238,11 @@ public class Worker implements Runnable {
 				for(String subteamMember: subteamMembers) {
 					allMembers += subteamMember + " //// ";
 				}
-//				System.out.println("(wtf) " + allMembers);
 	        	row.createCell(++j).setCellValue(createHelper.createRichTextString(allMembers));
 	        	allMembers = "";
 			}
-        }	
+        }
+        
         try {
 			this.sqlConnection.addConference(acronym, title, sponsor, proceedings, description, venue, year, antiquity, conferenceDays, committees, deadlines, url);
 		} catch (SQLException e) {

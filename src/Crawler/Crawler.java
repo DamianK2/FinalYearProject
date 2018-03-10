@@ -22,46 +22,53 @@ public class Crawler {
 	public synchronized ArrayList<String> getAllLinks(Document doc, ArrayList<String> link) {
 		this.linkList = link;
         StringBuilder sb = new StringBuilder(); 
-        Elements links = doc.select("a[href]");
+        Elements links = null;
+        try {
+        	links = doc.select("a[href]");
+        } catch(NullPointerException e) {
+        	logger.info("Null Pointer exception but wass expected.");
+        }
         
-        if(links.isEmpty()) {
-            Elements eles = doc.getElementsByTag("frame");
-            if(!eles.isEmpty()) {
-            	for(Element e: eles) {
-                	sb.append(linkList.get(0));
-                	String src = e.attr("src");
-                	if(!src.isEmpty()) {
-                		// Check if it isn't a http link
-                		if(src.contains("http"))
-                			linkList.add(src);
-                		else {
-                			// The link can look like this ./example.pdf
-                			if(src.charAt(0) == '.') {
-                				StringBuilder tempSb = new StringBuilder(src); 
-                				// Delete the dot and slash "./"
-                				tempSb.delete(0, 2);
-                				sb.append(tempSb.toString());
-                			} else {
-                				sb.append(src);
-                			}
-                    		linkList.add(sb.toString());
-                		}
-                	}
-                	
-                	doc = this.getURLDoc(sb.toString());
-                	if(doc != null)
-                		links = doc.select("a[href]");
-                    
-                    if(!links.isEmpty())
-                    	this.addToLinkList(links);
-                    
-                    // Reset the variable
-                    sb.setLength(0);
+        if(links != null) {
+        	if(links.isEmpty()) {
+                Elements eles = doc.getElementsByTag("frame");
+                if(!eles.isEmpty()) {
+                	for(Element e: eles) {
+                    	sb.append(linkList.get(0));
+                    	String src = e.attr("src");
+                    	if(!src.isEmpty()) {
+                    		// Check if it isn't a http link
+                    		if(src.contains("http"))
+                    			linkList.add(src);
+                    		else {
+                    			// The link can look like this ./example.pdf
+                    			if(src.charAt(0) == '.') {
+                    				StringBuilder tempSb = new StringBuilder(src); 
+                    				// Delete the dot and slash "./"
+                    				tempSb.delete(0, 2);
+                    				sb.append(tempSb.toString());
+                    			} else {
+                    				sb.append(src);
+                    			}
+                        		linkList.add(sb.toString());
+                    		}
+                    	}
+                    	
+                    	doc = this.getURLDoc(sb.toString());
+                    	if(doc != null)
+                    		links = doc.select("a[href]");
+                        
+                        if(!links.isEmpty())
+                        	this.addToLinkList(links);
+                        
+                        // Reset the variable
+                        sb.setLength(0);
+                    }
                 }
+                
+            } else {
+            	this.addToLinkList(links);
             }
-            
-        } else {
-        	this.addToLinkList(links);
         }
         
         // Return the ArrayList with all the links from the given website
@@ -104,6 +111,7 @@ public class Crawler {
 	 * @return document of the html
 	 */
 	public Document getURLDoc(String url) {
+		logger.debug("Getting document from: " + url);
 		Document doc = null;
 		try {
 			doc = Jsoup.connect(url).get();

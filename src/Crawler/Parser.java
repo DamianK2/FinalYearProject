@@ -17,7 +17,6 @@ import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
 import database.Information;
-import main.Main;
 import venue.Country;
 
 public class Parser {
@@ -67,6 +66,7 @@ public class Parser {
 	 * @return acronym or empty string
 	 */
 	public String getAcronym(String title, String description) {
+		logger.debug("Getting acronym from title");
 		return this.findAcronym(title);
 	}
 	
@@ -77,6 +77,7 @@ public class Parser {
 	 * @return sponsors
 	 */
 	public String getSponsors(String title, String description) {
+		logger.debug("Getting sponsors from title");
 		String sponsors = "";
 		
 		for(String sponsor: information.getSponsors()) {
@@ -95,24 +96,24 @@ public class Parser {
 	 * @return proceedings
 	 */
 	public String getProceedings(Document doc) {
+		if(doc == null) 
+			return "";
+		
 		// Use SB to concatenate many proceedings
 		StringBuilder proceedings = new StringBuilder();
-		if(doc != null) {
-			// Get all the elements
-			for(Element e: doc.getAllElements()) {
-				String elementString = e.wholeText();
-				// Find the proceedings in the text
-				for(String proc: information.getProceedings()) {
-					// Make sure it has a space in front of it
-					if(elementString.matches(changeToRegex(" " + proc)))
-						if(proceedings.toString().isEmpty())
-							proceedings.append(proc);
-						else if(!proceedings.toString().contains(proc))
-							proceedings.append("/" + proc);
-				}
+			
+		// Get all the elements
+		for(Element e: doc.getAllElements()) {
+			String elementString = e.wholeText();
+			// Find the proceedings in the text
+			for(String proc: information.getProceedings()) {
+				// Make sure it has a space in front of it
+				if(elementString.matches(changeToRegex(" " + proc)))
+					if(proceedings.toString().isEmpty())
+						proceedings.append(proc);
+					else if(!proceedings.toString().contains(proc))
+						proceedings.append("/" + proc);
 			}
-		} else {
-			return "";
 		}
 		
 		return proceedings.toString();
@@ -126,10 +127,12 @@ public class Parser {
 	public synchronized ArrayList<String> findProceedingLinks(ArrayList<String> linkList) {
 		ArrayList<String> proceedingLinks = new ArrayList<>();
 		this.addLinkKeywords();
-		for(String keyword: searchKeywords) {
-			String url = this.searchLinks(keyword, linkList);
-			if(!url.isEmpty())
-				proceedingLinks.add(url);
+		synchronized(searchKeywords) {
+			for(String keyword: searchKeywords) {
+				String url = this.searchLinks(keyword, linkList);
+				if(!url.isEmpty())
+					proceedingLinks.add(url);
+			}
 		}
 		return proceedingLinks;
 	}
@@ -140,6 +143,7 @@ public class Parser {
 	 * @return description
 	 */
 	public String getDescription(Document doc) {
+		logger.debug("Getting description");
 		String meta = "";
 		try {
 			meta = doc.select("meta[name=description]").first().attr("content");
@@ -160,6 +164,7 @@ public class Parser {
 	 * @return venue or empty string
 	 */
 	public String getVenue(String title, String description, Country country, Document doc) {
+		logger.debug("Getting venue links from passed in document");
 		String venue = "";
 		
 		if(doc != null) {
@@ -214,6 +219,7 @@ public class Parser {
 		if(link.isEmpty())
 			return allDeadlines;
 		else {
+			logger.debug("Getting deadlines from: " + link);
 			doc = crawler.getURLDoc(link);
 			
 			Elements tds;
@@ -267,14 +273,6 @@ public class Parser {
 					keyHeading = filteredTd;
 				}
 			}
-			
-//			for(String key: allDeadlines.keySet()) {
-//				System.out.println("Heading: " + key);
-//				LinkedHashMap<String, String> deadlines1 = allDeadlines.get(key);
-//				for(String d: deadlines1.keySet()) {
-//					System.out.println(d + ": " + deadlines1.get(d));
-//				}
-//			}
 				
 			return allDeadlines.size() < 3 ? new LinkedHashMap<String, LinkedHashMap<String, String>>() : allDeadlines;
 		}
@@ -286,6 +284,7 @@ public class Parser {
 	 * @return conference year
 	 */
 	public String getConferenceYear(String date, String title) {
+		logger.debug("Getting conference year from the date");
 		String year = "";
 		Pattern pattern = Pattern.compile("\\d{4}");
 		Matcher matcher;
@@ -302,6 +301,7 @@ public class Parser {
 	 * @return antiquity
 	 */
 	public String getAntiquity(String title, String description, Document doc) {
+		logger.debug("Getting antiquity from description");
 		String antiquity = "";
 		Pattern pattern = Pattern.compile("\\d{1,2}(st|nd|rd|th)|([tT]wenty-|[tT]hirty-|[fF]orty-"
 				+ "|[fF]ifty-|[sS]ixty-|[sS]eventy-|[eE]ighty-|[nN]inety-)*([fF]ir|[sS]eco|[tT]hi|"
@@ -329,7 +329,8 @@ public class Parser {
 	 * @param title, description
 	 * @return date
 	 */
-	public String getConferenceDays(String title, String description, Document doc) {		
+	public String getConferenceDays(String title, String description, Document doc) {
+		logger.debug("Getting conference days from the title");
 		return this.findConfDays(title);
 	}
 	
@@ -346,6 +347,7 @@ public class Parser {
 		if(!this.checkOrganiserFormat(doc, country))
 			return committees;
 		else {
+			logger.debug("Extracting committees from the passed in document");
 			String tempSubteam = "";
 			
 			List<String> members = new ArrayList<>();
@@ -610,6 +612,7 @@ public class Parser {
 	 * @return true/false
 	 */
 	protected boolean checkOrganiserFormat(Document doc, Country country) {
+		logger.debug("Checking format of the passed in document");
 		int counter = 0;
 		// Find all elements and text nodes
 		for(Element node: doc.getAllElements()) {

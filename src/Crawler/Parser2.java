@@ -25,11 +25,13 @@ public class Parser2 extends Parser {
 	
 	@Override
 	public String getAcronym(String title, String description) {
+		logger.debug("Getting acronym from description");
 		return this.findAcronym(description);
 	}
 
 	@Override
 	public String getSponsors(String title, String description) {
+		logger.debug("Getting sponsors from description");
 		String sponsors = "";
 		
 		// Iterate through the list of sponsors
@@ -47,6 +49,7 @@ public class Parser2 extends Parser {
 	
 	@Override
 	public String getDescription(Document doc) {
+		logger.debug("Getting description");
 		String meta = "";
 		try {
 			meta = doc.select("meta[property=og:description]").first().attr("content");
@@ -58,6 +61,7 @@ public class Parser2 extends Parser {
 	
 	@Override
 	public String getVenue(String title, String description, Country country, Document doc) {
+		logger.debug("Getting venue links from title");
 		String venue = "";
 		// Search the title for the country of the conference
 		if(!title.equals(""))
@@ -74,6 +78,7 @@ public class Parser2 extends Parser {
 		Pattern pattern = Pattern.compile("(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\\s+\\d{1,2}(\\s+|,)\\s+\\d{4}", Pattern.CASE_INSENSITIVE);
 		String[] separated, split;
 		
+		logger.debug("Getting deadlines from: " + linkList.get(0));
 		// Connect to the home page
 		doc = crawler.getURLDoc(linkList.get(0));
 		try {
@@ -104,20 +109,12 @@ public class Parser2 extends Parser {
 			return allDeadlines;
 		}
 		
-		
-//		for(String key: allDeadlines.keySet()) {
-//			System.out.println("Heading: " + key);
-//			LinkedHashMap<String, String> deadlines1 = allDeadlines.get(key);
-//			for(String d: deadlines1.keySet()) {
-//				System.out.println(d + ": " + deadlines1.get(d));
-//			}
-//		}
-		
 		return allDeadlines;
 	}
 	
 	@Override
 	public String getConferenceYear(String date, String title) {
+		logger.debug("Getting conference year from the title");
 		String year = "";
 		Pattern pattern = Pattern.compile("\\d{4}");
 		Matcher matcher;
@@ -130,6 +127,7 @@ public class Parser2 extends Parser {
 	
 	@Override
 	public String getAntiquity(String title, String description, Document doc) {
+		logger.debug("Getting antiquity from title");
 		String antiquity = "";
 		Pattern pattern = Pattern.compile("\\d{1,2}(st|nd|rd|th)|([tT]wenty-|[tT]hirty-|[fF]orty-"
 				+ "|[fF]ifty-|[sS]ixty-|[sS]eventy-|[eE]ighty-|[nN]inety-)*([fF]ir|[sS]eco|[tT]hi|"
@@ -153,7 +151,8 @@ public class Parser2 extends Parser {
 	}
 	
 	@Override
-	public String getConferenceDays(String title, String description, Document doc) {		
+	public String getConferenceDays(String title, String description, Document doc) {
+		logger.debug("Getting conference days from the description");
 		return this.findConfDays(description);
 	}
 	
@@ -165,6 +164,7 @@ public class Parser2 extends Parser {
 		if(!this.checkOrganiserFormat(doc, country))
 			return committees;
 		else {
+			logger.debug("Extracting committees from the passed in document");
 			// Initialize variables
 			String tempSubteam = "";
 			List<String> members = new ArrayList<>();
@@ -268,6 +268,7 @@ public class Parser2 extends Parser {
 	
 	@Override
 	protected boolean checkOrganiserFormat(Document doc, Country country) {
+		logger.debug("Checking format of the passed in document");
 		int counter = 0;
 		// Find all elements and text nodes
 		for(Element node: doc.getAllElements()) {

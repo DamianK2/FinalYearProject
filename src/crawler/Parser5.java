@@ -22,6 +22,7 @@ public class Parser5 extends Parser {
 	
 	@Override
 	public String getDescription(Document doc) {
+		logger.debug("Getting description");
 		String description = "";
 
 		try {
@@ -46,6 +47,7 @@ public class Parser5 extends Parser {
 			return allDeadlines;
 		else {
 			try {
+				logger.debug("Getting deadlines from: " + link);
 				doc = crawler.getURLDoc(link);
 				
 				Element el = doc.select("div:contains(Important Dates)").last();
@@ -92,48 +94,50 @@ public class Parser5 extends Parser {
 	
 	@Override
 	public String getAntiquity(String title, String description, Document doc) {
-		if(doc != null) {
-			Pattern pattern = Pattern.compile("\\d{1,2}(st|nd|rd|th)|([tT]wenty-|[tT]hirty-|[fF]orty-"
-					+ "|[fF]ifty-|[sS]ixty-|[sS]eventy-|[eE]ighty-|[nN]inety-)*([fF]ir|[sS]eco|[tT]hi|"
-					+ "[fF]our|[fF]if|[sS]ix|[sS]even|[eE]igh|[nN]in|[tT]en|[eE]leven|[tT]welf|[tT]hirteen|"
-					+ "[fF]ourteen|[fF]ifteen|[sS]ixteen|[sS]eventeen|[eE]ighteen|[nN]ineteen)(st|nd|rd|th)|"
-					+ "(twentieth|thirtieth|fourtieth|fiftieth|sixtieth|seventieth|eightieth|ninetieth)", Pattern.CASE_INSENSITIVE);
+		logger.debug("Getting antiquity from passed in document");
+		if(doc == null) 
+			return "";
+		
+		Pattern pattern = Pattern.compile("\\d{1,2}(st|nd|rd|th)|([tT]wenty-|[tT]hirty-|[fF]orty-"
+				+ "|[fF]ifty-|[sS]ixty-|[sS]eventy-|[eE]ighty-|[nN]inety-)*([fF]ir|[sS]eco|[tT]hi|"
+				+ "[fF]our|[fF]if|[sS]ix|[sS]even|[eE]igh|[nN]in|[tT]en|[eE]leven|[tT]welf|[tT]hirteen|"
+				+ "[fF]ourteen|[fF]ifteen|[sS]ixteen|[sS]eventeen|[eE]ighteen|[nN]ineteen)(st|nd|rd|th)|"
+				+ "(twentieth|thirtieth|fourtieth|fiftieth|sixtieth|seventieth|eightieth|ninetieth)", Pattern.CASE_INSENSITIVE);
+		
+		// Split on the new line character
+		String[] separated = doc.wholeText().split("\n");
+		String antiquity = "";
+		
+		for(String toCheck: separated) {
+			antiquity = this.findPattern(toCheck, pattern);
 			
-			// Split on the new line character
-			String[] separated = doc.wholeText().split("\n");
-			String antiquity = "";
-			
-			for(String toCheck: separated) {
-				antiquity = this.findPattern(toCheck, pattern);
-				
-				// No need to check other if statements if the string is empty
-				if(antiquity.isEmpty())
-					continue;
-				// If it is in the form of 1st, 2nd, 3rd etc. then strip of the ending i.e. st, nd
-				else if(antiquity.toLowerCase().matches("\\d{1,2}(?:st|nd|rd|th)")) {
-					String[] number = antiquity.toLowerCase().split("(?:st|nd|rd|th)");
-					return this.toOrdinal(Integer.parseInt(number[0]));
-				}
+			// No need to check other if statements if the string is empty
+			if(antiquity.isEmpty())
+				continue;
+			// If it is in the form of 1st, 2nd, 3rd etc. then strip of the ending i.e. st, nd
+			else if(antiquity.toLowerCase().matches("\\d{1,2}(?:st|nd|rd|th)")) {
+				String[] number = antiquity.toLowerCase().split("(?:st|nd|rd|th)");
+				return this.toOrdinal(Integer.parseInt(number[0]));
 			}
-		} 
+		}
 		
 		return "";
 	}
 	
 	@Override
 	public String getConferenceDays(String title, String description, Document doc) {
-		if(doc != null) {
-			for(Element el: doc.getAllElements()) {
-				for(TextNode textNode: el.textNodes()) {
-					String found = this.findConfDays(textNode.text());
-					if(!found.equals("")) {
-						return found;
-					}
+		if(doc == null) 
+			return "";
+		
+		logger.debug("Getting conference days from the passed in document");
+		for(Element el: doc.getAllElements()) {
+			for(TextNode textNode: el.textNodes()) {
+				String found = this.findConfDays(textNode.text());
+				if(!found.equals("")) {
+					return found;
 				}
 			}
-			return "";
-		} else {
-			return "";
 		}
+		return "";
 	}
 }

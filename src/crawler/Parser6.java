@@ -1,7 +1,6 @@
 package crawler;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.regex.Pattern;
 
@@ -37,6 +36,7 @@ public class Parser6 extends Parser {
 		links.addAll(this.findAllLinks("important_dates", linkList));
 		
 		for(String link: links) {
+			logger.debug("Getting deadlines from: " + link);
 			doc = crawler.getURLDoc(link);
 			
 			try {
@@ -91,16 +91,6 @@ public class Parser6 extends Parser {
 				deadlines.clear();
 			}
 			
-//			System.out.println("-----------------------");
-//			for(String key: allDeadlines.keySet()) {
-//				System.out.println();
-//				System.out.println("Heading: " + key);
-//				LinkedHashMap<String, String> deadlines1 = allDeadlines.get(key);
-//				for(String d: deadlines1.keySet()) {
-//					System.out.println(d + ": " + deadlines1.get(d));
-//				}
-//			}
-			
 			if(!allDeadlines.isEmpty() && allDeadlines.size() > 1)
 				return allDeadlines;
 			else
@@ -112,36 +102,34 @@ public class Parser6 extends Parser {
 		return allDeadlines;
 	}
 	
-//	public static void main(String[] args) {
-//		Parser p = new Parser6(new Information());
-//		p.getDeadlines(new ArrayList<String>(Arrays.asList("http://www.ieee-iccse.org/important_dates.html")));
-//	}
-	
 	@Override
 	public String getAntiquity(String title, String description, Document doc) {
-		if(doc != null) {
-			int antiquity = 1;
-			for(Element el: doc.getAllElements()) {
-				for(TextNode textNode: el.textNodes()) {
-					if(textNode.text().toLowerCase().matches(this.changeToRegex("\\d{1,2}(?:st|nd|rd|th)")))
-						antiquity++;
-				}
-			}
-			
-			return this.toOrdinal(antiquity);
-		} else
+		logger.debug("Getting antiquity from passed in document");
+		if(doc == null) 
 			return "";
+		
+		int antiquity = 1;
+		for(Element el: doc.getAllElements()) {
+			for(TextNode textNode: el.textNodes()) {
+				if(textNode.text().toLowerCase().matches(this.changeToRegex("\\d{1,2}(?:st|nd|rd|th)")))
+					antiquity++;
+			}
+		}
+		
+		return this.toOrdinal(antiquity);
 	}
 	
 	@Override
-	public String getConferenceDays(String title, String description, Document doc) {		
-		if(doc != null) {
-			for(Element el: doc.getAllElements()) {
-				for(TextNode textNode: el.textNodes()) {
-					String found = this.findConfDays(textNode.text());
-					if(!found.isEmpty())
-						return found;
-				}
+	public String getConferenceDays(String title, String description, Document doc) {
+		if(doc == null) 
+			return "";
+		
+		logger.debug("Getting conference days from the passed in document");
+		for(Element el: doc.getAllElements()) {
+			for(TextNode textNode: el.textNodes()) {
+				String found = this.findConfDays(textNode.text());
+				if(!found.isEmpty())
+					return found;
 			}
 		}
 		

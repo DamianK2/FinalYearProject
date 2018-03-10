@@ -23,6 +23,7 @@ public class Parser4 extends Parser {
 	
 	@Override
 	public String getDescription(Document doc) {
+		logger.debug("Getting description");
 		String description = "";
 
 		try {
@@ -37,6 +38,7 @@ public class Parser4 extends Parser {
 	//TODO change to suit tests
 	@Override
 	public String getVenue(String title, String description, Country country, Document doc) {
+		logger.debug("Getting venue links from document header and footer");
 		String venue = "", found;
 		String[] possibleNames = {"div#header", "div.header","header#header", "header.header", "div#footer", "div.footer", "footer#footer", "footer.footer", "header", "footer"};
 	        
@@ -66,6 +68,7 @@ public class Parser4 extends Parser {
 		LinkedHashMap<String, LinkedHashMap<String, String>> allDeadlines = new LinkedHashMap<>();
 		
 		try {
+			logger.debug("Getting deadlines from: " + linkList.get(0));
 			doc = crawler.getURLDoc(linkList.get(0));
 			el = doc.select("div:contains(Upcoming Important Dates)").next();
 		} catch(NullPointerException e) {
@@ -98,19 +101,12 @@ public class Parser4 extends Parser {
 			}
 		}
 		
-//		for(String key: allDeadlines.keySet()) {
-//			System.out.println("Heading: " + key);
-//			LinkedHashMap<String, String> deadlines1 = allDeadlines.get(key);
-//			for(String d: deadlines1.keySet()) {
-//				System.out.println(d + ": " + deadlines1.get(d));
-//			}
-//		}
-		
 		return allDeadlines;
 	}
 	
 	@Override
 	public String getAntiquity(String title, String description, Document doc) {
+		logger.debug("Getting antiquity from passed in document");
 		String antiquity = "";
 		try {
 			Elements el = doc.select(":contains(Other Editions)").next();
@@ -131,10 +127,11 @@ public class Parser4 extends Parser {
 	}
 	
 	public String getConferenceDays(String title, String description, Document doc) {
-		if(doc != null)
-			return this.findConfDays(doc.select("p").text());
-		else
+		if(doc == null)
 			return "";
+		
+		logger.debug("Getting conference days from the passed in document");
+		return this.findConfDays(doc.select("p").text());
 	}
 
 }

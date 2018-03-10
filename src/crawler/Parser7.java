@@ -1,7 +1,6 @@
 package crawler;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.regex.Pattern;
 
@@ -28,6 +27,7 @@ public class Parser7 extends Parser {
 		Pattern pattern = Pattern.compile("(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)(.\\s+|\\s+)\\d{1,2}(\\s+|,|(st|nd|rd|th),?)\\s+\\d{4}", Pattern.CASE_INSENSITIVE);
 		String[] separated;
 		
+		logger.debug("Getting deadlines from: " + linkList.get(0));
 		// Connect to the home page
 		doc = crawler.getURLDoc(linkList.get(0));
 
