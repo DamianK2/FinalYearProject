@@ -223,7 +223,7 @@ public class Worker implements Runnable {
 			}
         }	
         try {
-			this.sqlConnection.addConference(acronym, title, sponsor, proceedings, description, venue, year, antiquity, conferenceDays, committees, deadlines);
+			this.sqlConnection.addConference(acronym, title, sponsor, proceedings, description, venue, year, antiquity, conferenceDays, committees, deadlines, url);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

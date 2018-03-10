@@ -32,7 +32,8 @@ public class Conference {
 	public synchronized void addConference(String acronym, String title, String sponsors, String proceedings, String description,
 			String venue, String currentYear, String antiquity, String conferenceDays,
 			LinkedHashMap<String, List<String>> organisers,
-			LinkedHashMap<String, LinkedHashMap<String, String>> deadlines) throws SQLException {
+			LinkedHashMap<String, LinkedHashMap<String, String>> deadlines,
+			String link) throws SQLException {
 		int venueID = this.addToVenues(venue);
 		
 		// Check if the conference already exists in the database
@@ -40,13 +41,13 @@ public class Conference {
 		
 		// If the conference exists then overwrite every value in the database for it (to be changed in the future to check which information needs changing)
 		if(id != -1) {
-			this.updateWebsites(id, acronym, title, sponsors, proceedings, description, venueID, currentYear, antiquity, conferenceDays);
+			this.updateWebsites(id, acronym, title, sponsors, proceedings, description, venueID, currentYear, antiquity, conferenceDays, link);
 			this.deleteFromTable(id, "delete from deadlines where id = ?");
 			this.addToDeadlines(id, deadlines);
 			this.deleteFromTable(id, "delete from committees where id = ?");
 			this.addToCommittees(id, organisers);
 		} else {
-			id = this.addToWebsites(acronym, title, sponsors, proceedings, description, venueID, currentYear, antiquity, conferenceDays);
+			id = this.addToWebsites(acronym, title, sponsors, proceedings, description, venueID, currentYear, antiquity, conferenceDays, link);
 			this.addToDeadlines(id, deadlines);
 			this.addToCommittees(id, organisers);
 		}
@@ -92,13 +93,13 @@ public class Conference {
 	 * @throws SQLException
 	 */
 	private void updateWebsites(int id, String acronym, String title, String sponsors, String proceedings, String description,
-			int venueID, String currentYear, String antiquity, String conferenceDays) throws SQLException {
-		String updateQuery = "update websites set acronym = ?, title = ?, sponsors = ?, proceedings = ?, description = ?, venueID = ?, current_year = ?, antiquity = ?, conference_days = ? where id = ?";
+			int venueID, String currentYear, String antiquity, String conferenceDays, String link) throws SQLException {
+		String updateQuery = "update websites set acronym = ?, title = ?, sponsors = ?, proceedings = ?, description = ?, venueID = ?, current_year = ?, antiquity = ?, conference_days = ?, link = ? where id = ?";
 		preparedStmt = connection.prepareStatement(updateQuery, Statement.RETURN_GENERATED_KEYS);
 		
-		this.setValuesInStatement(acronym, title, sponsors, proceedings, description, venueID, currentYear, antiquity, conferenceDays);
+		this.setValuesInStatement(acronym, title, sponsors, proceedings, description, venueID, currentYear, antiquity, conferenceDays, link);
 		// Don't forget to tell which id we are updating
-		preparedStmt.setInt(10, id);
+		preparedStmt.setInt(11, id);
 		
 		conn.executeStatement(preparedStmt, true);
 	}
@@ -255,12 +256,12 @@ public class Conference {
 	 * @throws SQLException
 	 */
 	private int addToWebsites(String acronym, String title, String sponsors, String proceedings, String description,
-			int venueID, String currentYear, String antiquity, String conferenceDays) throws SQLException {
+			int venueID, String currentYear, String antiquity, String conferenceDays, String link) throws SQLException {
 		// Create the query
-		String mainQuery = "insert websites (acronym, title, sponsors, proceedings, description, venueID, current_year, antiquity, conference_days) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		String mainQuery = "insert websites (acronym, title, sponsors, proceedings, description, venueID, current_year, antiquity, conference_days, link) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		preparedStmt = connection.prepareStatement(mainQuery, Statement.RETURN_GENERATED_KEYS);
 
-		this.setValuesInStatement(acronym, title, sponsors, proceedings, description, venueID, currentYear, antiquity, conferenceDays);
+		this.setValuesInStatement(acronym, title, sponsors, proceedings, description, venueID, currentYear, antiquity, conferenceDays, link);
 		
 		return conn.executeStatement(preparedStmt, false);
 	}
@@ -279,7 +280,7 @@ public class Conference {
 	 * @throws SQLException
 	 */
 	private void setValuesInStatement(String acronym, String title, String sponsors, String proceedings, String description,
-			int venueID, String currentYear, String antiquity, String conferenceDays) throws SQLException {
+			int venueID, String currentYear, String antiquity, String conferenceDays, String link) throws SQLException {
 		// Set the variables
 		preparedStmt.setString(1, acronym);
 		preparedStmt.setString(2, title);
@@ -297,6 +298,7 @@ public class Conference {
 		preparedStmt.setInt(7, yearInteger);
 		preparedStmt.setString(8, antiquity);
 		preparedStmt.setString(9, conferenceDays);
+		preparedStmt.setString(10, link);
 	}
 
 	/**
