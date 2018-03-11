@@ -66,8 +66,9 @@ public class Parser {
 	 * @return acronym or empty string
 	 */
 	public String getAcronym(String title, String description) {
-		logger.debug("Getting acronym from title");
-		return this.findAcronym(title);
+		String found = this.findAcronym(title);
+		logger.debug("Found acronym \"" + found + "\" from title");
+		return found;
 	}
 	
 	/**
@@ -77,7 +78,6 @@ public class Parser {
 	 * @return sponsors
 	 */
 	public String getSponsors(String title, String description) {
-		logger.debug("Getting sponsors from title");
 		String sponsors = "";
 		
 		for(String sponsor: information.getSponsors()) {
@@ -87,7 +87,8 @@ public class Parser {
 				else
 					sponsors += "/" + sponsor;	//There can be more than 1 sponsor
 		}
-		
+		logger.debug("Found sponsors" + sponsors + "\" from title");
+
 		return sponsors;
 	}
 	
@@ -143,15 +144,13 @@ public class Parser {
 	 * @return description
 	 */
 	public String getDescription(Document doc) {
-		logger.debug("Getting description");
 		String meta = "";
 		try {
 			meta = doc.select("meta[name=description]").first().attr("content");
+			return meta;
 		} catch(NullPointerException e) {
-			logger.info("Null Pointer exception but was expected because not all websites have a meta with attribute name.");
+			return "";
 		}
-	
-		return meta;
 	}
 	
 	/**
@@ -164,20 +163,21 @@ public class Parser {
 	 * @return venue or empty string
 	 */
 	public String getVenue(String title, String description, Country country, Document doc) {
-		logger.debug("Getting venue links from passed in document");
-		String venue = "";
+		if(doc == null)
+			return "";
 		
-		if(doc != null) {
-			// Go through all the elements in the document
-			for(Element e: doc.getAllElements()) {
-				// Extract text nodes
-				for(TextNode textNode: e.textNodes()) {
-					// Omit empty strings
-					if(!textNode.text().matches("^\\s+$")) {
-						// Search for countries in the text node
-						venue = searchCountries(textNode.text(), country);
-						if(!venue.isEmpty())
-							return venue;
+		String venue = "";
+		// Go through all the elements in the document
+		for(Element e: doc.getAllElements()) {
+			// Extract text nodes
+			for(TextNode textNode: e.textNodes()) {
+				// Omit empty strings
+				if(!textNode.text().matches("^\\s+$")) {
+					// Search for countries in the text node
+					venue = searchCountries(textNode.text(), country);
+					if(!venue.isEmpty()) {
+						logger.debug("Found venue \"" + venue + "\" from from passed in document");
+						return venue;
 					}
 				}
 			}
@@ -231,7 +231,6 @@ public class Parser {
 				// Gets the <td> elements from the rows
 				tds = rows.select("td");
 			} catch(NullPointerException e) {
-				logger.info("Null Pointer exception but expected because not all websites have tables.");
 				return allDeadlines;
 			}
 			
@@ -284,7 +283,6 @@ public class Parser {
 	 * @return conference year
 	 */
 	public String getConferenceYear(String date, String title) {
-		logger.debug("Getting conference year from the date");
 		String year = "";
 		Pattern pattern = Pattern.compile("\\d{4}");
 		Matcher matcher;
@@ -292,6 +290,8 @@ public class Parser {
 		matcher = pattern.matcher(date);
 		if(matcher.find())
 			year = matcher.group(0);
+		
+		logger.debug("Found conference year \"" + year + "\" from the date");
 		return year;
 	}
 	
@@ -301,7 +301,6 @@ public class Parser {
 	 * @return antiquity
 	 */
 	public String getAntiquity(String title, String description, Document doc) {
-		logger.debug("Getting antiquity from description");
 		String antiquity = "";
 		Pattern pattern = Pattern.compile("\\d{1,2}(st|nd|rd|th)|([tT]wenty-|[tT]hirty-|[fF]orty-"
 				+ "|[fF]ifty-|[sS]ixty-|[sS]eventy-|[eE]ighty-|[nN]inety-)*([fF]ir|[sS]eco|[tT]hi|"
@@ -321,6 +320,7 @@ public class Parser {
 			}
 		}
 		
+		logger.debug("Found antiquity \"" + antiquity +  "\" from the description");
 		return antiquity;
 	}
 	
@@ -330,8 +330,9 @@ public class Parser {
 	 * @return date
 	 */
 	public String getConferenceDays(String title, String description, Document doc) {
-		logger.debug("Getting conference days from the title");
-		return this.findConfDays(title);
+		String confDays = this.findConfDays(title);
+		logger.debug("Found conference days \"" + confDays + "\" from the title");
+		return confDays;
 	}
 	
 	/**
@@ -347,7 +348,6 @@ public class Parser {
 		if(!this.checkOrganiserFormat(doc, country))
 			return committees;
 		else {
-			logger.debug("Extracting committees from the passed in document");
 			String tempSubteam = "";
 			
 			List<String> members = new ArrayList<>();

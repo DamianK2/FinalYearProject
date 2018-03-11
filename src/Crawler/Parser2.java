@@ -25,13 +25,13 @@ public class Parser2 extends Parser {
 	
 	@Override
 	public String getAcronym(String title, String description) {
-		logger.debug("Getting acronym from description");
-		return this.findAcronym(description);
+		String found = this.findAcronym(description);
+		logger.debug("Found acronym \"" + found + "\" from description");
+		return found;
 	}
 
 	@Override
 	public String getSponsors(String title, String description) {
-		logger.debug("Getting sponsors from description");
 		String sponsors = "";
 		
 		// Iterate through the list of sponsors
@@ -43,29 +43,30 @@ public class Parser2 extends Parser {
 				else
 					sponsors += "/" + sponsor;
 		}
+		logger.debug("Found sponsors \"" + sponsors + "\" from description");
 		
 		return sponsors;
 	}
 	
 	@Override
 	public String getDescription(Document doc) {
-		logger.debug("Getting description");
 		String meta = "";
 		try {
 			meta = doc.select("meta[property=og:description]").first().attr("content");
+			return meta;
 		} catch(NullPointerException e) {
-			logger.info("Null Pointer exception but was expected because not all websites have a meta with attribute property.");
+			return "";
 		}
-		return meta;
 	}
 	
 	@Override
 	public String getVenue(String title, String description, Country country, Document doc) {
-		logger.debug("Getting venue links from title");
 		String venue = "";
 		// Search the title for the country of the conference
 		if(!title.equals(""))
 			venue = this.searchCountries(title, country);
+		
+		logger.debug("Found venue \"" + venue + "\" from from title");
 		
 		return venue;
 	}
@@ -105,7 +106,6 @@ public class Parser2 extends Parser {
 				}
 			}
 		} catch(NullPointerException e) {
-			logger.info("Null Pointer exception but was expected.");
 			return allDeadlines;
 		}
 		
@@ -114,7 +114,6 @@ public class Parser2 extends Parser {
 	
 	@Override
 	public String getConferenceYear(String date, String title) {
-		logger.debug("Getting conference year from the title");
 		String year = "";
 		Pattern pattern = Pattern.compile("\\d{4}");
 		Matcher matcher;
@@ -122,12 +121,13 @@ public class Parser2 extends Parser {
 		matcher = pattern.matcher(title);
 		if(matcher.find())
 			year = matcher.group(0);
+		
+		logger.debug("Found conference year \"" + year + "\" from the title");
 		return year;
 	}
 	
 	@Override
 	public String getAntiquity(String title, String description, Document doc) {
-		logger.debug("Getting antiquity from title");
 		String antiquity = "";
 		Pattern pattern = Pattern.compile("\\d{1,2}(st|nd|rd|th)|([tT]wenty-|[tT]hirty-|[fF]orty-"
 				+ "|[fF]ifty-|[sS]ixty-|[sS]eventy-|[eE]ighty-|[nN]inety-)*([fF]ir|[sS]eco|[tT]hi|"
@@ -147,13 +147,15 @@ public class Parser2 extends Parser {
 			}
 		}
 		
+		logger.debug("Found antiquity \"" + antiquity +  "\" from the title");
 		return antiquity;
 	}
 	
 	@Override
 	public String getConferenceDays(String title, String description, Document doc) {
-		logger.debug("Getting conference days from the description");
-		return this.findConfDays(description);
+		String confDays = this.findConfDays(description);
+		logger.debug("Found conference days \"" + confDays + "\" from the description");
+		return confDays;
 	}
 	
 	@Override
@@ -164,7 +166,6 @@ public class Parser2 extends Parser {
 		if(!this.checkOrganiserFormat(doc, country))
 			return committees;
 		else {
-			logger.debug("Extracting committees from the passed in document");
 			// Initialize variables
 			String tempSubteam = "";
 			List<String> members = new ArrayList<>();
@@ -228,18 +229,6 @@ public class Parser2 extends Parser {
 				}
 			}
 		}
-		
-//		// Test print
-//		String allMembers = "";
-//		for(String subteam: committees.keySet()) {
-//    		allMembers += subteam + ": ";
-//			List<String> subteamMembers = committees.get(subteam);
-//			for(String subteamMember: subteamMembers) {
-//				allMembers += subteamMember + " //// ";
-//			}
-//			System.out.println(allMembers);
-//        	allMembers = "";
-//		}
 		
 		// If only 1 committee is returned then it must be an error
 		return committees.size() < 2 ? new LinkedHashMap<String, List<String>>() : committees;

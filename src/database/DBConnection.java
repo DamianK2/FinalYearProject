@@ -25,9 +25,9 @@ public class DBConnection {
 			Class.forName(driver);
 			connection = DriverManager.getConnection(url, "root", "");
 		} catch (ClassNotFoundException e) {
-			logger.fatal("Couldn't find class with name: " + driver + "\n" + e.getMessage());
+			logger.fatal("Couldn't find class with name: " + driver);
 		} catch (SQLException e) {
-			logger.fatal("Couldn't establish a connection with database using \"" + url + "\"\n" + e.getMessage());
+			logger.fatal("Couldn't establish a connection with database using \"" + url + "\"");
 		}
 		return connection;
 	}

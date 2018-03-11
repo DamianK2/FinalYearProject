@@ -22,16 +22,16 @@ public class Parser5 extends Parser {
 	
 	@Override
 	public String getDescription(Document doc) {
-		logger.debug("Getting description");
 		String description = "";
 
 		try {
 			description = doc.select("p").first().text();
+			return description;
 		} catch(NullPointerException e) {
-			logger.info("Null Pointer exception but was expected because not all websites have paragraphs.");
+			return "";
 		}
 		
-		return description;
+		
 	}
 	
 	@Override
@@ -84,7 +84,6 @@ public class Parser5 extends Parser {
 					}
 				}
 			} catch(NullPointerException e) {
-				logger.info("Null Pointer exception but was expected.");
 				return new LinkedHashMap<String, LinkedHashMap<String, String>>();
 			}
 		}
@@ -94,7 +93,6 @@ public class Parser5 extends Parser {
 	
 	@Override
 	public String getAntiquity(String title, String description, Document doc) {
-		logger.debug("Getting antiquity from passed in document");
 		if(doc == null) 
 			return "";
 		
@@ -117,7 +115,9 @@ public class Parser5 extends Parser {
 			// If it is in the form of 1st, 2nd, 3rd etc. then strip of the ending i.e. st, nd
 			else if(antiquity.toLowerCase().matches("\\d{1,2}(?:st|nd|rd|th)")) {
 				String[] number = antiquity.toLowerCase().split("(?:st|nd|rd|th)");
-				return this.toOrdinal(Integer.parseInt(number[0]));
+				antiquity = this.toOrdinal(Integer.parseInt(number[0]));
+				logger.debug("Found antiquity \"" + antiquity +  "\" from passed in document");
+				return antiquity;
 			}
 		}
 		
@@ -129,11 +129,11 @@ public class Parser5 extends Parser {
 		if(doc == null) 
 			return "";
 		
-		logger.debug("Getting conference days from the passed in document");
 		for(Element el: doc.getAllElements()) {
 			for(TextNode textNode: el.textNodes()) {
 				String found = this.findConfDays(textNode.text());
 				if(!found.equals("")) {
+					logger.debug("Found conference days \"" + found + "\" from the passed in document");
 					return found;
 				}
 			}

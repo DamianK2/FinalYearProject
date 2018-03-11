@@ -86,7 +86,6 @@ public class Parser6 extends Parser {
 					}
 				}
 			} catch(NullPointerException e) {
-				logger.info("Null Pointer exception but was expected.");
 				allDeadlines.clear();
 				deadlines.clear();
 			}
@@ -104,7 +103,6 @@ public class Parser6 extends Parser {
 	
 	@Override
 	public String getAntiquity(String title, String description, Document doc) {
-		logger.debug("Getting antiquity from passed in document");
 		if(doc == null) 
 			return "";
 		
@@ -115,8 +113,9 @@ public class Parser6 extends Parser {
 					antiquity++;
 			}
 		}
-		
-		return this.toOrdinal(antiquity);
+		String antqty = this.toOrdinal(antiquity);
+		logger.debug("Found antiquity \"" + antqty +  "\" from passed in document");
+		return antqty;
 	}
 	
 	@Override
@@ -124,12 +123,13 @@ public class Parser6 extends Parser {
 		if(doc == null) 
 			return "";
 		
-		logger.debug("Getting conference days from the passed in document");
 		for(Element el: doc.getAllElements()) {
 			for(TextNode textNode: el.textNodes()) {
 				String found = this.findConfDays(textNode.text());
-				if(!found.isEmpty())
+				if(!found.isEmpty()) {
+					logger.debug("Found conference days \"" + found + "\" from the passed in document");
 					return found;
+				}
 			}
 		}
 		

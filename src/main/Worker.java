@@ -57,20 +57,20 @@ public class Worker implements Runnable {
 		try {
 			// This will hang until there is a vacancy
     	    Main.semaphore.acquire(); 
-    	    logger.debug("Starting thread: " + Thread.currentThread().getName());
     	    this.extractInformation(this.url);
     	} catch (InterruptedException e) {
-    		logger.error("Cannot extract information from website.\n" + e.getMessage());
+    		logger.error("Cannot extract information from website.");
 		} finally {
+			Main.updatePercentage();
     	    Main.semaphore.release();
     	}
 	}
 	
 	// Fetches more links from already fetched links from Crawler
 	private void extractInformation(String url) {
-		logger.debug("Starting extraction from: " + url);
 		LinkedHashMap<String, LinkedHashMap<String, String>> deadlines = new LinkedHashMap<>();
 		linkList.add(url);
+		logger.debug("Fetching links from: " + url);
 		linkList = crawler.getAllLinks(crawler.getURLDoc(url), linkList);
         row = sheet.createRow(rowNumber);
         
@@ -111,7 +111,6 @@ public class Worker implements Runnable {
         String acronym;
         k = 0;
 		do {
-			logger.debug("Getting acronym for: " + mainLink);
 			acronym = parsers.get(k).getAcronym(title, description);
         	k++;
         } while(acronym.equals("") && k < NUM_ACRONYM_METHODS);   
@@ -121,7 +120,6 @@ public class Worker implements Runnable {
         String sponsor;
 		k = 0;
 		do {
-			logger.debug("Getting sponsors for: " + mainLink);
 			sponsor = parsers.get(k).getSponsors(title, description);
 			k++;
 		} while(sponsor.equals("") && k < NUM_SPONSOR_METHODS);
@@ -134,7 +132,6 @@ public class Worker implements Runnable {
 		do {
 			l = 0;
 			do {
-				logger.debug("Getting venue from: " + venueLinks.get(l));
 				if(venueLinks.isEmpty())
 					venue = parsers.get(k).getVenue(title, description, country, null);
 				else
@@ -157,7 +154,6 @@ public class Worker implements Runnable {
         do {
         	l = 0;
         	do {
-        		logger.debug("Getting antiquity from: " + potentialLinks.get(l));
         		if(potentialLinks.isEmpty())
         			antiquity = parsers.get(k).getAntiquity(title, description, null);
         		else
@@ -179,7 +175,6 @@ public class Worker implements Runnable {
         do {
         	l = 0;
         	do {
-        		logger.debug("Getting conference days from: " + potentialLinks.get(l));
         		if(potentialLinks.isEmpty())
         			conferenceDays = parsers.get(k).getConferenceDays(title, description, null);
         		else
@@ -194,7 +189,6 @@ public class Worker implements Runnable {
         String year = "";
         k = 0;
         do {
-        	logger.debug("Getting conference year");
         	year = parsers.get(k).getConferenceYear(conferenceDays, title);
         	k++;
         } while(year.equals("") && k < NUM_CONF_YEAR_METHODS);
@@ -203,7 +197,6 @@ public class Worker implements Runnable {
         
         k = 0;
         do {
-        	logger.debug("Getting deadlines");
         	deadlines = parsers.get(k).getDeadlines(linkList);	
         	k++;
         } while(deadlines.isEmpty() && k < NUM_DEADLINE_METHODS);
@@ -247,6 +240,7 @@ public class Worker implements Runnable {
 			this.sqlConnection.addConference(acronym, title, sponsor, proceedings, description, venue, year, antiquity, conferenceDays, committees, deadlines, url);
 		} catch (SQLException e) {
 			logger.error("Cannot add extracted conference information to database.\n" + e.getMessage());
+			e.printStackTrace();
 		}
 			
 	}

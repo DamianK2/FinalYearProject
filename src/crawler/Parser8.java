@@ -81,7 +81,6 @@ public class Parser8 extends Parser {
 					}
 				}
 			} catch(NullPointerException e) {
-				logger.info("Null Pointer exception but was expected.");
 				allDeadlines.clear();
 				deadlines.clear();
 			}
@@ -89,16 +88,6 @@ public class Parser8 extends Parser {
 			if(!allDeadlines.isEmpty())
 				return allDeadlines;
 		}
-		
-		
-//		for(String key: allDeadlines.keySet()) {
-//			System.out.println();
-//			System.out.println("Heading: " + key);
-//			LinkedHashMap<String, String> deadlines1 = allDeadlines.get(key);
-//			for(String d: deadlines1.keySet()) {
-//				System.out.println(d + ": " + deadlines1.get(d));
-//			}
-//		}
 		
 		return allDeadlines;
 	}

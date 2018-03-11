@@ -8,6 +8,9 @@ import java.sql.Statement;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class Conference {
 
 	private static Connection connection;
@@ -15,6 +18,7 @@ public class Conference {
 	private static DBConnection conn;
 	private static final int MAX_CHARS_MEMBER = 300;
 	private static final int MAX_CHARS_COM_TITLE = 200;
+	static Logger logger = LogManager.getLogger(Conference.class);
 
 	public Conference() {
 		conn = new DBConnection();
@@ -30,21 +34,32 @@ public class Conference {
 			LinkedHashMap<String, List<String>> organisers,
 			LinkedHashMap<String, LinkedHashMap<String, String>> deadlines,
 			String link) throws SQLException {
+		
+		logger.debug("Performing addition to venues");
 		int venueID = this.addToVenues(venue);
 		
+		logger.debug("Checking if conferences exists in the database");
 		// Check if the conference already exists in the database
 		int id = this.checkIfExists(acronym, venueID, currentYear);
 		
 		// If the conference exists then overwrite every value in the database for it (to be changed in the future to check which information needs changing)
 		if(id != -1) {
+			logger.debug("Overwriting the websites table in database");
 			this.updateWebsites(id, acronym, title, sponsors, proceedings, description, venueID, currentYear, antiquity, conferenceDays, link);
+			logger.debug("Deleting from the deadlines table in database");
 			this.deleteFromTable(id, "delete from deadlines where id = ?");
+			logger.debug("Adding to the deadlines table in database");
 			this.addToDeadlines(id, deadlines);
+			logger.debug("Deleting from the committees table in database");
 			this.deleteFromTable(id, "delete from committees where id = ?");
+			logger.debug("Adding to the committees table in database");
 			this.addToCommittees(id, organisers);
 		} else {
+			logger.debug("Adding new conferences to the websites table in database");
 			id = this.addToWebsites(acronym, title, sponsors, proceedings, description, venueID, currentYear, antiquity, conferenceDays, link);
+			logger.debug("Adding new conference deadlines to the deadlines table in database");
 			this.addToDeadlines(id, deadlines);
+			logger.debug("Adding new conference committees to the committees table in database");
 			this.addToCommittees(id, organisers);
 		}
 	}
@@ -58,9 +73,12 @@ public class Conference {
 	 * @throws SQLException
 	 */
 	private int checkIfExists(String acronym, int venueID, String currentYear) throws SQLException {
-		String checkQuery = "select id from websites where acronym = \"" + acronym + "\"" + " and venueID = \"" + venueID + "\"" + " and current_year = \"" + currentYear + "\"";
-		
+		String checkQuery = "select id from websites where acronym = ? and venueID = ? and current_year = ?";
 		preparedStmt = connection.prepareStatement(checkQuery);
+		preparedStmt.setString(1, acronym);
+		preparedStmt.setInt(2, venueID);
+		preparedStmt.setString(3, currentYear);
+		
 		ResultSet rs = preparedStmt.executeQuery();
 		int id;
 
@@ -207,9 +225,11 @@ public class Conference {
 	 */
 	private int addToVenues(String venue) throws SQLException {
 		// Create the search query
-		String searchQuery = "select id from venues where venue = \"" + venue + "\"";
+		String searchQuery = "select id from venues where venue = ?";
+		preparedStmt = connection.prepareStatement(searchQuery);
+		preparedStmt.setString(1, venue);
 		String venueQuery = "insert venues (venue) values (?)";
-		return this.checkAndReturn(searchQuery, venueQuery, venue);
+		return this.checkAndReturn(venueQuery, venue);
 	}
 
 	/**
@@ -281,9 +301,11 @@ public class Conference {
 	 */
 	private int addToDeadlineTypes(String type) throws SQLException {
 		// Check to lower case to avoid duplicates with capital letters etc.
-		String searchType = "select id from deadline_types where lower(d_type) = \"" + type.toLowerCase() + "\"";
+		String searchType = "select id from deadline_types where lower(d_type) = ?";
+		preparedStmt = connection.prepareStatement(searchType);
+		preparedStmt.setString(1, type.toLowerCase());
 		String deadlineType = "insert deadline_types (d_type) values (?)";
-		return this.checkAndReturn(searchType, deadlineType, type);
+		return this.checkAndReturn(deadlineType, type);
 	}
 	
 	/**
@@ -337,9 +359,11 @@ public class Conference {
 	private int addToCommitteeTitles(String comTitle) throws SQLException {
 		if(comTitle.length() < MAX_CHARS_COM_TITLE) {
 			// Check to lower case to avoid duplicates with capital letters etc.
-			String searchComTitle = "select id from committee_titles where lower(committee_title) = \"" + comTitle.toLowerCase() + "\"";
+			String searchComTitle = "select id from committee_titles where lower(committee_title) = ?";
+			preparedStmt = connection.prepareStatement(searchComTitle);
+			preparedStmt.setString(1, comTitle.toLowerCase());
 			String committeeTitle = "insert committee_titles (committee_title)" + " values (?)";
-			return this.checkAndReturn(searchComTitle, committeeTitle, comTitle);
+			return this.checkAndReturn(committeeTitle, comTitle);
 		} else
 			return 0;
 	}
@@ -352,9 +376,11 @@ public class Conference {
 	 */
 	private int addToMemberNames(String member) throws SQLException {
 		if(member.length() < MAX_CHARS_MEMBER) {
-			String searchMember = "select id from member_names where member = \"" + member + "\"";
+			String searchMember = "select id from member_names where member = ?";
+			preparedStmt = connection.prepareStatement(searchMember);
+			preparedStmt.setString(1, member);
 			String committeeMember = "insert member_names (member)" + " values (?)";
-			return this.checkAndReturn(searchMember, committeeMember, member);
+			return this.checkAndReturn(committeeMember, member);
 		} else
 			return 0;
 	}
@@ -369,15 +395,13 @@ public class Conference {
 	 * @return id of the row containing the item
 	 * @throws SQLException
 	 */
-	private int checkAndReturn(String searchQuery, String insertQuery, String toInsert) throws SQLException {
-		preparedStmt = connection.prepareStatement(searchQuery);
+	private int checkAndReturn(String insertQuery, String toInsert) throws SQLException {
 		ResultSet rs = preparedStmt.executeQuery();
 		int id;
 
 		if (rs.next()) {
 			// Find the id from the set
 			id = rs.getInt(1);
-//			System.out.println("(checkAndReturn)found item id: " + id);
 			return id;
 		} else {
 			preparedStmt = connection.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS);

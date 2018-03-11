@@ -23,22 +23,18 @@ public class Parser4 extends Parser {
 	
 	@Override
 	public String getDescription(Document doc) {
-		logger.debug("Getting description");
 		String description = "";
-
 		try {
 			description = doc.select("div.page-header").parents().first().text();
+			return description;
 		} catch(NullPointerException e) {
-			logger.info("Null Pointer exception but was expected because not all websites have a div with class \"page-header\".");
+			return "";
 		}
-		
-		return description;
 	}
 
 	//TODO change to suit tests
 	@Override
 	public String getVenue(String title, String description, Country country, Document doc) {
-		logger.debug("Getting venue links from document header and footer");
 		String venue = "", found;
 		String[] possibleNames = {"div#header", "div.header","header#header", "header.header", "div#footer", "div.footer", "footer#footer", "footer.footer", "header", "footer"};
 	        
@@ -49,12 +45,14 @@ public class Parser4 extends Parser {
 	        	if(!found.isEmpty()) {
 	        		// Check if the found string contains the country
 	        		venue = this.searchCountries(found, country);
-	        		if(!venue.isEmpty())
+	        		if(!venue.isEmpty()) {
+	        			logger.debug("Found venue \"" + venue + "\" by selecting " + name + " from passed in document");
 	        			return venue;
+	        		}
 	        	}
 	        }
 		} catch(NullPointerException e) {
-			logger.info("Null Pointer exception but was expected.");
+			return "";
 		}
 		
 		return venue;
@@ -72,7 +70,6 @@ public class Parser4 extends Parser {
 			doc = crawler.getURLDoc(linkList.get(0));
 			el = doc.select("div:contains(Upcoming Important Dates)").next();
 		} catch(NullPointerException e) {
-			logger.info("Null Pointer exception but was expected.");
 			return new LinkedHashMap<String, LinkedHashMap<String, String>>();
 		}
 		
@@ -106,7 +103,6 @@ public class Parser4 extends Parser {
 	
 	@Override
 	public String getAntiquity(String title, String description, Document doc) {
-		logger.debug("Getting antiquity from passed in document");
 		String antiquity = "";
 		try {
 			Elements el = doc.select(":contains(Other Editions)").next();
@@ -114,24 +110,32 @@ public class Parser4 extends Parser {
 			for(Element e: el) {
 				if(e.text().matches(".*\\d{4}.*")) {
 					String[] split = e.text().split("\\d{4}");
-					
 					// Add all the found editions and the current one to find the conference antiquity
-					return this.toOrdinal(split.length + 1);
+					antiquity = this.toOrdinal(split.length + 1);
+					logger.debug("Found antiquity \"" + antiquity +  "\" from passed in document");
+					return antiquity;
 				}
 			}
 		} catch(NullPointerException e) {
-			logger.info("Null Pointer exception but was expected.");
+			return "";
 		}
 		
 		return antiquity;
 	}
 	
+	@Override
 	public String getConferenceDays(String title, String description, Document doc) {
 		if(doc == null)
 			return "";
 		
-		logger.debug("Getting conference days from the passed in document");
-		return this.findConfDays(doc.select("p").text());
+		String confDays = "";
+		try {
+			confDays = this.findConfDays(doc.select("p").text());
+			logger.debug("Found conference days \"" + confDays + "\" from the passed in document");
+			return confDays;
+		} catch(NullPointerException e) {
+			return "";
+		}
 	}
 
 }

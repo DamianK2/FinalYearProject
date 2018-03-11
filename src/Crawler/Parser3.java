@@ -24,24 +24,25 @@ public class Parser3 extends Parser {
 
 	@Override
 	public String getDescription(Document doc) {
-		logger.debug("Getting description");
 		String meta = "";
 		try {
 			meta = doc.select(".site-description").text();
+			return meta;
 		} catch(NullPointerException e) {
-			logger.info("Null Pointer exception but was expected because not all websites have a class with name \"site-description\"");
+			return "";
 		}
-		return meta;
+		
 	}
 
 	@Override
 	public String getVenue(String title, String description, Country country, Document doc) {
-		logger.debug("Getting venue links from description");
 		String venue = "";
 		
 		// Search the description for the country of the conference
 		if(!description.equals(""))
 			venue = this.searchCountries(description, country);
+		
+		logger.debug("Found venue \"" + venue + "\" from from description");
 		
 		return venue;
 	}
@@ -81,7 +82,6 @@ public class Parser3 extends Parser {
 				}
 			}
 		} catch(NullPointerException e) {
-			logger.info("Null Pointer exception but was expected.");
 			return allDeadlines;
 		}
 		
@@ -90,7 +90,6 @@ public class Parser3 extends Parser {
 	
 	@Override
 	public String getAntiquity(String title, String description, Document doc) {
-		logger.debug("Getting antiquity from passed in document");
 		String antiquity = "";
 	
 		Elements ele = null;
@@ -98,7 +97,6 @@ public class Parser3 extends Parser {
 			Element el = doc.select("div:contains(Previous)").last();
 			ele = el.select("ul li");
 		} catch(NullPointerException e) {
-			logger.info("Null Pointer exception but was expected.");
 			return antiquity;
 		}
 	
@@ -110,24 +108,29 @@ public class Parser3 extends Parser {
 		// If it is the first conference then it wouldn't have "Previous" editions
 		if(currentYear == 1)
 			return "";
-		else
+		else {
+			logger.debug("Found antiquity \"" + antiquity +  "\" from passed in document");
 			return antiquity;
+		}
+			
 	}
 	
 	public String getConferenceDays(String title, String description, Document doc) {
-		logger.debug("Getting conference days from the passed in document");
 		String[] possibleNames = {"div#header", "div.header","header#header", "header.header", "div#footer", "div.footer", "footer#footer", "footer.footer", "header", "footer"};
 	        
 		try {
 	        // Iterate through all the possible name id's and classes
 	        for(String name: possibleNames) {
 	        	String confDays = this.findConfDays(doc.select(name).text());
-	        	if(!confDays.isEmpty())
+	        	if(!confDays.isEmpty()) {
+	        		logger.debug("Found conference days \"" + confDays + "\" from the passed in document");
 	        		return confDays;
+	        	}
 	        }
 		} catch(NullPointerException e) {
-			logger.info("Null Pointer exception but was expected.");
+			return "";
 		}
+		
 		return "";
 	}
 	
@@ -135,7 +138,6 @@ public class Parser3 extends Parser {
 	public LinkedHashMap<String, List<String>> getOrganisers(Document doc, Country country) {
 		LinkedHashMap<String, List<String>> committees = new LinkedHashMap<>();
 		
-		logger.debug("Extracting committees from the passed in document");
 		// Initialize variables
 		String tempSubteam = "";
 		List<String> members = new ArrayList<>();

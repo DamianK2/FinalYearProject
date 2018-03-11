@@ -26,7 +26,7 @@ public class Crawler {
         try {
         	links = doc.select("a[href]");
         } catch(NullPointerException e) {
-        	logger.info("Null Pointer exception but wass expected.");
+        	return linkList;
         }
         
         if(links != null) {
@@ -111,7 +111,7 @@ public class Crawler {
 	 * @return document of the html
 	 */
 	public Document getURLDoc(String url) {
-		logger.debug("Getting document from: " + url);
+//		logger.debug("Getting document from: " + url);
 		Document doc = null;
 		try {
 			doc = Jsoup.connect(url).get();

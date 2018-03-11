@@ -35,18 +35,20 @@ public class Main {
 	private static int counter = 0;
 	final static Semaphore semaphore = new Semaphore(MAX_NOF_THREADS);
 	private static ArrayList<Thread> threads = new ArrayList<>();
-	// private static ArrayList<Double> times = new ArrayList<>();
+//	private static ArrayList<Double> times = new ArrayList<>();
 	static Logger logger = LogManager.getLogger(Main.class);
 
 	public static void main(String[] args) {
 		// long tStartOverall = System.currentTimeMillis();
-		//
-		// for(int k = 0; k < 5; k++) {
+
+		// Testing purposes
+		// for (int k = 0; k < 10; k++) {
 		long tStart = System.currentTimeMillis();
 
 		Country country = new Country();
-		logger.debug("Closing connection to the database for information");
+		logger.debug("Creating connection to the database for information and conference");
 		Information information = new Information();
+		Conference sqlConnection = new Conference();
 
 		Workbook wb = new HSSFWorkbook();
 		// Workbook wb = new XSSFWorkbook();
@@ -78,16 +80,13 @@ public class Main {
 		parsers.add(new Parser8(information, crawler));
 		parsers.add(new Parser9(information, crawler));
 
-		logger.debug("Creating connection to the database for conference");
-		Conference sqlConnection = new Conference();
+		
 
 		// Create threads for each link to decrease crawling time
 		Thread thread;
 		for (String url : information.getLinks()) {
-			logger.debug("Creating thread for: " + url);
 			thread = new Thread(
 					new Worker(url, crawler, country, row, sheet, createHelper, parsers, rowNumber, sqlConnection));
-			logger.debug("Adding thread for: \"" + url + "\" to list of threads");
 			threads.add(thread);
 			logger.debug("Starting thread for: " + url);
 			thread.start();
@@ -117,26 +116,26 @@ public class Main {
 		try {
 			logger.debug("Writing workbook to file");
 			wb.write(fileOut);
-			logger.debug("Closing files and workbook");
+			logger.debug("Closing file and workbook");
 			fileOut.close();
 			wb.close();
 		} catch (IOException e) {
 			logger.fatal("Couldn't write to xls file or close the workbook/file\n" + e.getMessage());
 		}
 
-		logger.debug("Closing connection to the database for information");
+		logger.debug("Closing connection to the database for information and conference");
 		information.closeConnection();
-		logger.debug("Closing connection to the database for conference");
 		sqlConnection.closeConnection();
 
 		long tEnd = System.currentTimeMillis();
 		long tDelta = tEnd - tStart;
 		double elapsedSeconds = tDelta / 1000.0;
+		// Testing purposes
 		// times.add(elapsedSeconds);
 		// }
 		//
 		// int i = 1;
-		// for(double t: times) {
+		// for (double t : times) {
 		// System.out.println("Time taken for " + i + " iteration: " + t);
 		// i++;
 		// }
@@ -147,10 +146,12 @@ public class Main {
 		// System.out.println("Time taken to fetch information 10 times: " +
 		// elapsedSeconds + " seconds");
 		// elapsedSeconds = elapsedSeconds / 10.0;
-		System.out.println("Time taken to fetch information (average): " + elapsedSeconds + " seconds");
+		System.out.println("Time taken to fetch information: " + elapsedSeconds + " seconds");
 	}
-
-	public static synchronized void updateCounter() {
-		counter--;
+	
+	public static synchronized void updatePercentage() {
+		counter++;
+		int percentage = (int) Math.round(((double) counter/(double) threads.size()) * 100.0);
+		System.out.println("Completed: " + percentage + "%");
 	}
 }

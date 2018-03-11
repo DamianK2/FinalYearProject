@@ -64,7 +64,6 @@ public class Parser9 extends Parser {
 					}
 				}
 			} catch(NullPointerException e) {
-				logger.info("Null Pointer exception but was expected.");
 				return new LinkedHashMap<String, LinkedHashMap<String, String>>();
 			}
 		}
