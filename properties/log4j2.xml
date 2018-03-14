@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+  <Appenders>
+	<File name="log_file" fileName="logs/log.log">
+        <PatternLayout pattern="%-5level %d{dd/MM/yy HH:mm:ss.SSS} [%t] %l - %msg%n"/>
+    </File>  
+  </Appenders>
+  <Loggers>
+    <Root level="debug">
+	  <AppenderRef ref="log_file"/>
+    </Root>
+  </Loggers>
+</Configuration>
