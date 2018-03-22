@@ -4,10 +4,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.concurrent.Semaphore;
 
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -32,17 +30,16 @@ import venue.Country;
 
 public class Main {
 	final static int MAX_NOF_THREADS = 10;
-	private static int counter = 0;
+	private static int threads_completed = 0;
 	final static Semaphore semaphore = new Semaphore(MAX_NOF_THREADS);
 	private static ArrayList<Thread> threads = new ArrayList<>();
-//	private static ArrayList<Double> times = new ArrayList<>();
+//	private static ArrayList<Double> times = new ArrayList<>(); // Testing purposes
 	static Logger logger = LogManager.getLogger(Main.class);
 
 	public static void main(String[] args) {
-		// long tStartOverall = System.currentTimeMillis();
+		// long tStartOverall = System.currentTimeMillis(); // Testing purposes
 
-		// Testing purposes
-		// for (int k = 0; k < 10; k++) {
+		// for (int k = 0; k < 10; k++) { // Testing purposes
 		long tStart = System.currentTimeMillis();
 
 		Country country = new Country();
@@ -51,7 +48,6 @@ public class Main {
 		Conference sqlConnection = new Conference();
 
 		Workbook wb = new HSSFWorkbook();
-		// Workbook wb = new XSSFWorkbook();
 		CreationHelper createHelper = wb.getCreationHelper();
 		Sheet sheet = wb.createSheet("new sheet");
 		// Create a row and put some cells in it. Rows are 0 based.
@@ -143,15 +139,15 @@ public class Main {
 		// long tEndOverall = System.currentTimeMillis();
 		// long tDelta = tEndOverall - tStartOverall;
 		// double elapsedSeconds = tDelta / 1000.0;
-		// System.out.println("Time taken to fetch information 10 times: " +
+		// System.out.println("Time taken to extract information 10 times: " +
 		// elapsedSeconds + " seconds");
 		// elapsedSeconds = elapsedSeconds / 10.0;
-		System.out.println("Time taken to fetch information: " + elapsedSeconds + " seconds");
+		System.out.println("Time taken to extract information: " + elapsedSeconds + " seconds");
 	}
 	
 	public static synchronized void updatePercentage() {
-		counter++;
-		int percentage = (int) Math.round(((double) counter/(double) threads.size()) * 100.0);
+		threads_completed++;
+		int percentage = (int) Math.round(((double) threads_completed/(double) threads.size()) * 100.0);
 		System.out.println("Completed: " + percentage + "%");
 	}
 }

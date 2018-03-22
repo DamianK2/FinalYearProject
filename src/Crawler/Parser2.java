@@ -18,6 +18,7 @@ import venue.Country;
 
 public class Parser2 extends Parser {
 	static Logger logger = LogManager.getLogger(Parser2.class);
+	static Logger info_logger = LogManager.getLogger("information_log");
 	
 	public Parser2(Information info, Crawler c) {
 		super(info, c);
@@ -224,7 +225,7 @@ public class Parser2 extends Parser {
 						tempSubteam = "";
 						memberCounter = 0;
 						sb.setLength(0);
-						logger.info("A possible committee member that wasn't found by the system: " + textNode.text());
+						info_logger.info("A possible committee member that wasn't found by the system: " + textNode.text());
 					}
 				}
 			}

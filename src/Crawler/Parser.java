@@ -46,6 +46,7 @@ public class Parser {
 			+ "(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|"
 			+ "Nov(ember)?|Dec(ember)?)\\s\\d{1,2}-\\w+\\s\\d{1,2},\\s\\d{4}";
 	static Logger logger = LogManager.getLogger(Parser.class);
+	static Logger info_logger = LogManager.getLogger("information_log");
 	
 	public Parser(Information info, Crawler c) {
 		information = info;
@@ -384,7 +385,7 @@ public class Parser {
 						}
 						members.clear();
 						tempSubteam = "";
-						logger.info("A possible committee member that wasn't found by the system: " + textNode.text());
+						info_logger.info("A possible committee member that wasn't found by the system: " + textNode.text());
 					}
 				}
 			}

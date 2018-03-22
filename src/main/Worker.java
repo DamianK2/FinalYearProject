@@ -237,10 +237,35 @@ public class Worker implements Runnable {
         }
         
         try {
-			this.sqlConnection.addConference(acronym, title, sponsor, proceedings, description, venue, year, antiquity, conferenceDays, committees, deadlines, url);
+        	logger.debug("Performing addition to venues");
+    		int venueID = this.sqlConnection.addToVenues(venue);
+    		
+    		logger.debug("Checking if conferences exists in the database");
+    		// Check if the conference already exists in the database
+    		int id = this.sqlConnection.checkIfExists(acronym, venueID, year);
+    		
+    		// If the conference exists then overwrite every value in the database for it (to be changed in the future to check which information needs changing)
+    		if(id != -1) {
+    			logger.debug("Overwriting the websites table in database");
+    			this.sqlConnection.updateWebsites(id, acronym, title, sponsor, proceedings, description, venueID, year, antiquity, conferenceDays, mainLink);
+    			logger.debug("Deleting from the deadlines table in database");
+    			this.sqlConnection.deleteFromTable(id, "delete from deadlines where id = ?");
+    			logger.debug("Adding to the deadlines table in database");
+    			this.sqlConnection.addToDeadlines(id, deadlines);
+    			logger.debug("Deleting from the committees table in database");
+    			this.sqlConnection.deleteFromTable(id, "delete from committees where id = ?");
+    			logger.debug("Adding to the committees table in database");
+    			this.sqlConnection.addToCommittees(id, committees);
+    		} else {
+    			logger.debug("Adding new conferences to the websites table in database");
+    			id = this.sqlConnection.addToWebsites(acronym, title, sponsor, proceedings, description, venueID, year, antiquity, conferenceDays, mainLink);
+    			logger.debug("Adding new conference deadlines to the deadlines table in database");
+    			this.sqlConnection.addToDeadlines(id, deadlines);
+    			logger.debug("Adding new conference committees to the committees table in database");
+    			this.sqlConnection.addToCommittees(id, committees);
+    		}
 		} catch (SQLException e) {
-			logger.error("Cannot add extracted conference information to database.\n" + e.getMessage());
-			e.printStackTrace();
+			logger.error("Cannot add extracted conference information to database.");
 		}
 			
 	}

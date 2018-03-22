@@ -28,41 +28,6 @@ public class Conference {
 	public void closeConnection() {
 		conn.closeConnection();
 	}
-
-	public synchronized void addConference(String acronym, String title, String sponsors, String proceedings, String description,
-			String venue, String currentYear, String antiquity, String conferenceDays,
-			LinkedHashMap<String, List<String>> organisers,
-			LinkedHashMap<String, LinkedHashMap<String, String>> deadlines,
-			String link) throws SQLException {
-		
-		logger.debug("Performing addition to venues");
-		int venueID = this.addToVenues(venue);
-		
-		logger.debug("Checking if conferences exists in the database");
-		// Check if the conference already exists in the database
-		int id = this.checkIfExists(acronym, venueID, currentYear);
-		
-		// If the conference exists then overwrite every value in the database for it (to be changed in the future to check which information needs changing)
-		if(id != -1) {
-			logger.debug("Overwriting the websites table in database");
-			this.updateWebsites(id, acronym, title, sponsors, proceedings, description, venueID, currentYear, antiquity, conferenceDays, link);
-			logger.debug("Deleting from the deadlines table in database");
-			this.deleteFromTable(id, "delete from deadlines where id = ?");
-			logger.debug("Adding to the deadlines table in database");
-			this.addToDeadlines(id, deadlines);
-			logger.debug("Deleting from the committees table in database");
-			this.deleteFromTable(id, "delete from committees where id = ?");
-			logger.debug("Adding to the committees table in database");
-			this.addToCommittees(id, organisers);
-		} else {
-			logger.debug("Adding new conferences to the websites table in database");
-			id = this.addToWebsites(acronym, title, sponsors, proceedings, description, venueID, currentYear, antiquity, conferenceDays, link);
-			logger.debug("Adding new conference deadlines to the deadlines table in database");
-			this.addToDeadlines(id, deadlines);
-			logger.debug("Adding new conference committees to the committees table in database");
-			this.addToCommittees(id, organisers);
-		}
-	}
 	
 	/**
 	 * Check if the conference already exists in the database
@@ -72,7 +37,7 @@ public class Conference {
 	 * @return id of row if it exists, otherwise -1
 	 * @throws SQLException
 	 */
-	private int checkIfExists(String acronym, int venueID, String currentYear) throws SQLException {
+	public synchronized int checkIfExists(String acronym, int venueID, String currentYear) throws SQLException {
 		String checkQuery = "select id from websites where acronym = ? and venueID = ? and current_year = ?";
 		preparedStmt = connection.prepareStatement(checkQuery);
 		preparedStmt.setString(1, acronym);
@@ -105,7 +70,7 @@ public class Conference {
 	 * @param conferenceDays
 	 * @throws SQLException
 	 */
-	private void updateWebsites(int id, String acronym, String title, String sponsors, String proceedings, String description,
+	public synchronized void updateWebsites(int id, String acronym, String title, String sponsors, String proceedings, String description,
 			int venueID, String currentYear, String antiquity, String conferenceDays, String link) throws SQLException {
 		String updateQuery = "update websites set acronym = ?, title = ?, sponsors = ?, proceedings = ?, description = ?, venueID = ?, current_year = ?, antiquity = ?, conference_days = ?, link = ? where id = ?";
 		preparedStmt = connection.prepareStatement(updateQuery, Statement.RETURN_GENERATED_KEYS);
@@ -122,7 +87,7 @@ public class Conference {
 	 * @param id
 	 * @throws SQLException
 	 */
-	private void deleteFromTable(int id, String deleteQuery) throws SQLException {
+	public synchronized void deleteFromTable(int id, String deleteQuery) throws SQLException {
 		preparedStmt = connection.prepareStatement(deleteQuery, Statement.RETURN_GENERATED_KEYS);
 		preparedStmt.setInt(1, id);
 		// Delete everything with the given id from the table
@@ -135,7 +100,7 @@ public class Conference {
 	 * @param deadlines
 	 * @throws SQLException
 	 */
-	private void addToDeadlines(int id, LinkedHashMap<String, LinkedHashMap<String, String>> deadlines) throws SQLException {
+	public synchronized void addToDeadlines(int id, LinkedHashMap<String, LinkedHashMap<String, String>> deadlines) throws SQLException {
 		String checkQuery = "select id, deadline_type, deadline_id from deadlines where id = ? and deadline_type = ? and deadline_id = ?";
 		String query = "insert deadlines (id, deadline_type, deadline_id) values (?, ?, ?)";
 		
@@ -169,7 +134,7 @@ public class Conference {
 	 * @param organisers
 	 * @throws SQLException
 	 */
-	private void addToCommittees(int id, LinkedHashMap<String, List<String>> organisers) throws SQLException {
+	public synchronized void addToCommittees(int id, LinkedHashMap<String, List<String>> organisers) throws SQLException {
 		String checkQuery = "select id, titleID, memberID from committees where id = ? and titleID = ? and memberID = ?";
 		String query = "insert committees (id, titleID, memberID) values (?, ?, ?)";
 		int comTitleID;
@@ -223,7 +188,7 @@ public class Conference {
 	 * @return id of the row containing the venue
 	 * @throws SQLException
 	 */
-	private int addToVenues(String venue) throws SQLException {
+	public synchronized int addToVenues(String venue) throws SQLException {
 		// Create the search query
 		String searchQuery = "select id from venues where venue = ?";
 		preparedStmt = connection.prepareStatement(searchQuery);
@@ -246,7 +211,7 @@ public class Conference {
 	 * @return id of the created row
 	 * @throws SQLException
 	 */
-	private int addToWebsites(String acronym, String title, String sponsors, String proceedings, String description,
+	public synchronized int addToWebsites(String acronym, String title, String sponsors, String proceedings, String description,
 			int venueID, String currentYear, String antiquity, String conferenceDays, String link) throws SQLException {
 		// Create the query
 		String mainQuery = "insert websites (acronym, title, sponsors, proceedings, description, venueID, current_year, antiquity, conference_days, link) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
