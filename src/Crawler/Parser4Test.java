@@ -66,8 +66,6 @@ class Parser4Test {
 	
 	@Test
 	void testGetDeadlines() {
-		System.out.println(parser.getDeadlines(new ArrayList<String>(Arrays.asList("https://2018.splashcon.org/home"))));
-		
 		ArrayList<String> links = new ArrayList<String>(Arrays.asList("https://2018.splashcon.org/home",
 				"http://www.icsoft.org/ImportantDates.aspx"));
 		LinkedHashMap<String, LinkedHashMap<String, String>> deadlineTypes = parser.getDeadlines(links);

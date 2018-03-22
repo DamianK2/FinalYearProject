@@ -188,6 +188,8 @@ class ParserTest {
 		assertEquals("", parser.getAntiquity("", "", null));
 		assertEquals("Twentieth", parser.getAntiquity("", "20th", null));
 		assertEquals("Forty-Fourth", parser.getAntiquity("", "44th", null));
+		assertEquals("Forty-Fourth", parser.getAntiquity("", "Forty-Fourth conference and will take place from July 19th to 21st 2018", null));
+		assertEquals("", parser.getAntiquity("", "July 19th to 21st 2018", null));
 	}
 
 	@Test
@@ -195,6 +197,7 @@ class ParserTest {
 		assertEquals("", parser.getConferenceDays("", "", null));
 		assertEquals("25-27 June 2018", parser.getConferenceDays("La La La catch this date: 25-27 June 2018, if you can", "", null));
 		assertEquals("", parser.getConferenceDays("25                                  - 27 June 2018", "", null));
+		assertEquals("July 19th to 21st 2018", parser.getConferenceDays("July 19th to 21st 2018 in Amsterdam", "", null));
 	}
 	
 	@Test

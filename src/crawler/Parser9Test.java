@@ -16,7 +16,6 @@ class Parser9Test {
 	
 	@Test
 	void testGetDeadlines() {
-		System.out.println(parser.getDeadlines(new ArrayList<String>(Arrays.asList("https://ieeecompsac.computer.org/2018/important-dates/"))));
 		ArrayList<String> links = new ArrayList<String>(Arrays.asList("https://ieeecompsac.computer.org/2018/important-dates/"));
 		LinkedHashMap<String, LinkedHashMap<String, String>> deadlineTypes = parser.getDeadlines(links);
 		assertTrue(deadlineTypes.containsKey("0"));
@@ -31,8 +30,8 @@ class Parser9Test {
 		assertEquals("March 31, 2018", deadlines.get("Main conference symposia author notifications"));
 		
 		deadlines = deadlineTypes.get("3");
-		assertTrue(deadlines.containsKey("Workshop paper, Fast Abstract author notifications"));
-		assertEquals("May 10, 2018", deadlines.get("Workshop paper, Fast Abstract author notifications"));
+		assertTrue(deadlines.containsKey("Workshop paper, J1C2, Fast Abstract, and SRS author notifications"));
+		assertEquals("May 10, 2018", deadlines.get("Workshop paper, J1C2, Fast Abstract, and SRS author notifications"));
 		
 		deadlines = deadlineTypes.get("4");
 		assertTrue(deadlines.containsKey("Camera ready submissions and advance author registration due"));

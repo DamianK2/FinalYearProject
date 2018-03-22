@@ -35,16 +35,18 @@ public class Parser {
 	private static final ArrayList<String> TENS = new ArrayList<>(
 										Arrays.asList("Twent", "Thirt", "Fort", "Fift", 
 										"Sixt", "Sevent", "Eight", "Ninet"));	
-	private static final int MAX_CHARS_IN_DATE = 30;
+	private static final int MAX_CHARS_IN_DATE = 45;
 	protected static String acronymPattern = "([A-Z]{3,}.[A-Z]{1,}|[A-Z]{3,})";
 	protected static String acronymYearPattern = "([A-Z]+.[A-Z]+|[A-Z]+)('|\\s)(\\d{4}|\\d{2})";
-	private static String confDaysPattern = "\\d+\\s*?(-|–)\\s*?\\d+.+\\w+.\\d{4}|(Jan(uary)?|Feb(ruary)?|Mar(ch)?|"
-			+ "Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)."
-			+ "+\\d{1,2}(-|\\s–\\s)\\d{1,2}.+?\\d{4}|(Mon(day)?|Tue(sday)?|Wed(nesday)?|Thu(rsday)?|Fri(day)?|"
-			+ "Sat(urday)?|Sun(day)?)(\\s+?|,\\s+?).+?\\d{1,2}\\s+?(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|"
-			+ "May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\\s+?\\d{4}|"
-			+ "(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|"
-			+ "Nov(ember)?|Dec(ember)?)\\s\\d{1,2}-\\w+\\s\\d{1,2},\\s\\d{4}";
+	private static String confDaysPattern = "\\d+\\s*?(-|–)\\s*?\\d+.+\\w+.\\d{4}|(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|"
+			+ "Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?).+?\\d{1,2}.+?(-|–|to\\s)\\d{1,2}.+?\\d{4}"
+			+ "|(Mon(day)?|Tue(sday)?|Wed(nesday)?|Thu(rsday)?|Fri(day)?|Sat(urday)?|Sun(day)?)\\s\\d{1,2}.+?to.+?\\d{1,2}.+?"
+			+ "(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|"
+			+ "Dec(ember)?)\\s\\d{4}|(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?"
+			+ "|Nov(ember)?|Dec(ember)?).+\\d{1,2}(-|\\s–\\s)\\d{1,2}.+?\\d{4}|(Mon(day)?|Tue(sday)?|Wed(nesday)?|Thu(rsday)?|Fri(day)?|"
+			+ "Sat(urday)?|Sun(day)?)(\\s+?|,\\s+?).+?\\d{1,2}\\s+?(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|"
+			+ "Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\\s+?\\d{4}|(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|"
+			+ "Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\\s\\d{1,2}-\\w+\\s\\d{1,2},\\s\\d{4}";
 	static Logger logger = LogManager.getLogger(Parser.class);
 	static Logger info_logger = LogManager.getLogger("information_log");
 	
@@ -313,6 +315,13 @@ public class Parser {
 		matcher = pattern.matcher(description);
 		if(matcher.find()) {
 			antiquity = matcher.group(0);
+			String confDays = this.findConfDays(description);
+
+			if(!confDays.isEmpty()) {
+				if(confDays.contains(antiquity))
+					return "";
+			}
+				
 			// If the string is in the format of "1st, 2nd, 3rd" etc.
 			// Change it to its ordinal form
 			if(antiquity.toLowerCase().matches("\\d{1,2}(?:st|nd|rd|th)")) {
