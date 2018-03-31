@@ -3,14 +3,19 @@ package crawler;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
-public class Parser9 extends Parser {
+import database.Information;
 
-	public Parser9(Information info) {
-		super(info);
+public class Parser9 extends Parser {
+	static Logger logger = LogManager.getLogger(Parser9.class);
+
+	public Parser9(Information info, Crawler c) {
+		super(info, c);
 	}
 
 	@Override
@@ -25,11 +30,11 @@ public class Parser9 extends Parser {
 		if(link.isEmpty())
 			return allDeadlines;
 		else {
-			doc = this.getURLDoc(link);
-			
-			Elements el = doc.select("div:contains(Important Dates)");
+			logger.debug("Getting deadlines from: " + link);
+			doc = crawler.getURLDoc(link);
 			
 			try {
+				Elements el = doc.select("div:contains(Important Dates)");
 				// Extract the paragraph
 				String elementString = el.select("p").toString().replaceAll("\r|\n", "");
 				// Replace the unneeded text

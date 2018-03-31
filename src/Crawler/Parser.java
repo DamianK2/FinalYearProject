@@ -1,24 +1,29 @@
 package crawler;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
+import database.Information;
 import venue.Country;
 
 public class Parser {
 	protected static Information information;
-	protected static ArrayList<String> searchKeywords = new ArrayList<>();
+	protected static Crawler crawler;
+	// Synchronize the list to avoid concurrent modification
+	protected static List<String> searchKeywords = Collections.synchronizedList(new ArrayList<>());
 	private static final ArrayList<String> SPECIAL_CASES = new ArrayList<>(
 															Arrays.asList(
 															"Zeroth","First", "Second", "Third", 
@@ -30,29 +35,31 @@ public class Parser {
 	private static final ArrayList<String> TENS = new ArrayList<>(
 										Arrays.asList("Twent", "Thirt", "Fort", "Fift", 
 										"Sixt", "Sevent", "Eight", "Ninet"));	
-	private static final int MAX_CHARS_IN_DATE = 30;
+	private static final int MAX_CHARS_IN_DATE = 45;
 	protected static String acronymPattern = "([A-Z]{3,}.[A-Z]{1,}|[A-Z]{3,})";
 	protected static String acronymYearPattern = "([A-Z]+.[A-Z]+|[A-Z]+)('|\\s)(\\d{4}|\\d{2})";
-	private static String confDaysPattern = "\\d+\\s*?(-|–)\\s*?\\d+.+\\w+.\\d{4}|(Jan(uary)?|Feb(ruary)?|Mar(ch)?|"
-			+ "Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)."
-			+ "+\\d{1,2}(-|\\s–\\s)\\d{1,2}.+?\\d{4}|(Mon(day)?|Tue(sday)?|Wed(nesday)?|Thu(rsday)?|Fri(day)?|"
-			+ "Sat(urday)?|Sun(day)?)(\\s+?|,\\s+?).+?\\d{1,2}\\s+?(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|"
-			+ "May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\\s+?\\d{4}|"
-			+ "(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|"
-			+ "Nov(ember)?|Dec(ember)?)\\s\\d{1,2}-\\w+\\s\\d{1,2},\\s\\d{4}";
+	private static String confDaysPattern = "\\d+\\s*?(-|–)\\s*?\\d+.+\\w+.\\d{4}|(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|"
+			+ "Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?).+?\\d{1,2}.+?(-|–|to\\s)\\d{1,2}.+?\\d{4}"
+			+ "|(Mon(day)?|Tue(sday)?|Wed(nesday)?|Thu(rsday)?|Fri(day)?|Sat(urday)?|Sun(day)?)\\s\\d{1,2}.+?to.+?\\d{1,2}.+?"
+			+ "(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|"
+			+ "Dec(ember)?)\\s\\d{4}|(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?"
+			+ "|Nov(ember)?|Dec(ember)?).+\\d{1,2}(-|\\s–\\s)\\d{1,2}.+?\\d{4}|(Mon(day)?|Tue(sday)?|Wed(nesday)?|Thu(rsday)?|Fri(day)?|"
+			+ "Sat(urday)?|Sun(day)?)(\\s+?|,\\s+?).+?\\d{1,2}\\s+?(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|"
+			+ "Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\\s+?\\d{4}|(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|"
+			+ "Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\\s\\d{1,2}-\\w+\\s\\d{1,2},\\s\\d{4}";
+	static Logger logger = LogManager.getLogger(Parser.class);
+	static Logger info_logger = LogManager.getLogger("information_log");
 	
-	public Parser(Information info) {
+	public Parser(Information info, Crawler c) {
 		information = info;
+		crawler = c;
 	}
 	
 	/**
 	 * Extracts the title from the home page of the website.
 	 * @return title
 	 */
-	public String getTitle(String homeLink) {
-		Document doc = null;
-		// Connect to the home page
-        doc = this.getURLDoc(homeLink);
+	public String getTitle(Document doc) {
 		return doc.title();
 	}
 	
@@ -62,7 +69,9 @@ public class Parser {
 	 * @return acronym or empty string
 	 */
 	public String getAcronym(String title, String description) {
-		return this.findAcronym(title);
+		String found = this.findAcronym(title);
+		logger.debug("Found acronym \"" + found + "\" from title");
+		return found;
 	}
 	
 	/**
@@ -81,7 +90,8 @@ public class Parser {
 				else
 					sponsors += "/" + sponsor;	//There can be more than 1 sponsor
 		}
-		
+		logger.debug("Found sponsors" + sponsors + "\" from title");
+
 		return sponsors;
 	}
 	
@@ -89,29 +99,46 @@ public class Parser {
 	 * Searches and parses different links to find the proceedings.
 	 * @return proceedings
 	 */
-	public String getProceedings(ArrayList<String> linkList) {
+	public String getProceedings(Document doc) {
+		if(doc == null) 
+			return "";
+		
+		// Use SB to concatenate many proceedings
 		StringBuilder proceedings = new StringBuilder();
-		this.addLinkKeywords();
-		Document doc;
-		int keyword = 0;
-		while(proceedings.toString().isEmpty() && keyword < searchKeywords.size()) {
-			String url = this.searchLinks(searchKeywords.get(keyword), linkList);
-			if(!url.isEmpty()) {
-				doc = this.getURLDoc(url);
-				for(Element e: doc.getAllElements()) {
-					String elementString = e.wholeText();
-					for(String proc: information.getProceedings()) {
-						if(elementString.matches(changeToRegex(" " + proc)))
-							if(proceedings.toString().isEmpty())
-								proceedings.append(proc);
-							else if(!proceedings.toString().contains(proc))
-								proceedings.append("/" + proc);
-					}
-				}
+			
+		// Get all the elements
+		for(Element e: doc.getAllElements()) {
+			String elementString = e.wholeText();
+			// Find the proceedings in the text
+			for(String proc: information.getProceedings()) {
+				// Make sure it has a space in front of it
+				if(elementString.matches(changeToRegex(" " + proc)))
+					if(proceedings.toString().isEmpty())
+						proceedings.append(proc);
+					else if(!proceedings.toString().contains(proc))
+						proceedings.append("/" + proc);
 			}
-			keyword++;
 		}
+		
 		return proceedings.toString();
+	}
+	
+	/**
+	 * Find links in the passed in list that can contain proceedings
+	 * @param linkList
+	 * @return list of potential proceeding links
+	 */
+	public synchronized ArrayList<String> findProceedingLinks(ArrayList<String> linkList) {
+		ArrayList<String> proceedingLinks = new ArrayList<>();
+		this.addLinkKeywords();
+		synchronized(searchKeywords) {
+			for(String keyword: searchKeywords) {
+				String url = this.searchLinks(keyword, linkList);
+				if(!url.isEmpty())
+					proceedingLinks.add(url);
+			}
+		}
+		return proceedingLinks;
 	}
 	
 	/**
@@ -119,19 +146,14 @@ public class Parser {
 	 * or the head of the website.
 	 * @return description
 	 */
-	public String getDescription(String homeLink) {
-		Document doc = null;
-		// Connect to the home page
-        doc = this.getURLDoc(homeLink);
+	public String getDescription(Document doc) {
 		String meta = "";
 		try {
 			meta = doc.select("meta[name=description]").first().attr("content");
-			System.out.println("Decription: " + meta);
+			return meta;
 		} catch(NullPointerException e) {
-		   System.out.println("No meta with attribute \"name\"");
+			return "";
 		}
-	
-		return meta;
 	}
 	
 	/**
@@ -143,32 +165,47 @@ public class Parser {
 	 * @param country
 	 * @return venue or empty string
 	 */
-	public String getVenue(String title, String description, Country country, ArrayList<String> linkList) {
-		String venue = "";
-		String[] links = new String[2];
-		Document doc = null;
-		// Search for the different links in the conference
-		links[0] = this.searchLinks("[vV]enue", linkList);
-		links[1] = this.searchLinks("[rR]egistra", linkList);
+	public String getVenue(String title, String description, Country country, Document doc) {
+		if(doc == null)
+			return "";
 		
-		for(String link: links) {
-			if(!link.isEmpty()) {
-				// Connect to the target link
-				doc = this.getURLDoc(link);
-				
-				for(Element e: doc.getAllElements()) {
-					for(TextNode textNode: e.textNodes()) {
-//						searchCountries(textNode.text(), country);
-						if(!textNode.text().matches("^\\s+$")) {
-							venue = searchCountries(textNode.text(), country);
-							if(!venue.isEmpty())
-								return venue;
-						}
+		String venue = "";
+		// Go through all the elements in the document
+		for(Element e: doc.getAllElements()) {
+			// Extract text nodes
+			for(TextNode textNode: e.textNodes()) {
+				// Omit empty strings
+				if(!textNode.text().matches("^\\s+$")) {
+					// Search for countries in the text node
+					venue = searchCountries(textNode.text(), country);
+					if(!venue.isEmpty()) {
+						logger.debug("Found venue \"" + venue + "\" from from passed in document");
+						return venue;
 					}
 				}
 			}
 		}
+		
 		return venue;
+	}
+	
+	public synchronized ArrayList<String> findVenueLinks(ArrayList<String> linkList) {
+		ArrayList<String> venueLinks = new ArrayList<>();
+		venueLinks.add(linkList.get(0));
+		// Search the links for the title of the webpage (aimed at pages with frames)
+		ArrayList<String> possibleLinks = this.findAllLinks(this.changeToRegex("[tT]itle"), linkList);
+		if(!possibleLinks.isEmpty())
+			venueLinks.addAll(possibleLinks);
+		
+		// Search for the different links in the conference
+		String link = this.searchLinks("[vV]enue", linkList);
+		if(!link.isEmpty())
+			venueLinks.add(link);
+		link = this.searchLinks("[rR]egistra", linkList);
+		if(!link.isEmpty())
+			venueLinks.add(link);
+
+		return venueLinks;
 	}
 	
 	/**
@@ -185,7 +222,8 @@ public class Parser {
 		if(link.isEmpty())
 			return allDeadlines;
 		else {
-			doc = this.getURLDoc(link);
+			logger.debug("Getting deadlines from: " + link);
+			doc = crawler.getURLDoc(link);
 			
 			Elements tds;
 			try {
@@ -237,14 +275,6 @@ public class Parser {
 					keyHeading = filteredTd;
 				}
 			}
-			
-//			for(String key: allDeadlines.keySet()) {
-//				System.out.println("Heading: " + key);
-//				LinkedHashMap<String, String> deadlines1 = allDeadlines.get(key);
-//				for(String d: deadlines1.keySet()) {
-//					System.out.println(d + ": " + deadlines1.get(d));
-//				}
-//			}
 				
 			return allDeadlines.size() < 3 ? new LinkedHashMap<String, LinkedHashMap<String, String>>() : allDeadlines;
 		}
@@ -263,6 +293,8 @@ public class Parser {
 		matcher = pattern.matcher(date);
 		if(matcher.find())
 			year = matcher.group(0);
+		
+		logger.debug("Found conference year \"" + year + "\" from the date");
 		return year;
 	}
 	
@@ -271,7 +303,7 @@ public class Parser {
 	 * @param description
 	 * @return antiquity
 	 */
-	public String getAntiquity(String title, String description, ArrayList<String> linkList) {
+	public String getAntiquity(String title, String description, Document doc) {
 		String antiquity = "";
 		Pattern pattern = Pattern.compile("\\d{1,2}(st|nd|rd|th)|([tT]wenty-|[tT]hirty-|[fF]orty-"
 				+ "|[fF]ifty-|[sS]ixty-|[sS]eventy-|[eE]ighty-|[nN]inety-)*([fF]ir|[sS]eco|[tT]hi|"
@@ -283,6 +315,13 @@ public class Parser {
 		matcher = pattern.matcher(description);
 		if(matcher.find()) {
 			antiquity = matcher.group(0);
+			String confDays = this.findConfDays(description);
+
+			if(!confDays.isEmpty()) {
+				if(confDays.contains(antiquity))
+					return "";
+			}
+				
 			// If the string is in the format of "1st, 2nd, 3rd" etc.
 			// Change it to its ordinal form
 			if(antiquity.toLowerCase().matches("\\d{1,2}(?:st|nd|rd|th)")) {
@@ -291,6 +330,7 @@ public class Parser {
 			}
 		}
 		
+		logger.debug("Found antiquity \"" + antiquity +  "\" from the description");
 		return antiquity;
 	}
 	
@@ -299,8 +339,10 @@ public class Parser {
 	 * @param title, description
 	 * @return date
 	 */
-	public String getConferenceDays(String title, String description, ArrayList<String> linkList) {		
-		return this.findConfDays(title);
+	public String getConferenceDays(String title, String description, Document doc) {
+		String confDays = this.findConfDays(title);
+		logger.debug("Found conference days \"" + confDays + "\" from the title");
+		return confDays;
 	}
 	
 	/**
@@ -309,70 +351,50 @@ public class Parser {
 	 * @param country
 	 * @return a map with organizer teams as key and a list of members as value
 	 */
-	public LinkedHashMap<String, List<String>> getOrganisers(ArrayList<String> linkList, Country country) {
-		List<String> potentialLinks = new ArrayList<>();
-		// Find the links on the websites that contain the organizers
-		this.addCommitteeSearchWords();
-		for(String keyword: searchKeywords) {
-			ArrayList<String> links = this.findAllLinks(keyword, linkList);
-			if(!links.isEmpty())
-				for(String link: links)
-					if(!potentialLinks.contains(link))
-						potentialLinks.add(link);
-		}
-		
+	public LinkedHashMap<String, List<String>> getOrganisers(Document doc, Country country) {
 		LinkedHashMap<String, List<String>> committees = new LinkedHashMap<>();
-
-		if(potentialLinks.isEmpty())
-			return committees;
+		
 		// Check if the format of organisers is suitable for this code
-		else if(!this.checkOrganiserFormat(potentialLinks.get(0), country))
+		if(!this.checkOrganiserFormat(doc, country))
 			return committees;
 		else {
 			String tempSubteam = "";
 			
 			List<String> members = new ArrayList<>();
 			
-			for(String link: potentialLinks) {
-				// Get the document
-				Document doc = this.getURLDoc(link);
-				// Replace the strong tags as they can cause wrong committees to be returned from certain websites
-				doc = Jsoup.parse(doc.toString().replaceAll("<strong>|</strong>", ""));
-				// Find all elements and text nodes
-				for(Element node: doc.getAllElements()) {	
-					for(TextNode textNode: node.textNodes()) {
-						// Search for committee names in the text node
-						if(this.searchForCommittees(textNode.text())) {
-							// If the subteam isn't empty and there are members in the list add them to the map to be returned later
-							if(!tempSubteam.equals("") && !members.isEmpty()) {
-								committees.put(tempSubteam, new ArrayList<String>(members));
-								members.clear();
-							}
-							// Add the subteam found for later use as a key
-							tempSubteam = textNode.text();
-	//						System.out.println("FOUND: " + textNode.text());
-	//						System.out.println(tempSubteam);
-						}
-						// Check the string for a country to find if it is a member or not
-						else if(this.checkStringForCountry(textNode.text(), country)) {
-							// Add the member to the list if a valid subteam is present
-							if(textNode.text().matches(".*?(,|\\().*?,.*$")) {
-								if(!tempSubteam.equals(""))
-									members.add(textNode.text());
-							}
-	//						System.out.println(textNode.text());
-	//						System.out.println(members);
-						}
-						// Do nothing with empty strings
-						else if(textNode.text().matches("^\\s+$")); 
-						else {
-							// If it's neither a member or a subteam then everything gathered so far to the map and clear the variables
-							if(!tempSubteam.equals("") && !members.isEmpty()) {
-								committees.put(tempSubteam, new ArrayList<String>(members));
-							}
+			// Replace the strong tags as they can cause wrong committees to be returned from certain websites
+			doc = Jsoup.parse(doc.toString().replaceAll("<strong>|</strong>", ""));
+			// Find all elements and text nodes
+			for(Element node: doc.getAllElements()) {	
+				for(TextNode textNode: node.textNodes()) {
+					// Search for committee names in the text node
+					if(this.searchForCommittees(textNode.text())) {
+						// If the subteam isn't empty and there are members in the list add them to the map to be returned later
+						if(!tempSubteam.equals("") && !members.isEmpty()) {
+							committees.put(tempSubteam, new ArrayList<String>(members));
 							members.clear();
-							tempSubteam = "";
 						}
+						// Add the subteam found for later use as a key
+						tempSubteam = textNode.text();
+					}
+					// Check the string for a country to find if it is a member or not
+					else if(this.checkStringForCountry(textNode.text(), country)) {
+						// Add the member to the list if a valid subteam is present
+						if(textNode.text().matches(".*?(,|\\().*?,.*$")) {
+							if(!tempSubteam.equals(""))
+								members.add(textNode.text().replaceAll("\"|'", ""));
+						}
+					}
+					// Do nothing with empty strings
+					else if(textNode.text().matches("^\\s+$")); 
+					else {
+						// If it's neither a member or a subteam then everything gathered so far to the map and clear the variables
+						if(!tempSubteam.equals("") && !members.isEmpty()) {
+							committees.put(tempSubteam.replaceAll("\"|'", ""), new ArrayList<String>(members));
+						}
+						members.clear();
+						tempSubteam = "";
+						info_logger.info("A possible committee member that wasn't found by the system: " + textNode.text());
 					}
 				}
 			}
@@ -380,6 +402,30 @@ public class Parser {
 		
 		// If only 1 committee is returned then it must be an error
 		return committees.size() < 2 ? new LinkedHashMap<String, List<String>>() : committees;
+	}
+	
+	/**
+	 * Looks through the links to find ones that may contain committees
+	 * @param linkList
+	 * @return list of links that could contain committee members
+	 */
+	public synchronized ArrayList<String> findCommitteeLinks(ArrayList<String> linkList) {
+		ArrayList<String> potentialLinks = new ArrayList<>();
+		// Find the links on the websites that contain the organizers
+		this.addCommitteeSearchWords();
+		
+		// Needs to be synchronized so that two threads don't modify the same list at the same time
+		synchronized(searchKeywords) {
+			for(String keyword: searchKeywords) {
+				ArrayList<String> links = this.findAllLinks(keyword, linkList);
+				if(!links.isEmpty())
+					for(String link: links)
+						if(!potentialLinks.contains(link))
+							potentialLinks.add(link);
+			}
+		}
+		
+		return potentialLinks;
 	}
 	
 	// ------------- HELPER METHODS START HERE -------------
@@ -405,7 +451,6 @@ public class Parser {
 		searchKeywords.clear();
 		searchKeywords.add(this.changeToRegex("[oO]rganiz"));
 		searchKeywords.add(this.changeToRegex("[oO]rganis"));
-//		searchKeywords.add(this.changeToRegex("[pP]rogram"));
 		searchKeywords.add(this.changeToRegex("[pP]eople"));
 		searchKeywords.add(this.changeToRegex("[cC]ommittee"));
 	}
@@ -430,7 +475,7 @@ public class Parser {
 	 * @param country
 	 * @return venue
 	 */
-	protected String searchCountries(String string, Country country) {
+	protected synchronized String searchCountries(String string, Country country) {
 		String venue = "", countryRegex;
 		// Go through the list of countries
 		for(String countryName: country.getCountries()) {
@@ -481,7 +526,7 @@ public class Parser {
 	 * @param keyword
 	 * @return link
 	 */
-	protected String searchLinks(String keyword, ArrayList<String> linkList) {
+	protected synchronized String searchLinks(String keyword, ArrayList<String> linkList) {
 		String answer = "";
 		keyword = this.changeToRegex(keyword);
 		
@@ -514,25 +559,6 @@ public class Parser {
 		}
 		
 		return answer;
-	}
-	
-	/**
-	 * Receives the URL to connect to and after successfully 
-	 * connecting, returns the document object.
-	 * @param url
-	 * @return document
-	 */
-	protected Document getURLDoc(String url) {
-		Document doc = null;
-		try {
-			doc = Jsoup.connect(url).get();
-			
-			System.out.println("(inside Parser)Fetching from " + url + "...");
-		} catch (IOException e) {
-			System.out.println("Something went wrong when getting the first element from the list of links.");
-			e.printStackTrace();
-		}
-		return doc;
 	}
 	
 	/**
@@ -595,8 +621,8 @@ public class Parser {
 	 * @param country
 	 * @return true/false
 	 */
-	protected boolean checkOrganiserFormat(String link, Country country) {
-		Document doc = this.getURLDoc(link);
+	protected boolean checkOrganiserFormat(Document doc, Country country) {
+		logger.debug("Checking format of the passed in document");
 		int counter = 0;
 		// Find all elements and text nodes
 		for(Element node: doc.getAllElements()) {
@@ -673,5 +699,33 @@ public class Parser {
 		}
 		
 		return found;
+	}
+	
+	/**
+	 * Finds a link with the history keyword
+	 * @param linkList
+	 * @return link containing the history keyword
+	 */
+	public String findLinkContainingHistory(ArrayList<String> linkList) {
+		return this.searchLinks("[hH]istory", linkList);
+	}
+	
+	/**
+	 * Finds a link with the history keyword
+	 * @param linkList
+	 * @return link containing the history keyword
+	 */
+	public ArrayList<String> findConferenceDaysLinks(ArrayList<String> linkList) {
+		ArrayList<String> possibleLinks = new ArrayList<>();
+		possibleLinks.add(linkList.get(0));
+		// Search the links for the title of the webpage (aimed at pages with frames)
+		ArrayList<String> links = this.findAllLinks(this.changeToRegex("[tT]itle"), linkList);
+		if(!links.isEmpty())
+			possibleLinks.addAll(links);
+		String link = this.searchLinks("[iI]mportant", linkList);
+		if(!link.isEmpty())
+			possibleLinks.add(link);
+		
+		return possibleLinks;
 	}
 }

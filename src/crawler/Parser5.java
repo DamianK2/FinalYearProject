@@ -2,31 +2,36 @@ package crawler;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 
+import database.Information;
+
 public class Parser5 extends Parser {
+	static Logger logger = LogManager.getLogger(Parser5.class);
 	
-	public Parser5(Information info) {
-		super(info);
+	public Parser5(Information info, Crawler c) {
+		super(info, c);
 	}
 	
 	@Override
-	public String getDescription(String homeLink) {
-		Document doc = this.getURLDoc(homeLink);
+	public String getDescription(Document doc) {
 		String description = "";
 
 		try {
 			description = doc.select("p").first().text();
-			System.out.println(description);
+			return description;
 		} catch(NullPointerException e) {
-			System.err.println("No paragraph found to extract the description.");
+			return "";
 		}
 		
-		return description;
+		
 	}
 	
 	@Override
@@ -41,11 +46,11 @@ public class Parser5 extends Parser {
 		if(link.isEmpty())
 			return allDeadlines;
 		else {
-			doc = this.getURLDoc(link);
-			
-			Element el = doc.select("div:contains(Important Dates)").last();
-			
 			try {
+				logger.debug("Getting deadlines from: " + link);
+				doc = crawler.getURLDoc(link);
+				
+				Element el = doc.select("div:contains(Important Dates)").last();
 				// Extract the paragraph
 				String elementString = el.select("p").toString().replaceAll("\r|\n", "");
 				// Replace the unneeded text
@@ -87,40 +92,52 @@ public class Parser5 extends Parser {
 	}
 	
 	@Override
-	public String getAntiquity(String title, String description, ArrayList<String> linkList) {
-		String link = this.searchLinks("[hH]istory", linkList);
-		Document doc;
-		if(!link.equals(""))
-			doc = this.getURLDoc(link);
-		else
+	public String getAntiquity(String title, String description, Document doc) {
+		if(doc == null) 
 			return "";
-	
-		int antiquity = 1;
-		for(Element el: doc.getAllElements()) {
-			for(TextNode textNode: el.textNodes()) {
-				if(textNode.text().toLowerCase().matches(this.changeToRegex("\\d{1,2}(?:st|nd|rd|th)")))
-					antiquity++;
+		
+		Pattern pattern = Pattern.compile("\\d{1,2}(st|nd|rd|th)|([tT]wenty-|[tT]hirty-|[fF]orty-"
+				+ "|[fF]ifty-|[sS]ixty-|[sS]eventy-|[eE]ighty-|[nN]inety-)*([fF]ir|[sS]eco|[tT]hi|"
+				+ "[fF]our|[fF]if|[sS]ix|[sS]even|[eE]igh|[nN]in|[tT]en|[eE]leven|[tT]welf|[tT]hirteen|"
+				+ "[fF]ourteen|[fF]ifteen|[sS]ixteen|[sS]eventeen|[eE]ighteen|[nN]ineteen)(st|nd|rd|th)|"
+				+ "(twentieth|thirtieth|fourtieth|fiftieth|sixtieth|seventieth|eightieth|ninetieth)", Pattern.CASE_INSENSITIVE);
+		
+		// Split on the new line character
+		String[] separated = doc.wholeText().split("\n");
+		String antiquity = "";
+		
+		for(String toCheck: separated) {
+			antiquity = this.findPattern(toCheck, pattern);
+			
+			// No need to check other if statements if the string is empty
+			if(antiquity.isEmpty())
+				continue;
+			// If it is in the form of 1st, 2nd, 3rd etc. then strip of the ending i.e. st, nd
+			else if(antiquity.toLowerCase().matches("\\d{1,2}(?:st|nd|rd|th)")) {
+				String[] number = antiquity.toLowerCase().split("(?:st|nd|rd|th)");
+				antiquity = this.toOrdinal(Integer.parseInt(number[0]));
+				logger.debug("Found antiquity \"" + antiquity +  "\" from passed in document");
+				return antiquity;
 			}
 		}
 		
-		return this.toOrdinal(antiquity);
-		
+		return "";
 	}
-
+	
 	@Override
-	public String getConferenceDays(String title, String description, ArrayList<String> linkList) {
-		
-		Document doc = this.getURLDoc(linkList.get(0));
+	public String getConferenceDays(String title, String description, Document doc) {
+		if(doc == null) 
+			return "";
 		
 		for(Element el: doc.getAllElements()) {
 			for(TextNode textNode: el.textNodes()) {
 				String found = this.findConfDays(textNode.text());
 				if(!found.equals("")) {
+					logger.debug("Found conference days \"" + found + "\" from the passed in document");
 					return found;
 				}
 			}
 		}
-		
 		return "";
 	}
 }

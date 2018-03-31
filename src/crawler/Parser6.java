@@ -1,19 +1,23 @@
 package crawler;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 
-public class Parser6 extends Parser {
+import database.Information;
 
-	public Parser6(Information info) {
-		super(info);
+public class Parser6 extends Parser {
+	static Logger logger = LogManager.getLogger(Parser6.class);
+
+	public Parser6(Information info, Crawler c) {
+		super(info, c);
 	}
 	
 	@Override
@@ -32,7 +36,8 @@ public class Parser6 extends Parser {
 		links.addAll(this.findAllLinks("important_dates", linkList));
 		
 		for(String link: links) {
-			doc = this.getURLDoc(link);
+			logger.debug("Getting deadlines from: " + link);
+			doc = crawler.getURLDoc(link);
 			
 			try {
 				// Select the div with "Important Dates"
@@ -85,18 +90,10 @@ public class Parser6 extends Parser {
 				deadlines.clear();
 			}
 			
-//			System.out.println("-----------------------");
-//			for(String key: allDeadlines.keySet()) {
-//				System.out.println();
-//				System.out.println("Heading: " + key);
-//				LinkedHashMap<String, String> deadlines1 = allDeadlines.get(key);
-//				for(String d: deadlines1.keySet()) {
-//					System.out.println(d + ": " + deadlines1.get(d));
-//				}
-//			}
-			
-			if(!allDeadlines.isEmpty())
+			if(!allDeadlines.isEmpty() && allDeadlines.size() > 1)
 				return allDeadlines;
+			else
+				return new LinkedHashMap<String, LinkedHashMap<String, String>>();
 		}
 		
 
@@ -104,61 +101,36 @@ public class Parser6 extends Parser {
 		return allDeadlines;
 	}
 	
-	public static void main(String[] args) {
-		Parser p = new Parser6(new Information());
-		p.getDeadlines(new ArrayList<String>(Arrays.asList("http://www.ieee-iccse.org/important_dates.html")));
-	}
-	
 	@Override
-	public String getAntiquity(String title, String description, ArrayList<String> linkList) {
-		Pattern pattern = Pattern.compile("\\d{1,2}(st|nd|rd|th)|([tT]wenty-|[tT]hirty-|[fF]orty-"
-				+ "|[fF]ifty-|[sS]ixty-|[sS]eventy-|[eE]ighty-|[nN]inety-)*([fF]ir|[sS]eco|[tT]hi|"
-				+ "[fF]our|[fF]if|[sS]ix|[sS]even|[eE]igh|[nN]in|[tT]en|[eE]leven|[tT]welf|[tT]hirteen|"
-				+ "[fF]ourteen|[fF]ifteen|[sS]ixteen|[sS]eventeen|[eE]ighteen|[nN]ineteen)(st|nd|rd|th)|"
-				+ "(twentieth|thirtieth|fourtieth|fiftieth|sixtieth|seventieth|eightieth|ninetieth)", Pattern.CASE_INSENSITIVE);
-		// Connect to the home page
-		Document doc = this.getURLDoc(linkList.get(0));
-		// Split on the new line character
-		String[] separated = doc.wholeText().split("\n");
-		String antiquity = "";
+	public String getAntiquity(String title, String description, Document doc) {
+		if(doc == null) 
+			return "";
 		
-		for(String toCheck: separated) {
-			antiquity = this.findPattern(toCheck, pattern);
-			
-			// No need to check other if statements if the string is empty
-			if(antiquity.isEmpty())
-				continue;
-			// If it is in the form of 1st, 2nd, 3rd etc. then strip of the ending i.e. st, nd
-			else if(antiquity.toLowerCase().matches("\\d{1,2}(?:st|nd|rd|th)")) {
-				String[] number = antiquity.toLowerCase().split("(?:st|nd|rd|th)");
-				return this.toOrdinal(Integer.parseInt(number[0]));
-			} else {
-				return antiquity;
+		int antiquity = 1;
+		for(Element el: doc.getAllElements()) {
+			for(TextNode textNode: el.textNodes()) {
+				if(textNode.text().toLowerCase().matches(this.changeToRegex("\\d{1,2}(?:st|nd|rd|th)")))
+					antiquity++;
 			}
 		}
-		
-		return antiquity;
-		
+		String antqty = this.toOrdinal(antiquity);
+		logger.debug("Found antiquity \"" + antqty +  "\" from passed in document");
+		return antqty;
 	}
 	
 	@Override
-	public String getConferenceDays(String title, String description, ArrayList<String> linkList) {		
-		Document doc = null;
-		String link = this.searchLinks("[iI]mportant", linkList);
-		if(link.isEmpty())
+	public String getConferenceDays(String title, String description, Document doc) {
+		if(doc == null) 
 			return "";
-		else {
-			doc = this.getURLDoc(link);
-			
-			for(Element el: doc.getAllElements()) {
-				for(TextNode textNode: el.textNodes()) {
-					String found = this.findConfDays(textNode.text());
-					if(!found.isEmpty())
-						return found;
+		
+		for(Element el: doc.getAllElements()) {
+			for(TextNode textNode: el.textNodes()) {
+				String found = this.findConfDays(textNode.text());
+				if(!found.isEmpty()) {
+					logger.debug("Found conference days \"" + found + "\" from the passed in document");
+					return found;
 				}
 			}
-			
-			
 		}
 		
 		return "";

@@ -1,45 +1,48 @@
 package crawler;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
+import database.Information;
 import venue.Country;
 
 public class Parser3 extends Parser {
-
-	public Parser3(Information info) {
-		super(info);
+	static Logger logger = LogManager.getLogger(Parser3.class);
+	
+	public Parser3(Information info, Crawler c) {
+		super(info, c);
 	}
 
 	@Override
-	public String getDescription(String homeLink) {
-		Document doc = null;
-        doc = this.getURLDoc(homeLink);
+	public String getDescription(Document doc) {
 		String meta = "";
 		try {
 			meta = doc.select(".site-description").text();
+			return meta;
 		} catch(NullPointerException e) {
-			System.out.println("No class with name \"site-description\"");
+			return "";
 		}
-		return meta;
+		
 	}
 
 	@Override
-	public String getVenue(String title, String description, Country country, ArrayList<String> linkList) {
+	public String getVenue(String title, String description, Country country, Document doc) {
 		String venue = "";
 		
 		// Search the description for the country of the conference
 		if(!description.equals(""))
 			venue = this.searchCountries(description, country);
+		
+		logger.debug("Found venue \"" + venue + "\" from from description");
 		
 		return venue;
 	}
@@ -52,8 +55,9 @@ public class Parser3 extends Parser {
 		Pattern pattern = Pattern.compile("((Mon(day)?|Tue(sday)?|Wed(nesday)?|Thu(rsday)?|Fri(day)?|Sat(urday)?|Sun(day)?)\\s\\d{1,2}.|\\d{1,2}.|\\d{1,2}-\\d{1,2}.)*(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)(\\s+|,|\\.)\\d{4}|\\w+.\\d{1,2}.-.\\w+.\\d{1,2}.\\w+.\\d{4}|\\w+.\\d{1,2},\\s\\d{4}", Pattern.CASE_INSENSITIVE);
 		String[] separated;
 		
+		logger.debug("Getting deadlines from: " + linkList.get(0));
 		// Connect to the home page
-		doc = this.getURLDoc(linkList.get(0));
+		doc = crawler.getURLDoc(linkList.get(0));
 		
 		try {
 			// Select the div with "Important Dates"
@@ -80,24 +84,14 @@ public class Parser3 extends Parser {
 		} catch(NullPointerException e) {
 			return allDeadlines;
 		}
-			
-//		for(String key: allDeadlines.keySet()) {
-//			System.out.println("Heading: " + key);
-//			LinkedHashMap<String, String> deadlines1 = allDeadlines.get(key);
-//			for(String d: deadlines1.keySet()) {
-//				System.out.println(d + ": " + deadlines1.get(d));
-//			}
-//		}
 		
 		return allDeadlines;
 	}
 	
 	@Override
-	public String getAntiquity(String title, String description, ArrayList<String> linkList) {
+	public String getAntiquity(String title, String description, Document doc) {
 		String antiquity = "";
 	
-		// Connect to the home page
-		Document doc = this.getURLDoc(linkList.get(0));
 		Elements ele = null;
 		try {
 			Element el = doc.select("div:contains(Previous)").last();
@@ -105,118 +99,74 @@ public class Parser3 extends Parser {
 		} catch(NullPointerException e) {
 			return antiquity;
 		}
+	
+		int currentYear = 1;
+		// Count the number of previously held conferences
+		currentYear += ele.size();
+		antiquity = this.toOrdinal(currentYear);
 		
-		if(ele.isEmpty())
-			return antiquity;
+		// If it is the first conference then it wouldn't have "Previous" editions
+		if(currentYear == 1)
+			return "";
 		else {
-			int currentYear = 1;
-			// Count the number of previously held conferences
-			currentYear += ele.size();
-			antiquity = this.toOrdinal(currentYear);
-			
+			logger.debug("Found antiquity \"" + antiquity +  "\" from passed in document");
 			return antiquity;
 		}
+			
 	}
 	
-	public String getConferenceDays(String title, String description, ArrayList<String> linkList) {	
+	public String getConferenceDays(String title, String description, Document doc) {
 		String[] possibleNames = {"div#header", "div.header","header#header", "header.header", "div#footer", "div.footer", "footer#footer", "footer.footer", "header", "footer"};
-		
-		// Search the links for the title of the webpage (aimed at pages with frames)
-		ArrayList<String> possibleLinks = this.findAllLinks(this.changeToRegex("[tT]itle"), linkList);
-		possibleLinks.add(linkList.get(0));
-		
-		// Iterate through all links to find the information from the header and footer
-		for(String link: possibleLinks) {
-			// Connect to the home page
-			Document doc = this.getURLDoc(link);
 	        
+		try {
 	        // Iterate through all the possible name id's and classes
 	        for(String name: possibleNames) {
 	        	String confDays = this.findConfDays(doc.select(name).text());
-	        	if(!confDays.isEmpty())
+	        	if(!confDays.isEmpty()) {
+	        		logger.debug("Found conference days \"" + confDays + "\" from the passed in document");
 	        		return confDays;
+	        	}
 	        }
+		} catch(NullPointerException e) {
+			return "";
 		}
-
+		
 		return "";
 	}
 	
 	@Override
-	public LinkedHashMap<String, List<String>> getOrganisers(ArrayList<String> linkList, Country country) {
-		List<String> potentialLinks = new ArrayList<>();
-		this.addCommitteeSearchWords();
-		
-		// Find the links containing the search keywords (i.e. committee, chair etc.)
-		for(String keyword: searchKeywords) {
-			ArrayList<String> links = this.findAllLinks(keyword, linkList);
-			if(!links.isEmpty())
-				// Iterate through the links to make sure no duplicates are added
-				for(String link: links)
-					if(!potentialLinks.contains(link)) {
-//						System.out.println(link);
-						potentialLinks.add(link);
-					}	
-		}
-		
+	public LinkedHashMap<String, List<String>> getOrganisers(Document doc, Country country) {
 		LinkedHashMap<String, List<String>> committees = new LinkedHashMap<>();
 		
-		if(potentialLinks.isEmpty())
-			return committees;
-		// Check if the format of organisers is suitable for this code
-		else {
-			// Initialize variables
-			String tempSubteam = "";
-			List<String> members = new ArrayList<>();
-			
-			for(String link: potentialLinks) {
-				// Get the document
-				Document doc = this.getURLDoc(link);
-//				System.out.println(doc.wholeText());
-				// Remove the spaces
-				String[] split = doc.wholeText().split("\n");
-				for(String toCheck: split) {
-					toCheck = toCheck.trim();
-					if(!toCheck.isEmpty()) {
-						// Check for a committee keyword in the string
-						if(this.searchForCommittees(toCheck)) {
-							// Add the found values to the output map
-							if(!members.isEmpty() && !tempSubteam.equals("")) {
-								committees.put(tempSubteam, new ArrayList<String>(members));
-							}
-							// Overwrite the variables
-							tempSubteam = toCheck;
-							members.clear();
-						} else {
-							// Add the members
-							members.add(toCheck);
-						}
+		// Initialize variables
+		String tempSubteam = "";
+		List<String> members = new ArrayList<>();
+		
+		// Remove the spaces
+		String[] split = doc.wholeText().split("\n");
+		for(String toCheck: split) {
+			toCheck = toCheck.trim();
+			if(!toCheck.isEmpty()) {
+				// Check for a committee keyword in the string
+				if(this.searchForCommittees(toCheck)) {
+					// Add the found values to the output map
+					if(!members.isEmpty() && !tempSubteam.equals("")) {
+						committees.put(tempSubteam.replaceAll("\"|'", ""), new ArrayList<String>(members));
 					}
-				}
-				if(!members.isEmpty() && !tempSubteam.equals("")) {
-					committees.put(tempSubteam, new ArrayList<String>(members));
+					// Overwrite the variables
+					tempSubteam = toCheck;
+					members.clear();
+				} else {
+					// Add the members
+					members.add(toCheck.replaceAll("\"|'", ""));
 				}
 			}
 		}
-		
-		// Test print
-		String allMembers = "";
-		for(String subteam: committees.keySet()) {
-    		allMembers += subteam + ": ";
-			List<String> subteamMembers = committees.get(subteam);
-			for(String subteamMember: subteamMembers) {
-				allMembers += subteamMember + " //// ";
-			}
-			System.out.println(allMembers);
-        	allMembers = "";
+		if(!members.isEmpty() && !tempSubteam.equals("")) {
+			committees.put(tempSubteam, new ArrayList<String>(members));
 		}
 		
 		// If only 1 committee is returned then it must be an error
 		return committees.size() < 2 ? new LinkedHashMap<String, List<String>>() : committees;
-	}
-	
-	public static void main(String[] args) {
-		Parser p = new Parser3(new Information());
-		Country country = new Country();
-		p.getOrganisers(new ArrayList<String>(Arrays.asList("https://itrust.sutd.edu.sg/hase2017/organizing-committee/")), country);
 	}
 }

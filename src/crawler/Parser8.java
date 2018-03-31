@@ -4,14 +4,19 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-public class Parser8 extends Parser {
+import database.Information;
 
-	public Parser8(Information info) {
-		super(info);
+public class Parser8 extends Parser {
+	static Logger logger = LogManager.getLogger(Parser8.class);
+
+	public Parser8(Information info, Crawler c) {
+		super(info, c);
 	}
 	
 	@Override
@@ -29,7 +34,8 @@ public class Parser8 extends Parser {
 		links.addAll(this.findAllLinks("important_dates", linkList));
 		
 		for(String link: links) {
-			doc = this.getURLDoc(link);
+			logger.debug("Getting deadlines from: " + link);
+			doc = crawler.getURLDoc(link);
 			
 			try {
 				// Select the div with "Important Dates"
@@ -82,16 +88,6 @@ public class Parser8 extends Parser {
 			if(!allDeadlines.isEmpty())
 				return allDeadlines;
 		}
-		
-		
-//		for(String key: allDeadlines.keySet()) {
-//			System.out.println();
-//			System.out.println("Heading: " + key);
-//			LinkedHashMap<String, String> deadlines1 = allDeadlines.get(key);
-//			for(String d: deadlines1.keySet()) {
-//				System.out.println(d + ": " + deadlines1.get(d));
-//			}
-//		}
 		
 		return allDeadlines;
 	}

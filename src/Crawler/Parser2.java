@@ -6,60 +6,68 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 
+import database.Information;
 import venue.Country;
 
 public class Parser2 extends Parser {
+	static Logger logger = LogManager.getLogger(Parser2.class);
+	static Logger info_logger = LogManager.getLogger("information_log");
 	
-	public Parser2(Information info) {
-		super(info);
+	public Parser2(Information info, Crawler c) {
+		super(info, c);
 	}
 	
 	@Override
 	public String getAcronym(String title, String description) {
-		return this.findAcronym(description);
+		String found = this.findAcronym(description);
+		logger.debug("Found acronym \"" + found + "\" from description");
+		return found;
 	}
 
 	@Override
 	public String getSponsors(String title, String description) {
 		String sponsors = "";
 		
+		// Iterate through the list of sponsors
 		for(String sponsor: information.getSponsors()) {
+			// Check if the description has the sponsor
 			if(description.matches(this.changeToRegex(sponsor)))
 				if(sponsors.isEmpty())
 					sponsors += sponsor;
 				else
 					sponsors += "/" + sponsor;
 		}
+		logger.debug("Found sponsors \"" + sponsors + "\" from description");
 		
 		return sponsors;
 	}
 	
 	@Override
-	public String getDescription(String homeLink) {
-		Document doc = null;
-		// Connect to the home page
-        doc = this.getURLDoc(homeLink);
+	public String getDescription(Document doc) {
 		String meta = "";
 		try {
 			meta = doc.select("meta[property=og:description]").first().attr("content");
-			System.out.println("Description: " + meta);
+			return meta;
 		} catch(NullPointerException e) {
-			System.out.println("No meta with attribute \"property\"");
+			return "";
 		}
-		return meta;
 	}
 	
 	@Override
-	public String getVenue(String title, String description, Country country, ArrayList<String> linkList) {
+	public String getVenue(String title, String description, Country country, Document doc) {
 		String venue = "";
 		// Search the title for the country of the conference
 		if(!title.equals(""))
 			venue = this.searchCountries(title, country);
+		
+		logger.debug("Found venue \"" + venue + "\" from from title");
 		
 		return venue;
 	}
@@ -72,12 +80,13 @@ public class Parser2 extends Parser {
 		Pattern pattern = Pattern.compile("(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)\\s+\\d{1,2}(\\s+|,)\\s+\\d{4}", Pattern.CASE_INSENSITIVE);
 		String[] separated, split;
 		
+		logger.debug("Getting deadlines from: " + linkList.get(0));
 		// Connect to the home page
-		doc = this.getURLDoc(linkList.get(0));
-		// Select the div with "Important Dates"
-		Element el = doc.select("div:contains(Important Dates)").last();
-		
+		doc = crawler.getURLDoc(linkList.get(0));
 		try {
+			// Select the div with "Important Dates"
+			Element el = doc.select("div:contains(Important Dates)").last();
+		
 			// Extract the paragraph
 			String elementString = el.select("p").toString().replaceAll("\r|\n", "");
 			elementString = elementString.replaceAll("<strike>(.*?|.*\\n.*\\n)<\\/strike>|<del>(.*?|.*\\n.*\\\\n)<\\/del>|line-through.+?>.+?<\\/.+?>", "");
@@ -101,15 +110,6 @@ public class Parser2 extends Parser {
 			return allDeadlines;
 		}
 		
-		
-//		for(String key: allDeadlines.keySet()) {
-//			System.out.println("Heading: " + key);
-//			LinkedHashMap<String, String> deadlines1 = allDeadlines.get(key);
-//			for(String d: deadlines1.keySet()) {
-//				System.out.println(d + ": " + deadlines1.get(d));
-//			}
-//		}
-		
 		return allDeadlines;
 	}
 	
@@ -122,11 +122,13 @@ public class Parser2 extends Parser {
 		matcher = pattern.matcher(title);
 		if(matcher.find())
 			year = matcher.group(0);
+		
+		logger.debug("Found conference year \"" + year + "\" from the title");
 		return year;
 	}
 	
 	@Override
-	public String getAntiquity(String title, String description, ArrayList<String> linkList) {
+	public String getAntiquity(String title, String description, Document doc) {
 		String antiquity = "";
 		Pattern pattern = Pattern.compile("\\d{1,2}(st|nd|rd|th)|([tT]wenty-|[tT]hirty-|[fF]orty-"
 				+ "|[fF]ifty-|[sS]ixty-|[sS]eventy-|[eE]ighty-|[nN]inety-)*([fF]ir|[sS]eco|[tT]hi|"
@@ -146,37 +148,23 @@ public class Parser2 extends Parser {
 			}
 		}
 		
+		logger.debug("Found antiquity \"" + antiquity +  "\" from the title");
 		return antiquity;
 	}
 	
 	@Override
-	public String getConferenceDays(String title, String description, ArrayList<String> linkList) {		
-		return this.findConfDays(description);
+	public String getConferenceDays(String title, String description, Document doc) {
+		String confDays = this.findConfDays(description);
+		logger.debug("Found conference days \"" + confDays + "\" from the description");
+		return confDays;
 	}
 	
 	@Override
-	public LinkedHashMap<String, List<String>> getOrganisers(ArrayList<String> linkList, Country country) {
-		List<String> potentialLinks = new ArrayList<>();
-		this.addCommitteeSearchWords();
-		
-		// Find the links containing the search keywords (i.e. committee, chair etc.)
-		for(String keyword: searchKeywords) {
-			ArrayList<String> links = this.findAllLinks(keyword, linkList);
-			if(!links.isEmpty())
-				// Iterate through the links to make sure no duplicates are added
-				for(String link: links)
-					if(!potentialLinks.contains(link)) {
-//						System.out.println(link);
-						potentialLinks.add(link);
-					}	
-		}
-		
+	public LinkedHashMap<String, List<String>> getOrganisers(Document doc, Country country) {
 		LinkedHashMap<String, List<String>> committees = new LinkedHashMap<>();
 		
-		if(potentialLinks.isEmpty())
-			return committees;
 		// Check if the format of organisers is suitable for this code
-		else if(!this.checkOrganiserFormat(potentialLinks.get(0), country))
+		if(!this.checkOrganiserFormat(doc, country))
 			return committees;
 		else {
 			// Initialize variables
@@ -185,79 +173,63 @@ public class Parser2 extends Parser {
 			StringBuilder sb = new StringBuilder();
 			int memberCounter = 0;
 			
-			for(String link: potentialLinks) {
-				// Get the document
-				Document doc = this.getURLDoc(link);
-				
-				// Find all elements and text nodes
-				for(Element node: doc.getAllElements()) {
-					for(TextNode textNode: node.textNodes()) {
+			// Find all elements and text nodes
+			for(Element node: doc.getAllElements()) {
+				for(TextNode textNode: node.textNodes()) {
 //						System.out.println(textNode.text());
-						// Search for committee names in the text node
-						if(this.searchForCommittees(textNode.text())) {
-							// If the subteam isn't empty and there are members in the list add them to the map to be returned later
-							if(!tempSubteam.equals("") && !members.isEmpty()) {
-								// Avoid overwriting the same key in the map, and add members to the existing list instead
-								this.addToCommittees(committees, tempSubteam, members);
-								members.clear();
-							}
-							// Add the subteam found for later use as a key
-							tempSubteam = textNode.text();
-						}
-						// Do nothing with empty text nodes
-						else if(textNode.text().matches("^\\s+$"));
-						else if(!tempSubteam.equals("") && memberCounter < 4) {
-							// Check if this text node is a country
-							boolean isCountry = this.checkStringForCountry(textNode.text(), country);
-							// If it is not the first text node to be appended (counter > 0), then add a comma and increase the counter
-							if(memberCounter > 0 && !isCountry) {
-								sb.append(", " + textNode.text());
-								memberCounter++;
-							}
-							// If the text node contains a country then we concatenated a full string and we can add it to the list of members
-							else if(memberCounter > 0 && isCountry) {
-								// Add the member to the list
-								sb.append(", " + textNode.text());
-								members.add(new String(sb.toString()));
-								// Reset the string builder and counter
-								sb.setLength(0);
-								memberCounter = 0;
-							}
-							// The counter is 0, add the raw string
-							else {
-								sb.append(textNode.text());
-								memberCounter++;
-							}
-						}
-						else {
-							// If it's neither a member or a subteam then add everything gathered so far to the map and clear the variables
-							if(!tempSubteam.equals("") && !members.isEmpty()) {
-								// Avoid overwriting the same key in the map, and add members to the existing list instead
-								this.addToCommittees(committees, tempSubteam, members);
-							}
-							
-							// Reset the variables
+					// Search for committee names in the text node
+					if(this.searchForCommittees(textNode.text())) {
+						// If the subteam isn't empty and there are members in the list add them to the map to be returned later
+						if(!tempSubteam.equals("") && !members.isEmpty()) {
+							// Avoid overwriting the same key in the map, and add members to the existing list instead
+							this.addToCommittees(committees, tempSubteam, members);
 							members.clear();
-							tempSubteam = "";
-							memberCounter = 0;
-							sb.setLength(0);
 						}
+						// Add the subteam found for later use as a key
+						tempSubteam = textNode.text().replaceAll("\"|'", "");
+					}
+					// Do nothing with empty text nodes
+					else if(textNode.text().matches("^\\s+$"));
+					else if(!tempSubteam.equals("") && memberCounter < 4) {
+						// Check if this text node is a country
+						boolean isCountry = this.checkStringForCountry(textNode.text(), country);
+						// If it is not the first text node to be appended (counter > 0), then add a comma and increase the counter
+						if(memberCounter > 0 && !isCountry) {
+							sb.append(", " + textNode.text());
+							memberCounter++;
+						}
+						// If the text node contains a country then we concatenated a full string and we can add it to the list of members
+						else if(memberCounter > 0 && isCountry) {
+							// Add the member to the list
+							sb.append(", " + textNode.text());
+							members.add(new String(sb.toString().replaceAll("\"|'", "")));
+							// Reset the string builder and counter
+							sb.setLength(0);
+							memberCounter = 0;
+						}
+						// The counter is 0, add the raw string
+						else {
+							sb.append(textNode.text());
+							memberCounter++;
+						}
+					}
+					else {
+						// If it's neither a member or a subteam then add everything gathered so far to the map and clear the variables
+						if(!tempSubteam.equals("") && !members.isEmpty()) {
+							// Avoid overwriting the same key in the map, and add members to the existing list instead
+							this.addToCommittees(committees, tempSubteam, members);
+						}
+						
+						// Reset the variables
+						members.clear();
+						tempSubteam = "";
+						memberCounter = 0;
+						sb.setLength(0);
+						info_logger.info("A possible committee member that wasn't found by the system: " + textNode.text());
 					}
 				}
 			}
 		}
-		
-//		// Test print
-//		String allMembers = "";
-//		for(String subteam: committees.keySet()) {
-//    		allMembers += subteam + ": ";
-//			List<String> subteamMembers = committees.get(subteam);
-//			for(String subteamMember: subteamMembers) {
-//				allMembers += subteamMember + " //// ";
-//			}
-//			System.out.println(allMembers);
-//        	allMembers = "";
-//		}
 		
 		// If only 1 committee is returned then it must be an error
 		return committees.size() < 2 ? new LinkedHashMap<String, List<String>>() : committees;
@@ -285,8 +257,8 @@ public class Parser2 extends Parser {
 	}
 	
 	@Override
-	protected boolean checkOrganiserFormat(String link, Country country) {
-		Document doc = this.getURLDoc(link);
+	protected boolean checkOrganiserFormat(Document doc, Country country) {
+		logger.debug("Checking format of the passed in document");
 		int counter = 0;
 		// Find all elements and text nodes
 		for(Element node: doc.getAllElements()) {

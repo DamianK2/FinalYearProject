@@ -1,18 +1,22 @@
 package crawler;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import database.Information;
+
 public class Parser7 extends Parser {
+	static Logger logger = LogManager.getLogger(Parser7.class);
 	
-	public Parser7(Information info) {
-		super(info);
+	public Parser7(Information info, Crawler c) {
+		super(info, c);
 	}
 	
 	@Override
@@ -23,12 +27,14 @@ public class Parser7 extends Parser {
 		Pattern pattern = Pattern.compile("(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(tember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)(.\\s+|\\s+)\\d{1,2}(\\s+|,|(st|nd|rd|th),?)\\s+\\d{4}", Pattern.CASE_INSENSITIVE);
 		String[] separated;
 		
+		logger.debug("Getting deadlines from: " + linkList.get(0));
 		// Connect to the home page
-		doc = this.getURLDoc(linkList.get(0));
-		// Select the div with "Important Dates"
-		Element el = doc.select("div:contains(Important Dates)").last();
-		
+		doc = crawler.getURLDoc(linkList.get(0));
+
 		try {
+			// Select the div with "Important Dates"
+			Element el = doc.select("div:contains(Important Dates)").last();
+			
 			// Extract the paragraph
 			String elementString = el.select("p").toString().replaceAll("\r|\n", "");
 			elementString = elementString.replaceAll("<strike>(.*?|.*\\n.*\\n)<\\/strike>|<del>(.*?|.*\\n.*\\n)<\\/del>|line-through.+?>.+?<\\/.+?>|<s>(.*?|.*\\n.*\\n)<\\/s>", "");
@@ -80,19 +86,6 @@ public class Parser7 extends Parser {
 			return allDeadlines;
 		}
 		
-//		for(String key: allDeadlines.keySet()) {
-//			System.out.println("Heading: " + key);
-//			LinkedHashMap<String, String> deadlines1 = allDeadlines.get(key);
-//			for(String d: deadlines1.keySet()) {
-//				System.out.println(d + ": " + deadlines1.get(d));
-//			}
-//		}
-		
 		return allDeadlines;
-	}
-	
-	public static void main(String[] args) {
-		Parser p = new Parser7(new Information());
-		p.getDeadlines(new ArrayList<String>(Arrays.asList("https://sites.uoit.ca/ifiptm2018/important-dates/index.php")));
 	}
 }
