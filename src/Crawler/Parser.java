@@ -96,7 +96,7 @@ public class Parser {
 	}
 	
 	/**
-	 * Searches and parses different links to find the proceedings.
+	 * Searches and parses different documents to find the proceedings.
 	 * @return proceedings
 	 */
 	public String getProceedings(Document doc) {
