@@ -1,6 +1,5 @@
 package crawler;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -15,7 +14,8 @@ import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import database.Information;
@@ -23,7 +23,17 @@ import venue.Country;
 
 class ParserTest {
 
-	private Parser parser = new Parser(new Information(), new Crawler());
+	private Parser parser;
+	
+	@BeforeEach
+	void setup() {
+		parser = new Parser(new Information(), new Crawler());
+	}
+
+	@AfterEach
+	void teardown() {
+		parser = null;
+	}
 	
 	@Test
 	void testGetTitle() {

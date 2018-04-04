@@ -13,6 +13,7 @@ import org.jsoup.select.Elements;
 public class Crawler {
 	private ArrayList<String> linkList = new ArrayList<>();
 	static Logger logger = LogManager.getLogger(Crawler.class);
+	
 	/**
 	 * Using the passed in document extracts the links and adds them to the list of links.
 	 * @param home page Document
@@ -21,7 +22,7 @@ public class Crawler {
 	 */
 	public synchronized ArrayList<String> getAllLinks(Document doc, ArrayList<String> link) {
 		this.linkList = link;
-        StringBuilder sb = new StringBuilder(); 
+        StringBuilder sb = new StringBuilder();
         Elements links = null;
         try {
         	links = doc.select("a[href]");
@@ -37,11 +38,11 @@ public class Crawler {
                     	sb.append(linkList.get(0));
                     	String src = e.attr("src");
                     	if(!src.isEmpty()) {
-                    		// Check if it isn't a http link
-                    		if(src.contains("http"))
+                    		// Check if it is a http link
+                    		if(src.contains("http") && this.checkLinkFormat(src) && !this.checkDuplicates(src))
                     			linkList.add(src);
                     		else {
-                    			// The link can look like this ./example.pdf
+                    			// The link can look like this ./example.html
                     			if(src.charAt(0) == '.') {
                     				StringBuilder tempSb = new StringBuilder(src); 
                     				// Delete the dot and slash "./"
@@ -50,7 +51,8 @@ public class Crawler {
                     			} else {
                     				sb.append(src);
                     			}
-                        		linkList.add(sb.toString());
+                    			if(this.checkLinkFormat(sb.toString()) && !this.checkDuplicates(sb.toString()))
+                    				linkList.add(sb.toString());
                     		}
                     	}
                     	
@@ -83,12 +85,24 @@ public class Crawler {
 	private synchronized void addToLinkList(Elements links) {
 		for(Element link: links) {
 			// Eliminate the unneeded links with images or pdfs
-			if(!this.checkDuplicates(link.attr("abs:href")) 
-					&& !link.attr("abs:href").toLowerCase().matches("[http].+(pdf|rar|zip|jpg|png|doc|docx)") 
-					&& !link.attr("abs:href").toLowerCase().matches(".*other edition.*")
-					&& !link.attr("abs:href").toLowerCase().matches("mailto:.+"))
+			if(!this.checkDuplicates(link.attr("abs:href")) && this.checkLinkFormat(link.attr("abs:href")))
 				linkList.add(link.attr("abs:href"));
 		}
+	}
+	
+	/**
+	 * Checks if a link contains extensions such as pdf, docx, png etc.
+	 * @param link
+	 * @return true/false
+	 */
+	private synchronized boolean checkLinkFormat(String link) {
+		if(link.toLowerCase().matches("[http].+(pdf|rar|zip|jpg|png|doc|docx)") 
+				|| link.toLowerCase().matches(".*other edition.*")
+				|| link.toLowerCase().matches("mailto:.+")) {
+			return false;
+		}
+		
+		return true;
 	}
 	
 	/**

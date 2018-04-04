@@ -39,7 +39,6 @@ public class Parser7 extends Parser {
 			String elementString = el.select("p").toString().replaceAll("\r|\n", "");
 			elementString = elementString.replaceAll("<strike>(.*?|.*\\n.*\\n)<\\/strike>|<del>(.*?|.*\\n.*\\n)<\\/del>|line-through.+?>.+?<\\/.+?>|<s>(.*?|.*\\n.*\\n)<\\/s>", "");
 			
-//			System.out.println(elementString);
 			String deadline = "";
 			String keyHeading = "";
 			if(!elementString.isEmpty()) {

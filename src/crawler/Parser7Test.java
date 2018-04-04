@@ -7,13 +7,25 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import database.Information;
 
 class Parser7Test {
 
-	private Parser parser = new Parser7(new Information(), new Crawler());
+	private Parser parser;
+	
+	@BeforeEach
+	void setup() {
+		parser = new Parser7(new Information(), new Crawler());
+	}
+
+	@AfterEach
+	void teardown() {
+		parser = null;
+	}
 	
 	@Test
 	void testGetDeadlines() {

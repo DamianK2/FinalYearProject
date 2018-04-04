@@ -115,6 +115,7 @@ public class Parser3 extends Parser {
 			
 	}
 	
+	@Override
 	public String getConferenceDays(String title, String description, Document doc) {
 		String[] possibleNames = {"div#header", "div.header","header#header", "header.header", "div#footer", "div.footer", "footer#footer", "footer.footer", "header", "footer"};
 	        

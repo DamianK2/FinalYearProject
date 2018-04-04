@@ -33,15 +33,9 @@ public class Main {
 	private static int threads_completed = 0;
 	final static Semaphore semaphore = new Semaphore(MAX_NOF_THREADS);
 	private static ArrayList<Thread> threads = new ArrayList<>();
-//	private static ArrayList<Double> times = new ArrayList<>(); // Testing purposes
 	static Logger logger = LogManager.getLogger(Main.class);
 
 	public static void main(String[] args) {
-		// long tStartOverall = System.currentTimeMillis(); // Testing purposes
-
-		// for (int k = 0; k < 10; k++) { // Testing purposes
-		long tStart = System.currentTimeMillis();
-
 		Country country = new Country();
 		logger.debug("Creating connection to the database for information and conference");
 		Information information = new Information();
@@ -75,8 +69,6 @@ public class Main {
 		parsers.add(new Parser7(information, crawler));
 		parsers.add(new Parser8(information, crawler));
 		parsers.add(new Parser9(information, crawler));
-
-		
 
 		// Create threads for each link to decrease crawling time
 		Thread thread;
@@ -122,29 +114,8 @@ public class Main {
 		logger.debug("Closing connection to the database for information and conference");
 		information.closeConnection();
 		sqlConnection.closeConnection();
-
-		long tEnd = System.currentTimeMillis();
-		long tDelta = tEnd - tStart;
-		double elapsedSeconds = tDelta / 1000.0;
-		// Testing purposes
-		// times.add(elapsedSeconds);
-		// }
-		//
-		// int i = 1;
-		// for (double t : times) {
-		// System.out.println("Time taken for " + i + " iteration: " + t);
-		// i++;
-		// }
-		//
-		// long tEndOverall = System.currentTimeMillis();
-		// long tDelta = tEndOverall - tStartOverall;
-		// double elapsedSeconds = tDelta / 1000.0;
-		// System.out.println("Time taken to extract information 10 times: " +
-		// elapsedSeconds + " seconds");
-		// elapsedSeconds = elapsedSeconds / 10.0;
-		System.out.println("Time taken to extract information: " + elapsedSeconds + " seconds");
 	}
-	
+
 	public static synchronized void updatePercentage() {
 		threads_completed++;
 		int percentage = (int) Math.round(((double) threads_completed/(double) threads.size()) * 100.0);
