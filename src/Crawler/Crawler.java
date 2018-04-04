@@ -13,6 +13,7 @@ import org.jsoup.select.Elements;
 public class Crawler {
 	private ArrayList<String> linkList = new ArrayList<>();
 	static Logger logger = LogManager.getLogger(Crawler.class);
+	
 	/**
 	 * Using the passed in document extracts the links and adds them to the list of links.
 	 * @param home page Document

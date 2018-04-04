@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 public class Country {
-	// Add country exceptions at the start
 	private static final ArrayList<String> countries = new ArrayList<>();
 
 	public Country() {
@@ -12,6 +11,9 @@ public class Country {
 		this.storeCountries();
 	}
 	
+	/**
+	 * Using the Locale library get all the countries
+	 */
 	private void storeCountries() {
 		Locale[] locales = Locale.getAvailableLocales();
 		String name;
@@ -22,6 +24,9 @@ public class Country {
 		}
 	}
 	
+	/**
+	 * Add countries or acronyms not available in the Locale library
+	 */
 	private void addExceptions() {
 		countries.add("USA");
 		countries.add("UK");
@@ -32,6 +37,9 @@ public class Country {
 		countries.add("Sri Lanka");
 	}
 	
+	/**
+	 * @return list of countries
+	 */
 	public synchronized ArrayList<String> getCountries() {
 		return countries;
 	}

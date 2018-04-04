@@ -189,6 +189,11 @@ public class Parser {
 		return venue;
 	}
 	
+	/**
+	 * Finds all links that can contain a venue
+	 * @param linkList
+	 * @return
+	 */
 	public synchronized ArrayList<String> findVenueLinks(ArrayList<String> linkList) {
 		ArrayList<String> venueLinks = new ArrayList<>();
 		venueLinks.add(linkList.get(0));
@@ -299,7 +304,7 @@ public class Parser {
 	}
 	
 	/**
-	 * Checks the description or hompage for the antiquity of the conference.
+	 * Checks the description or the hompage for the antiquity of the conference.
 	 * @param description
 	 * @return antiquity
 	 */
@@ -405,7 +410,7 @@ public class Parser {
 	}
 	
 	/**
-	 * Looks through the links to find ones that may contain committees
+	 * Looks through the links to find the ones that may contain committees
 	 * @param linkList
 	 * @return list of links that could contain committee members
 	 */

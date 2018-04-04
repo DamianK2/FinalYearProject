@@ -9,11 +9,10 @@ import java.sql.SQLException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import main.Main;
-
 public class DBConnection {
 	private Connection connection;
 	static Logger logger = LogManager.getLogger(DBConnection.class);
+	
 	/**
 	 * Create a mysql database connection
 	 */
