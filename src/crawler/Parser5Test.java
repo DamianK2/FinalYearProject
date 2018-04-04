@@ -11,14 +11,26 @@ import java.util.LinkedHashMap;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import database.Information;
 
 class Parser5Test {
 	
-	private Parser parser = new Parser5(new Information(), new Crawler());
+	private Parser parser;
 
+	@BeforeEach
+	void setup() {
+		parser = new Parser5(new Information(), new Crawler());
+	}
+
+	@AfterEach
+	void teardown() {
+		parser = null;
+	}
+	
 	@Test
 	void testGetDescription() {
 		File splash = new File("TestPages/SPLASH2018.html");

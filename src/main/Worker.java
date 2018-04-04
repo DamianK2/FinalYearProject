@@ -67,9 +67,7 @@ public class Worker implements Runnable {
 	}
 	
 	// Fetches more links from already fetched links from Crawler
-	private void extractInformation(String url) {
-		long tStart = System.currentTimeMillis();
-		
+	public void extractInformation(String url) {
 		LinkedHashMap<String, LinkedHashMap<String, String>> deadlines = new LinkedHashMap<>();
 		linkList.add(url);
 		logger.debug("Fetching links from: " + url);
@@ -80,7 +78,8 @@ public class Worker implements Runnable {
         row.createCell(1).setCellValue(createHelper.createRichTextString(mainLink));
         Document mainLinkDoc = crawler.getURLDoc(mainLink);
         logger.debug("Getting title from: " + mainLink);
-		String title = parsers.get(0).getTitle(mainLinkDoc);
+		String title = ""; 
+		if(mainLinkDoc != null) title = parsers.get(0).getTitle(mainLinkDoc);
 		row.createCell(2).setCellValue(createHelper.createRichTextString(title));
 		
 		ArrayList<String> proceedingLinks = parsers.get(0).findProceedingLinks(linkList);
@@ -269,10 +268,5 @@ public class Worker implements Runnable {
 		} catch (SQLException e) {
 			logger.error("Cannot add extracted conference information to database.");
 		}
-        
-        long tEnd = System.currentTimeMillis();
-		long tDelta = tEnd - tStart;
-		double elapsedSeconds = tDelta / 1000.0;	
-		System.out.println(url + ": " + elapsedSeconds + " seconds");
 	}
 }

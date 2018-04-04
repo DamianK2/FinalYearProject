@@ -11,6 +11,8 @@ import java.util.LinkedHashMap;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import database.Information;
@@ -18,8 +20,18 @@ import venue.Country;
 
 class Parser4Test {
 	
-	private Parser parser = new Parser4(new Information(), new Crawler());
+	private Parser parser;
 
+	@BeforeEach
+	void setup() {
+		parser = new Parser4(new Information(), new Crawler());
+	}
+
+	@AfterEach
+	void teardown() {
+		parser = null;
+	}
+	
 	@Test
 	void testGetDescription() {
 		File icpe = new File("TestPages/ICPE2018.html");
@@ -75,13 +87,13 @@ class Parser4Test {
 		assertTrue(deadlineTypes.containsKey("6"));
 		assertTrue(deadlineTypes.containsKey("7"));
 		assertFalse(deadlineTypes.containsKey("8"));
-
+		
 		LinkedHashMap<String, String> deadlines = deadlineTypes.get("0");
 		assertTrue(deadlines.containsKey(" OOPSLA Paper submission "));
 		assertEquals("Mon 16 Apr 2018", deadlines.get(" OOPSLA Paper submission "));
 		deadlines = deadlineTypes.get("2");
-		assertTrue(deadlines.containsKey(" Onward! 2018 Papers Submission Deadline "));
-		assertEquals("Mon 23 Apr 2018", deadlines.get(" Onward! 2018 Papers Submission Deadline "));
+		assertTrue(deadlines.containsKey(" Onward! 2018 Essays Submission Deadline "));
+		assertEquals("Mon 23 Apr 2018", deadlines.get(" Onward! 2018 Essays Submission Deadline "));
 		deadlines = deadlineTypes.get("3");
 		assertTrue(deadlines.containsKey(" SPLASH-I Proposals Due "));
 		assertEquals("Fri 18 May 2018", deadlines.get(" SPLASH-I Proposals Due "));
@@ -89,8 +101,8 @@ class Parser4Test {
 		assertTrue(deadlines.containsKey(" Onward! 2018 Essays First Notification "));
 		assertEquals("Mon 11 Jun 2018", deadlines.get(" Onward! 2018 Essays First Notification "));
 		deadlines = deadlineTypes.get("7");
-		assertTrue(deadlines.containsKey(" GPCE 2018 Abstract Submission All important dates"));
-		assertEquals("Fri 29 Jun 2018", deadlines.get(" GPCE 2018 Abstract Submission All important dates"));
+		assertTrue(deadlines.containsKey(" SPLASH-I Notification All important dates"));
+		assertEquals("Fri 29 Jun 2018", deadlines.get(" SPLASH-I Notification All important dates"));
 		assertEquals(new LinkedHashMap<String, LinkedHashMap<String, String>>(), parser.getDeadlines(new ArrayList<String>(Arrays.asList("https://research.spec.org/fileadmin/user_upload/documents/icpe_2018/ICPE-2018_Sponsorship.pdf"))));
 	}
 	

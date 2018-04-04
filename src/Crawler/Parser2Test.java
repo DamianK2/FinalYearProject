@@ -12,6 +12,8 @@ import java.util.List;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import database.Information;
@@ -19,7 +21,18 @@ import venue.Country;
 
 class Parser2Test {
 	
-	private Parser parser = new Parser2(new Information(), new Crawler());
+	private Parser parser; 
+	
+	@BeforeEach
+	void setup() {
+		parser = new Parser2(new Information(), new Crawler());
+	}
+	
+	@AfterEach
+	void teardown() {
+		parser = null;
+	}
+	
 	
 	@Test
 	void testGetAcronym() {

@@ -1,7 +1,7 @@
 package crawler;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,17 +10,26 @@ import java.util.Arrays;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.junit.Rule;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.ExpectedException;
 
 class CrawlerTest {
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
-	
+
+	private Crawler crawler;
+
+	@BeforeEach
+	void setup() {
+		crawler = new Crawler();
+	}
+
+	@AfterEach
+	void teardown() {
+		crawler = null;
+	}
+
 	@Test
 	void testGetAllLinks() {
-		Crawler crawler = new Crawler();
 		File psd = new File("TestPages/PSD2018.html");
 		File splash = new File("TestPages/SPLASH2018.html");
 		Document doc = null;
@@ -31,7 +40,7 @@ class CrawlerTest {
 			throw new IOException();
 		} catch (IOException e) {
 		}
-		
+
 		ArrayList<String> links = crawler.getAllLinks(doc, new ArrayList<String>(Arrays.asList("https://unescoprivacychair.urv.cat/psd2018/index.php")));
 		assertEquals("https://unescoprivacychair.urv.cat/psd2018/index.php", links.get(0));
 		assertEquals("https://unescoprivacychair.urv.cat/psd2018/index.php?m=organization", links.get(1));
@@ -45,10 +54,9 @@ class CrawlerTest {
 		links = crawler.getAllLinks(doc2, new ArrayList<String>(Arrays.asList("https://2018.splashcon.org/home")));
 		links = crawler.getAllLinks(null, null);
 	}
-	
+
 	@Test
 	void testFramesetPages() {
-		Crawler crawler = new Crawler();
 		File ispass = new File("TestPages/ISPASS2018.html");
 		Document doc = null;
 		try {
@@ -63,18 +71,9 @@ class CrawlerTest {
 		assertTrue(links.contains("http://www.ispass.org/ispass2018/ISPASS2018_files/sidebar_logo.html"));
 		assertTrue(links.contains("http://www.ispass.org/ispass2018/ISPASS2018_files/sidebar.html"));
 	}
-	
-//	@Test
-//	void testNullPointerException() {
-//		Crawler crawler = new Crawler();
-//		assertThrows(NullPointerException.class, () -> {
-//			crawler.getURLDoc("https://www.testingtestingtesting.com");
-//        });
-//	}
-	
+
 	@Test
 	void testConnection() {
-		Crawler crawler = new Crawler();
 		crawler.getURLDoc("https://www.google.com");
 	}
 
